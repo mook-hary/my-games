@@ -22,6 +22,17 @@ let isGameOver = false;
 let rotX = 60;   
 let rotZ = -45;  
 
+// 💡【新設】現在の画面サイズから dynamicCubeSize と halfSize を安全に取得する共通関数
+// これにより、ゲーム開始、回転、消去、どの部屋からも全く同じ正しい立体サイズを呼び出せるようになります。
+function getDynamicSizes() {
+    const wrapper = document.getElementById("game-aspect-wrapper");
+    const wrapperWidth = wrapper ? wrapper.clientWidth : 960;
+    const dynamicCubeSize = wrapperWidth * 0.050; // あなたが調整した大きい比率（5.0%）
+    const offset = (SIZE - 1) * dynamicCubeSize / 2;
+    const halfSize = dynamicCubeSize / 2;
+    return { dynamicCubeSize, offset, halfSize };
+}
+
 function initGame() {
     const stage = document.getElementById("stage");
     if(!stage) return;
@@ -51,12 +62,8 @@ function initGame() {
 
     let index = 0;
     
-    // 💡 あなたが設定したお好みの比率（例: 0.050）
-    const wrapper = document.getElementById("game-aspect-wrapper");
-    const wrapperWidth = wrapper ? wrapper.clientWidth : 960;
-    const dynamicCubeSize = wrapperWidth * 0.050; 
-    const offset = (SIZE - 1) * dynamicCubeSize / 2;
-    const halfSize = dynamicCubeSize / 2; 
+    // 共通関数からサイズを取得
+    const { dynamicCubeSize, offset, halfSize } = getDynamicSizes();
 
     for (let x = 0; x < SIZE; x++) {
         for (let y = 0; y < SIZE; y++) {
@@ -72,13 +79,14 @@ function initGame() {
                 
                 cube.addEventListener("click", (e) => {
                     e.stopPropagation(); 
-                    handleClick(blockData, halfSize);
+                    handleClick(blockData);
                 });
 
                 let hasLeft = x > 0, hasRight = x < SIZE - 1;
                 let hasFront = y > 0, hasBack = y < SIZE - 1;
                 let hasBottom = z > 0, hasTop = z < SIZE - 1;
 
+                // 💡 軽量化：完全に内側に隠れているブロックは、最初は面を作らず非表示
                 if (hasLeft && hasRight && hasFront && hasBack && hasBottom && hasTop) {
                     cube.style.display = "none"; 
                     stage.appendChild(cube);
@@ -97,7 +105,6 @@ function initGame() {
 function createFacesForCube(b, halfSize) {
     if (b.hasFaces) return; 
     
-    // 💡 CSSの固定値「18px」を排除し、現在の大きいサイズ（halfSize）で面を組み立てます
     const faces = [
         { name: 'top', style: `transform: translateZ(${halfSize}px);` },
         { name: 'bottom', style: `transform: rotateX(180deg) translateZ(${halfSize}px);` },
@@ -125,17 +132,10 @@ function updateCubePosition(cube, x, y, z, offset, dynamicCubeSize) {
     cube.style.transform = `translateZ(${(z * dynamicCubeSize) - offset}px)`;
 }
 
-// 💡【今回の最重要修正】回転ボタンを押した時も、
-// ブロックそれぞれの面（.face）に対して「大きい立体サイズ（halfSize）」を強制的に再キープさせます。
-// これにより、ブラウザが勝手にサイズを縮めるバグを完全に封殺します。
 function setupEvents() {
     document.getElementById("rot-z-btn").addEventListener("click", () => {
         if (isGameOver) return;
-        const wrapper = document.getElementById("game-aspect-wrapper");
-        const wrapperWidth = wrapper ? wrapper.clientWidth : 960;
-        const dynamicCubeSize = wrapperWidth * 0.050; // 数値を上部と統一
-        const offset = (SIZE - 1) * dynamicCubeSize / 2;
-        const halfSize = dynamicCubeSize / 2; // 厚みの再計算
+        const { dynamicCubeSize, offset, halfSize } = getDynamicSizes();
 
         blocks.forEach(b => {
             const oldX = b.x;
@@ -143,7 +143,6 @@ function setupEvents() {
             b.y = (SIZE - 1) - oldX;
             updateCubePosition(b.element, b.x, b.y, b.z, offset, dynamicCubeSize);
             
-            // 🔴【新設】すでにある面に対しても、大きい立体サイズ（halfSize）を上書き固定
             if(b.hasFaces) {
                 b.element.querySelectorAll('.face.top').forEach(el => el.style.transform = `translateZ(${halfSize}px)`);
                 b.element.querySelectorAll('.face.bottom').forEach(el => el.style.transform = `rotateX(180deg) translateZ(${halfSize}px)`);
@@ -157,11 +156,7 @@ function setupEvents() {
 
     document.getElementById("rot-y-btn").addEventListener("click", () => {
         if (isGameOver) return;
-        const wrapper = document.getElementById("game-aspect-wrapper");
-        const wrapperWidth = wrapper ? wrapper.clientWidth : 960;
-        const dynamicCubeSize = wrapperWidth * 0.050; // 数値を上部と統一
-        const offset = (SIZE - 1) * dynamicCubeSize / 2;
-        const halfSize = dynamicCubeSize / 2; // 厚みの再計算
+        const { dynamicCubeSize, offset, halfSize } = getDynamicSizes();
 
         blocks.forEach(b => {
             const oldY = b.y;
@@ -169,7 +164,6 @@ function setupEvents() {
             b.z = (SIZE - 1) - oldY;
             updateCubePosition(b.element, b.x, b.y, b.z, offset, dynamicCubeSize);
             
-            // 🔴【新設】すでにある面に対しても、大きい立体サイズ（halfSize）を上書き固定
             if(b.hasFaces) {
                 b.element.querySelectorAll('.face.top').forEach(el => el.style.transform = `translateZ(${halfSize}px)`);
                 b.element.querySelectorAll('.face.bottom').forEach(el => el.style.transform = `rotateX(180deg) translateZ(${halfSize}px)`);
@@ -232,7 +226,7 @@ function isSelectable(b) {
     return (openSides >= 2);
 }
 
-function handleClick(b, halfSize) {
+function handleClick(b) {
     if (isGameOver || !b.active) return;
     const status = document.getElementById("status");
 
@@ -266,9 +260,13 @@ function handleClick(b, halfSize) {
             status.innerText = "消去成功！(+700pt)";
             status.style.color = "#4caf50";
             
+            // 💡【解決】外側が消えた瞬間にも、共通関数から最新の正しい halfSize を安全に取得
+            const { halfSize } = getDynamicSizes();
+            
             blocks.forEach(o => {
                 if (o.active && o.element.style.display === "none") {
                     if (isSelectable(o)) {
+                        // 🔴 正しい立体サイズ（halfSize）を渡して、内側の面を実寸大で組み立てます！
                         createFacesForCube(o, halfSize); 
                         o.element.style.display = "block"; 
                     }
