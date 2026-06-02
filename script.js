@@ -4,7 +4,6 @@ const tileTypes = [
     { txt: "④", color: "#ff006e" }, { txt: "⑤", color: "#fb5607" }, { txt: "⑥", color: "#ffbe0b" },
     { txt: "⑦", color: "#06d6a0" }, { txt: "⑧", color: "#118ab2" }, { txt: "⑨", color: "#4a5759" },
     { txt: "⑩", color: "#2a9d8f" }, { txt: "⑪", color: "#e76f51" }, { txt: "⑫", color: "#a8dadc" },
-    // 🍎 13番以降の絵文字バージョン
     { txt: "🍎", color: "#ff4d6d" }, { txt: "💎", color: "#00b4d8" }, { txt: "🌟", color: "#ffb703" },
     { txt: "🍀", color: "#38b000" }, { txt: "🔥", color: "#ff4a00" }, { txt: "👾", color: "#a2d2ff" },
     { txt: "🐱", color: "#ffb5a7" }, { txt: "🐼", color: "#f0f0f0" }, { txt: "🚀", color: "#90e0ef" },
@@ -52,13 +51,12 @@ function initGame() {
 
     let index = 0;
     
-    // 💡【完全比率化】現在の外枠（#game-aspect-wrapper）の実際の横幅から、
-    // ブロック1マスと、3Dの厚みのサイズ（半分）を100%正確に逆算します。
+    // 💡 あなたが設定したお好みの比率（例: 0.050）
     const wrapper = document.getElementById("game-aspect-wrapper");
     const wrapperWidth = wrapper ? wrapper.clientWidth : 960;
-    const dynamicCubeSize = wrapperWidth * 0.050; // CSSの 3.6cqw と完全に一致させる
+    const dynamicCubeSize = wrapperWidth * 0.050; 
     const offset = (SIZE - 1) * dynamicCubeSize / 2;
-    const halfSize = dynamicCubeSize / 2; // 立方体の半分の厚み（translateZ用）
+    const halfSize = dynamicCubeSize / 2; 
 
     for (let x = 0; x < SIZE; x++) {
         for (let y = 0; y < SIZE; y++) {
@@ -96,10 +94,10 @@ function initGame() {
     updateStageRotation();
 }
 
-// 💡 3Dの飛び出しの厚み（halfSize）も動的に受け取って、完璧な立方体に組み立てます
 function createFacesForCube(b, halfSize) {
     if (b.hasFaces) return; 
     
+    // 💡 CSSの固定値「18px」を排除し、現在の大きいサイズ（halfSize）で面を組み立てます
     const faces = [
         { name: 'top', style: `transform: translateZ(${halfSize}px);` },
         { name: 'bottom', style: `transform: rotateX(180deg) translateZ(${halfSize}px);` },
@@ -122,25 +120,38 @@ function createFacesForCube(b, halfSize) {
 }
 
 function updateCubePosition(cube, x, y, z, offset, dynamicCubeSize) {
-    // ズレの原因を排除するため、中心点からの正確なピクセル位置を反映
     cube.style.left = ((x * dynamicCubeSize) - offset) + "px";
     cube.style.top = ((y * dynamicCubeSize) - offset) + "px";
     cube.style.transform = `translateZ(${(z * dynamicCubeSize) - offset}px)`;
 }
 
+// 💡【今回の最重要修正】回転ボタンを押した時も、
+// ブロックそれぞれの面（.face）に対して「大きい立体サイズ（halfSize）」を強制的に再キープさせます。
+// これにより、ブラウザが勝手にサイズを縮めるバグを完全に封殺します。
 function setupEvents() {
     document.getElementById("rot-z-btn").addEventListener("click", () => {
         if (isGameOver) return;
         const wrapper = document.getElementById("game-aspect-wrapper");
         const wrapperWidth = wrapper ? wrapper.clientWidth : 960;
-        const dynamicCubeSize = wrapperWidth * 0.050;
+        const dynamicCubeSize = wrapperWidth * 0.050; // 数値を上部と統一
         const offset = (SIZE - 1) * dynamicCubeSize / 2;
+        const halfSize = dynamicCubeSize / 2; // 厚みの再計算
 
         blocks.forEach(b => {
             const oldX = b.x;
             b.x = b.y;
             b.y = (SIZE - 1) - oldX;
             updateCubePosition(b.element, b.x, b.y, b.z, offset, dynamicCubeSize);
+            
+            // 🔴【新設】すでにある面に対しても、大きい立体サイズ（halfSize）を上書き固定
+            if(b.hasFaces) {
+                b.element.querySelectorAll('.face.top').forEach(el => el.style.transform = `translateZ(${halfSize}px)`);
+                b.element.querySelectorAll('.face.bottom').forEach(el => el.style.transform = `rotateX(180deg) translateZ(${halfSize}px)`);
+                b.element.querySelectorAll('.face.front').forEach(el => el.style.transform = `rotateX(-90deg) translateZ(${halfSize}px)`);
+                b.element.querySelectorAll('.face.back').forEach(el => el.style.transform = `rotateX(90deg) translateZ(${halfSize}px)`);
+                b.element.querySelectorAll('.face.right').forEach(el => el.style.transform = `rotateY(90deg) translateZ(${halfSize}px)`);
+                b.element.querySelectorAll('.face.left').forEach(el => el.style.transform = `rotateY(-90deg) translateZ(${halfSize}px)`);
+            }
         });
     });
 
@@ -148,14 +159,25 @@ function setupEvents() {
         if (isGameOver) return;
         const wrapper = document.getElementById("game-aspect-wrapper");
         const wrapperWidth = wrapper ? wrapper.clientWidth : 960;
-        const dynamicCubeSize = wrapperWidth * 0.050;
+        const dynamicCubeSize = wrapperWidth * 0.050; // 数値を上部と統一
         const offset = (SIZE - 1) * dynamicCubeSize / 2;
+        const halfSize = dynamicCubeSize / 2; // 厚みの再計算
 
         blocks.forEach(b => {
             const oldY = b.y;
             b.y = b.z;
             b.z = (SIZE - 1) - oldY;
             updateCubePosition(b.element, b.x, b.y, b.z, offset, dynamicCubeSize);
+            
+            // 🔴【新設】すでにある面に対しても、大きい立体サイズ（halfSize）を上書き固定
+            if(b.hasFaces) {
+                b.element.querySelectorAll('.face.top').forEach(el => el.style.transform = `translateZ(${halfSize}px)`);
+                b.element.querySelectorAll('.face.bottom').forEach(el => el.style.transform = `rotateX(180deg) translateZ(${halfSize}px)`);
+                b.element.querySelectorAll('.face.front').forEach(el => el.style.transform = `rotateX(-90deg) translateZ(${halfSize}px)`);
+                b.element.querySelectorAll('.face.back').forEach(el => el.style.transform = `rotateX(90deg) translateZ(${halfSize}px)`);
+                b.element.querySelectorAll('.face.right').forEach(el => el.style.transform = `rotateY(90deg) translateZ(${halfSize}px)`);
+                b.element.querySelectorAll('.face.left').forEach(el => el.style.transform = `rotateY(-90deg) translateZ(${halfSize}px)`);
+            }
         });
     });
 
