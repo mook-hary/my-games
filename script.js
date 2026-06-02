@@ -100,22 +100,30 @@ function initGame() {
 }
 
 function setupEvents() {
+    // 【修正】横回転：オブジェクト自体をその場でゴロンと横に回す
     document.getElementById("rot-z-btn").addEventListener("click", () => {
+        if (isGameOver) return;
         rotZ += 180;
         updateStageRotation();
     });
 
+    // 【修正】縦回転：オブジェクト自体をその場でゴロンと縦にひっくり返す
     document.getElementById("rot-y-btn").addEventListener("click", () => {
-        rotX = (rotX === 60) ? 240 : 60; 
+        if (isGameOver) return;
+        // 60度と240度を切り替えるのではなく、現在の角度に180度足してひっくり返します
+        rotX += 180; 
         updateStageRotation();
     });
 
     document.getElementById("reset-btn").addEventListener("click", initGame);
 }
 
-function updateStageRotation() {
+ffunction updateStageRotation() {
     const stage = document.getElementById("stage");
-    if(stage) stage.style.transform = `rotateZ(${rotZ}deg) rotateX(${rotX}deg)`; // ← 順番を入れ替えました！
+    if(stage) {
+        // 【最重要】塊そのものを回転させてから、最初に見やすい角度（X軸に60度）傾ける計算にします
+        stage.style.transform = `rotateY(${rotZ}deg) rotateX(${rotX}deg)`;
+    }
 }
 
 function countdown() {
