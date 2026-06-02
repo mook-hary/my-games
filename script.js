@@ -4,7 +4,7 @@ const tileTypes = [
     { txt: "④", color: "#ff006e" }, { txt: "⑤", color: "#fb5607" }, { txt: "⑥", color: "#ffbe0b" },
     { txt: "⑦", color: "#06d6a0" }, { txt: "⑧", color: "#118ab2" }, { txt: "⑨", color: "#4a5759" },
     { txt: "⑩", color: "#2a9d8f" }, { txt: "⑪", color: "#e76f51" }, { txt: "⑫", color: "#a8dadc" },
-    // 🍎 13番以降を楽しい絵文字バージョンにアップデート！
+    // 🍎 13番以降の絵文字バージョン
     { txt: "🍎", color: "#ff4d6d" }, { txt: "💎", color: "#00b4d8" }, { txt: "🌟", color: "#ffb703" },
     { txt: "🍀", color: "#38b000" }, { txt: "🔥", color: "#ff4a00" }, { txt: "👾", color: "#a2d2ff" },
     { txt: "🐱", color: "#ffb5a7" }, { txt: "🐼", color: "#f0f0f0" }, { txt: "🚀", color: "#90e0ef" },
@@ -20,7 +20,6 @@ let timeLeft = 120;
 let timerId = null;
 let isGameOver = false;
 
-// 【元に戻しました】最初の見やすい角度のまま固定します
 let rotX = 60;   
 let rotZ = -45;  
 
@@ -62,35 +61,29 @@ function initGame() {
                 const cube = document.createElement("div");
                 cube.className = "cube";
                 
-                // 初期の配置スタイルを反映
                 updateCubePosition(cube, x, y, z, offset);
 
-                const faces = [
-                    { name: 'top', style: 'transform: translateZ(18px);' },
-                    { name: 'bottom', style: 'transform: rotateX(180deg) translateZ(18px);' },
-                    { name: 'front', style: 'transform: rotateX(-90deg) translateZ(18px);' },
-                    { name: 'back', style: 'transform: rotateX(90deg) translateZ(18px);' },
-                    { name: 'right', style: 'transform: rotateY(90deg) translateZ(18px);' },
-                    { name: 'left', style: 'transform: rotateY(-90deg) translateZ(18px);' }
-                ];
-
-                faces.forEach(f => {
-                    const face = document.createElement("div");
-                    face.className = `face ${f.name}`;
-                    face.style.cssText = f.style;
-                    face.style.backgroundColor = tile.color;
-                    face.innerText = tile.txt;
-                    cube.appendChild(face);
-                });
-
-                const blockData = { x, y, z, txt: tile.txt, element: cube, active: true };
+                // 💡【軽量化ポイント】初期生成時には、内側のブロックの中身（面）を空っぽにしてデータだけを持たせます
+                const blockData = { x, y, z, txt: tile.txt, color: tile.color, element: cube, active: true, hasFaces: false };
                 
                 cube.addEventListener("click", (e) => {
                     e.stopPropagation(); 
                     handleClick(blockData);
                 });
 
-                stage.appendChild(cube);
+                let hasLeft = x > 0, hasRight = x < SIZE - 1;
+                let hasFront = y > 0, hasBack = y < SIZE - 1;
+                let hasBottom = z > 0, hasTop = z < SIZE - 1;
+
+                if (hasLeft && hasRight && hasFront && hasBack && hasBottom && hasTop) {
+                    // 内側に隠れている間は画面に表示せず、面も作らない
+                    cube.style.display = "none"; 
+                    stage.appendChild(cube);
+                } else {
+                    // 最初から外に見えているブロックだけ面を作って表示する
+                    createFacesForCube(blockData);
+                    stage.appendChild(cube);
+                }
                 blocks.push(blockData);
             }
         }
@@ -99,7 +92,31 @@ function initGame() {
     updateStageRotation();
 }
 
-// 各ブロックの画面上の座標を更新する関数
+// 💡【新設】必要になったタイミング（露出した時）で初めて6つの面を組み立てる関数
+function createFacesForCube(b) {
+    if (b.hasFaces) return; // 既に作成済みならスキップ
+    
+    const faces = [
+        { name: 'top', style: 'transform: translateZ(18px);' },
+        { name: 'bottom', style: 'transform: rotateX(180deg) translateZ(18px);' },
+        { name: 'front', style: 'transform: rotateX(-90deg) translateZ(18px);' },
+        { name: 'back', style: 'transform: rotateX(90deg) translateZ(18px);' },
+        { name: 'right', style: 'transform: rotateY(90deg) translateZ(18px);' },
+        { name: 'left', style: 'transform: rotateY(-90deg) translateZ(18px);' }
+    ];
+
+    faces.forEach(f => {
+        const face = document.createElement("div");
+        face.className = `face ${f.name}`;
+        face.style.cssText = f.style;
+        face.style.backgroundColor = b.color;
+        face.innerText = b.txt;
+        b.element.appendChild(face);
+    });
+    
+    b.hasFaces = true;
+}
+
 function updateCubePosition(cube, x, y, z, offset) {
     cube.style.left = ((x * 46) - offset - 18) + "px";
     cube.style.top = ((y * 46) - offset - 18) + "px";
@@ -107,7 +124,6 @@ function updateCubePosition(cube, x, y, z, offset) {
 }
 
 function setupEvents() {
-    // 【横回転ボタン】中のブロックの座標データ(x, y)を90度入れ替えて、位置を再計算
     document.getElementById("rot-z-btn").addEventListener("click", () => {
         if (isGameOver) return;
         const offset = (SIZE - 1) * 46 / 2;
@@ -119,7 +135,6 @@ function setupEvents() {
         });
     });
 
-    // 【縦回転ボタン】中のブロックの座標データ(y, z)を90度入れ替えて、位置を再計算
     document.getElementById("rot-y-btn").addEventListener("click", () => {
         if (isGameOver) return;
         const offset = (SIZE - 1) * 46 / 2;
@@ -137,7 +152,6 @@ function setupEvents() {
 function updateStageRotation() {
     const stage = document.getElementById("stage");
     if(stage) {
-        // ステージ自体の傾きは、最初の完璧な状態（60度と-45度）に完全固定します！
         stage.style.transform = `rotateX(${rotX}deg) rotateZ(${rotZ}deg)`;
     }
 }
@@ -162,19 +176,13 @@ function updateTimerUI() {
     if(bar) bar.style.width = `${percentage}%`;
 }
 
-// 【高速化版】クリック時のラグを完全に無くす判定処理
 function isSelectable(b) {
     let hasLeft = false, hasRight = false, hasFront = false, hasBack = false;
 
-    // 🔴 以前は blocks.forEach で216個すべてを総当たりしていましたが、
-    // 🔴 計算式（座標）を使って、ピンポイントで「隣の4つ」だけを直接見に行くように大改造しました。
-    
-    // 1つの配列から特定の座標のブロックを瞬時に探すための高速フィルター
     const findBlock = (x, y, z) => {
         return blocks.find(o => o.active && o.x === x && o.y === y && o.z === z);
     };
 
-    // 自分の「左・右・手前・奥」に、まだ消えていない（activeな）ブロックがあるか直接チェック
     if (findBlock(b.x - 1, b.y, b.z)) hasLeft = true;
     if (findBlock(b.x + 1, b.y, b.z)) hasRight = true;
     if (findBlock(b.x, b.y - 1, b.z)) hasFront = true;
@@ -186,7 +194,6 @@ function isSelectable(b) {
     if (!hasFront) openSides++;
     if (!hasBack) openSides++;
 
-    // 空いている面が2面以上あれば選択可能
     return (openSides >= 2);
 }
 
@@ -223,6 +230,16 @@ function handleClick(b) {
             
             status.innerText = "消去成功！(+700pt)";
             status.style.color = "#4caf50";
+            
+            // 💡【出現時の連携処理】周りが消えて露出した瞬間、初めて面(Face)を作り、画面に表示します
+            blocks.forEach(o => {
+                if (o.active && o.element.style.display === "none") {
+                    if (isSelectable(o)) {
+                        createFacesForCube(o); // 👈 ここで安全に中身を組み立てる
+                        o.element.style.display = "block"; 
+                    }
+                }
+            });
             updateCount();
         } else {
             selected.element.classList.remove("selected");
