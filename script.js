@@ -3,7 +3,12 @@ const tileTypes = [
     { txt: "①", color: "#e63946" }, { txt: "②", color: "#3a86ff" }, { txt: "③", color: "#8338ec" },
     { txt: "④", color: "#ff006e" }, { txt: "⑤", color: "#fb5607" }, { txt: "⑥", color: "#ffbe0b" },
     { txt: "⑦", color: "#06d6a0" }, { txt: "⑧", color: "#118ab2" }, { txt: "⑨", color: "#4a5759" },
-    { txt: "⑩", color: "#2a9d8f" }, { txt: "⑪", color: "#e76f51" }, { txt: "⑫", color: "#a8dadc" } // ←追加！
+    { txt: "⑩", color: "#2a9d8f" }, { txt: "⑪", color: "#e76f51" }, { txt: "⑫", color: "#a8dadc" },
+    { txt: "⑬", color: "#9b5de5" }, { txt: "⑭", color: "#f15bb5" }, { txt: "⑮", color: "#00f5d4" },
+    { txt: "⑯", color: "#00bbf9" }, { txt: "⑰", color: "#fee440" }, { txt: "⑱", color: "#31572c" },
+    { txt: "⑲", color: "#90e0ef" }, { txt: "⑳", color: "#0096c7" }, { txt: "㉑", color: "#f77f00" },
+    { txt: "㉒", color: "#fcbf49" }, { txt: "㉓", color: "#eae2b7" }, { txt: "㉔", color: "#d62828" },
+    { txt: "㉕", color: "#003049" }, { txt: "㉖", color: "#ffcdb2" }, { txt: "㉗", color: "#b5e2fa" }
 ];
 
 let blocks = [];
@@ -39,9 +44,9 @@ function initGame() {
     timerId = setInterval(countdown, 1000);
 
     let pool = [];
-    // 修正後（12種類 × 18回 = 216個にする）
-    for (let i = 0; i < 18; i++) {
-        tileTypes.forEach(t => pool.push({ ...t }));
+    // 27種類 × 8回 = 216個のブロックを生成
+    for (let i = 0; i < 8; i++) {
+    tileTypes.forEach(t => pool.push({ ...t }));
     }
     pool.sort(() => Math.random() - 0.5);
 
