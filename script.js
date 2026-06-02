@@ -2,7 +2,8 @@ const SIZE = 6;
 const tileTypes = [
     { txt: "①", color: "#e63946" }, { txt: "②", color: "#3a86ff" }, { txt: "③", color: "#8338ec" },
     { txt: "④", color: "#ff006e" }, { txt: "⑤", color: "#fb5607" }, { txt: "⑥", color: "#ffbe0b" },
-    { txt: "⑦", color: "#06d6a0" }, { txt: "⑧", color: "#118ab2" }, { txt: "⑨", color: "#4a5759" }
+    { txt: "⑦", color: "#06d6a0" }, { txt: "⑧", color: "#118ab2" }, { txt: "⑨", color: "#4a5759" },
+    { txt: "⑩", color: "#2a9d8f" }, { txt: "⑪", color: "#e76f51" }, { txt: "⑫", color: "#a8dadc" } // ←追加！
 ];
 
 let blocks = [];
@@ -38,7 +39,8 @@ function initGame() {
     timerId = setInterval(countdown, 1000);
 
     let pool = [];
-    for (let i = 0; i < 24; i++) {
+    // 修正後（12種類 × 18回 = 216個にする）
+    for (let i = 0; i < 18; i++) {
         tileTypes.forEach(t => pool.push({ ...t }));
     }
     pool.sort(() => Math.random() - 0.5);
