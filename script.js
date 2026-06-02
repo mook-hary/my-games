@@ -22,12 +22,10 @@ let isGameOver = false;
 let rotX = 60;   
 let rotZ = -45;  
 
-// 💡【新設】現在の画面サイズから dynamicCubeSize と halfSize を安全に取得する共通関数
-// これにより、ゲーム開始、回転、消去、どの部屋からも全く同じ正しい立体サイズを呼び出せるようになります。
 function getDynamicSizes() {
     const wrapper = document.getElementById("game-aspect-wrapper");
     const wrapperWidth = wrapper ? wrapper.clientWidth : 960;
-    const dynamicCubeSize = wrapperWidth * 0.050; // あなたが調整した大きい比率（5.0%）
+    const dynamicCubeSize = wrapperWidth * 0.050; 
     const offset = (SIZE - 1) * dynamicCubeSize / 2;
     const halfSize = dynamicCubeSize / 2;
     return { dynamicCubeSize, offset, halfSize };
@@ -62,7 +60,6 @@ function initGame() {
 
     let index = 0;
     
-    // 共通関数からサイズを取得
     const { dynamicCubeSize, offset, halfSize } = getDynamicSizes();
 
     for (let x = 0; x < SIZE; x++) {
@@ -86,7 +83,6 @@ function initGame() {
                 let hasFront = y > 0, hasBack = y < SIZE - 1;
                 let hasBottom = z > 0, hasTop = z < SIZE - 1;
 
-                // 💡 軽量化：完全に内側に隠れているブロックは、最初は面を作らず非表示
                 if (hasLeft && hasRight && hasFront && hasBack && hasBottom && hasTop) {
                     cube.style.display = "none"; 
                     stage.appendChild(cube);
@@ -205,6 +201,7 @@ function updateTimerUI() {
     if(bar) bar.style.width = `${percentage}%`;
 }
 
+// 💡【選択可否判定】今すぐタップして消せるかどうかを調べる関数（これはルール通り維持）
 function isSelectable(b) {
     let hasLeft = false, hasRight = false, hasFront = false, hasBack = false;
 
@@ -224,6 +221,25 @@ function isSelectable(b) {
     if (!hasBack) openSides++;
 
     return (openSides >= 2);
+}
+
+// 💡【新設：露出判定】上下左右前後のどこか1面でも世界に露出したかを調べる関数
+// これにより、選べないブロックであっても「目に見える状態」になったら確実に画面に出現させます。
+function isExposed(b) {
+    const findBlock = (x, y, z) => {
+        return blocks.find(o => o.active && o.x === x && o.y === y && o.z === z);
+    };
+
+    // 6方向のうち、隣にアクティブなブロックが「いない（＝空いている）」場所をカウント
+    let openSides = 0;
+    if (!findBlock(b.x - 1, b.y, b.z)) openSides++;
+    if (!findBlock(b.x + 1, b.y, b.z)) openSides++;
+    if (!findBlock(b.x, b.y - 1, b.z)) openSides++;
+    if (!findBlock(b.x, b.y + 1, b.z)) openSides++;
+    if (!findBlock(b.x, b.y, b.z - 1)) openSides++; // 下
+    if (!findBlock(b.x, b.y, b.z + 1)) openSides++; // 上
+
+    return (openSides > 0); // 1方向でも空いていれば、露出しているとみなす
 }
 
 function handleClick(b) {
@@ -260,13 +276,13 @@ function handleClick(b) {
             status.innerText = "消去成功！(+700pt)";
             status.style.color = "#4caf50";
             
-            // 💡【解決】外側が消えた瞬間にも、共通関数から最新の正しい halfSize を安全に取得
             const { halfSize } = getDynamicSizes();
             
+            // 🔴【重要修正】非表示だった内側のブロックを再スキャンする処理
             blocks.forEach(o => {
                 if (o.active && o.element.style.display === "none") {
-                    if (isSelectable(o)) {
-                        // 🔴 正しい立体サイズ（halfSize）を渡して、内側の面を実寸大で組み立てます！
+                    // 💡 isSelectable ではなく、新設した「露出判定（isExposed）」でチェックします！
+                    if (isExposed(o)) {
                         createFacesForCube(o, halfSize); 
                         o.element.style.display = "block"; 
                     }
