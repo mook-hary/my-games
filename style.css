@@ -182,9 +182,11 @@ button:hover { background: #45a049; }
 
 /* 選択されたブロックの強調表示 */
 .selected .face {
-    border: 3px solid #ffffff;
-    box-shadow: 0 0 25px #ffffff;
-    filter: brightness(1.4) !important; /* 選択時はライティングを上書きしてピカッと光らせる */
+    border: 4px solid #ffeb3b !important; /* 枠線を太くして目立つ黄色にするだけ */
+    background-color: #ffffff !important; /* ブロック自体の色をパッと白に変える */
+    color: #000000 !important;            /* 文字の色を黒にして見やすくする */
+    box-shadow: none !important;          /* 影の計算を完全にストップ */
+    filter: none !important;              /* フィルターの計算を完全にストップ */
 }
 
 /* 【自動3Dライティング】
