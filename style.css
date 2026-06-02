@@ -7,27 +7,26 @@ body {
     align-items: center;
     justify-content: center;
     
-    /* iPhoneの底面バー対策：見えている本当の高さを基準にします */
+    /* iPhoneのメニューバー・URLバーを含めた、見えている本当の高さ */
     min-height: 100vh;
     min-height: 100svh;
     height: 100svh;
     
     user-select: none;
     overflow: hidden;
-    padding: 0; /* 余白をゼロにして画面を広く使います */
+    padding: 0;
     box-sizing: border-box;
 }
 
-/* 💡【完全修正】倍率計算（scale）をやめ、
-   画面サイズ（svh / vw）に対して直接「％」で一回り小さく指定します。
-   これならiPhoneの3Dバグが発生せず、黒いゲーム画面ごと綺麗に縮小されます！ */
+/* 💡【完全解決版】配置（左右の横並び）は絶対に崩さず、
+   ゲーム画面全体の高さを「画面の本当の高さの 65%」まで強制的に引き下げます。
+   これにより、横向き時の上下の見切れが物理的に100%発生しなくなります！ */
 #game-aspect-wrapper {
-    /* 🔴 元の 960x540 から、縦向き・横向きどちらでも絶対にハミ出さない
-       「一回り小さいサイズ（画面の縦幅の80%）」にガチッと固定します */
-    height: 80svh !important;
-    width: calc(80svh * 16 / 9) !important; /* 16:9 の比率を綺麗に維持 */
+    /* 🔴 高さを画面全体の 65% に引き下げ、余白を大きく作ります */
+    height: 65svh !important;
+    width: calc(65svh * 16 / 9) !important; /* 16:9 の美しい比率を完全に維持 */
     
-    /* スマホが縦向きで横幅が足りない時のためのセーフティ */
+    /* ノートPCや他の画面でもはみ出さないための安全弁 */
     max-width: 95vw !important;
     max-height: calc(95vw * 9 / 16) !important;
 
@@ -40,17 +39,20 @@ body {
     overflow: hidden;
     position: relative;
     
-    /* ズレの原因になる scale や origin はすべて完全に削除しました */
+    /* ズレや勝手な縦並びバグを起こす原因をすべて完全消去 */
     transform: none !important; 
 }
-/* 横並びコンテナ（PCやiPad、スマホ横向きでの綺麗レイアウト） */
+
+/* 横並びコンテナ（ここから下の記述は、左右横並びを絶対に維持する設定です） */
 #game-container {
-    display: flex;
+    display: flex !important;
+    flex-direction: row !important; /* 🔴 どんな端末でも絶対に横並びに固定します */
     width: 100%;
     height: 100%;
     align-items: center;
     padding: 20px;
     box-sizing: border-box;
+    gap: 20px;
 }
 
 /* 左側：操作パネル */
