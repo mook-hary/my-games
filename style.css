@@ -207,13 +207,22 @@ button {
 }
 
 /* 選択されたブロック */
+/* 💡【新設・選択エフェクトの改良】
+   元の色を完全に消さず、60%の半透明にして残します。
+   さらに、周囲に黄色いネオンのような発光（グロー）エフェクトをかけることで、
+   元の数字や色をはっきり視認したまま、選ばれている状態を美しく演出します。 */
 .selected .face {
-    border: 4px solid #ffeb3b !important;
-    background-color: inherit !important;
-    color: inherit !important;
-    outline: 2px solid #ffffff;
-    box-shadow: none !important;
-    filter: none !important;
+    border: 3px solid #ffeb3b !important; /* 枠線を太めの黄色に */
+    outline: 1px solid #ffffff;           /* 内側に白いシャープな線を引いて引き締める */
+    
+    /* 🔴【最重要】元の色を消していた命令を削除し、60%の半透明（透かし）に変更します */
+    opacity: 0.6 !important; 
+    
+    /* 🔴【発光演出】黄色いネオンのような光のボカシをまとわせます */
+    box-shadow: 0 0 15px #ffeb3b, inset 0 0 10px #ffeb3b !important;
+    
+    /* 自動3Dライティングの影（フィルター）を一時的に解除して、明るく目立たせます */
+    filter: brightness(1.2) !important;
 }
 
 /* 自動3Dライティング */
