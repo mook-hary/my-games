@@ -182,8 +182,8 @@ button {
 /* 立方体ブロック（外枠に合わせて1マスの見た目も比率縮小） */
 .cube {
     position: absolute;
-    width: 3.6cqw;
-    height: 3.6cqw;
+    width: 5.0cqw;
+    height: 5.0cqw;
     transform-style: preserve-3d;
     cursor: pointer;
 }
@@ -191,8 +191,8 @@ button {
 /* 各面の共通スタイル */
 .face {
     position: absolute;
-    width: 3.6cqw;
-    height: 3.6cqw;
+    width: 5.0cqw;
+    height: 5.0cqw;
     display: flex;
     align-items: center;
     justify-content: center;
