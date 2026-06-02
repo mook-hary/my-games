@@ -23,6 +23,26 @@ body {
     box-shadow: 0 10px 30px rgba(0,0,0,0.7);
     overflow: hidden;
     position: relative;
+
+    /* 💡【下が切れる問題への対策】
+       画面の高さ（または横幅）が960x540より小さい場合、
+       16:9の比率を保ったまま、画面に収まるように自動で縮小する魔法の設定です！
+    */
+    transform-origin: center center;
+    max-width: 100vw;
+    max-height: 100vh;
+}
+
+/* 💡【追加】画面が小さいとき、はみ出さずに綺麗に中央に収めるための補正 */
+@media (max-width: 960px), (max-height: 540px) {
+    body {
+        padding: 10px;
+        box-sizing: border-box;
+    }
+    #game-aspect-wrapper {
+        /* 横幅と高さ、どちらか狭い方に合わせて比率を維持したまま縮小します */
+        transform: scale(min(calc(100vw / 980), calc(100vh / 560)));
+    }
 }
 
 /* 横並びコンテナ */
