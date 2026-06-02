@@ -20,6 +20,8 @@ body {
     overflow: hidden;
     padding: 10px;
     box-sizing: border-box;
+
+    touch-action: manipulation;
 }
 
 /* 💡【最重要：ゲーム表示領域】
