@@ -179,3 +179,16 @@ button:hover { background: #45a049; }
     box-shadow: 0 0 25px #ffffff;
     filter: brightness(1.4);
 }
+/* 【追加】CSSの3Dライティングを有効にする */
+.face {
+    /* 画面の奥（ライトがない側）を向いた面を自動的に暗くする設定 */
+    transform-style: preserve-3d;
+}
+.cube {
+    /* 1つのブロック内の面同士で光の計算を連動させる設定 */
+    transform-style: preserve-3d;
+}
+#stage {
+    /* 上からの環境光（陰影）を自動で計算させるCSSの魔法 */
+    contain: layout;
+}
