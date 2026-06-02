@@ -57,72 +57,95 @@ body {
 
 /* 左側：操作パネル */
 #ui-panel {
-    width: 280px;
+    width: 230px; /* 横幅を少しシャープに */
     height: 100%;
     background: #222;
-    padding: 15px;
+    padding: 10px; /* パネル内の余白を狭くして縦スペースを確保 */
     box-sizing: border-box;
     border-radius: 12px;
     border: 1px solid #333;
     text-align: center;
+    
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    /* 🔴 無理な上下への押し付け合いをやめ、上から適度な間隔で綺麗に並べます */
+    justify-content: flex-start; 
+    gap: 6px; /* パーツ同士の間隔を極限まで狭くして下切れを防止 */
+    flex-shrink: 0;
 }
 
-#ui-panel h2 { margin: 0; font-size: 22px; color: #4CAF50; }
-
-/* ステータス周り */
-#status-box {
-    background: #151515;
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid #2a2a2a;
+/* 各パーツの文字サイズ・マージンをスマホの高さに合わせて圧縮 */
+#ui-panel h2 { 
+    margin: 0 0 2px 0; 
+    font-size: 16px; /* 22px ➡️ 16px に縮小 */
+    color: #4CAF50; 
 }
-#status { font-weight: bold; color: #ffeb3b; min-height: 44px; font-size: 14px; display: flex; align-items: center; justify-content: center; }
 
 /* スコアとタイマー */
 #score-display {
-    font-size: 22px;
+    font-size: 16px; /* 18px ➡️ 16px に縮小 */
     font-weight: bold;
     color: #4CAF50;
-    text-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
 }
-#timer-text { font-size: 16px; font-weight: bold; color: #ff4444; }
+#timer-text { 
+    font-size: 12px; /* 14px ➡️ 12px に縮小 */
+    font-weight: bold; 
+    color: #ff4444; 
+}
 #timer-container {
     width: 100%;
     background-color: #333;
     border-radius: 10px;
     overflow: hidden;
     border: 1px solid #555;
-    margin-top: 2px;
 }
 #timer-bar {
     width: 100%;
-    height: 10px;
+    height: 6px; /* 🔴 バーの厚みを 10px ➡️ 6px に薄くして縦幅を節約 */
     background-color: #e63946;
     transition: width 0.2s linear;
+}
+
+/* ステータス周り */
+#status-box {
+    background: #151515;
+    padding: 4px; /* 内側の余白を削減 */
+    border-radius: 6px;
+    border: 1px solid #2a2a2a;
+    font-size: 12px; /* 文字を少し小さく */
+}
+#status { 
+    font-weight: bold; 
+    color: #ffeb3b; 
+    min-height: 28px; /* 44px ➡️ 28px に低く設定 */
+    font-size: 11px; /* 13px ➡️ 11px に縮小 */
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    line-height: 1.2;
 }
 
 /* 回転ボタン */
 #control-panel {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     justify-content: center;
 }
 .rot-btn {
     background: #0077b6 !important;
-    font-size: 12px !important;
-    padding: 10px 10px !important;
+    font-size: 11px !important;
+    padding: 6px 4px !important; /* ボタンの上下の厚みを薄く */
     flex: 1;
 }
-.rot-btn:hover { background: #0096c7 !important; }
 
+/* リセットボタン */
 #reset-btn {
-    padding: 10px 20px;
-    font-size: 15px;
+    padding: 6px 10px; /* ボタンの上下の厚みを薄く */
+    font-size: 12px; /* 文字を少し小さく */
     background: #4CAF50;
+    margin-top: auto; /* 🔴 他のパーツが縮んだ分の余りで、一番下に優しく配置 */
 }
+
 button {
     color: white;
     border: none;
