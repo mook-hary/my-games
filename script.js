@@ -117,7 +117,7 @@ function setupEvents() {
     document.getElementById("reset-btn").addEventListener("click", initGame);
 }
 
-ffunction updateStageRotation() {
+function updateStageRotation() {
     const stage = document.getElementById("stage");
     if(stage) {
         // 【最重要】塊そのものを回転させてから、最初に見やすい角度（X軸に60度）傾ける計算にします
