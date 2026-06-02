@@ -115,7 +115,7 @@ function setupEvents() {
 
 function updateStageRotation() {
     const stage = document.getElementById("stage");
-    if(stage) stage.style.transform = `rotateX(${rotX}deg) rotateZ(${rotZ}deg)`;
+    if(stage) stage.style.transform = `rotateZ(${rotZ}deg) rotateX(${rotX}deg)`; // ← 順番を入れ替えました！
 }
 
 function countdown() {
