@@ -6,12 +6,19 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    
+    /* 💡 iPhoneのメニューバー対策：
+       100vhの代わりに、ブラウザの見えている本当の高さ（svh）を基準にします */
     min-height: 100vh;
+    min-height: 100svh;
+    
     user-select: none;
     overflow: hidden;
+    padding: 10px;
+    box-sizing: border-box;
 }
 
-/* 16:9の比率（例：横960px × 縦540px）を強制固定するラッパー */
+/* 16:9の比率を固定する大枠 */
 #game-aspect-wrapper {
     width: 960px;
     height: 540px;
@@ -23,25 +30,28 @@ body {
     box-shadow: 0 10px 30px rgba(0,0,0,0.7);
     overflow: hidden;
     position: relative;
-
-    /* 💡【下が切れる問題への対策】
-       画面の高さ（または横幅）が960x540より小さい場合、
-       16:9の比率を保ったまま、画面に収まるように自動で縮小する魔法の設定です！
-    */
     transform-origin: center center;
-    max-width: 100vw;
-    max-height: 100vh;
 }
 
-/* 💡【追加】画面が小さいとき、はみ出さずに綺麗に中央に収めるための補正 */
-@media (max-width: 960px), (max-height: 540px) {
-    body {
-        padding: 10px;
-        box-sizing: border-box;
-    }
+/* 横並びコンテナ */
+#game-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* 💡【iPhone・スマホ専用の強制ピッタリ縮小システム】
+   画面の横幅や高さがゲーム盤面より1ピクセルでも小さければ、
+   iPhoneの画面サイズ（メニューバーを引いた本当のセーフエリア）に合わせて
+   16:9を維持したまま、絶対に画面内に収まるように縮小率を強制再計算します！
+*/
+@media (max-width: 980px), (max-height: 560px) {
     #game-aspect-wrapper {
-        /* 横幅と高さ、どちらか狭い方に合わせて比率を維持したまま縮小します */
-        transform: scale(min(calc(100vw / 980), calc(100vh / 560)));
+        /* 横幅と高さ、どちらか狭い方に合わせて限界まで自動縮小します */
+        transform: scale(min(calc(100vw / 980), calc(100vh / 560), calc(100svh / 560))) !important;
     }
 }
 
