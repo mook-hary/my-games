@@ -64,14 +64,13 @@ function initGame() {
                 cube.style.top = ((y * 46) - offset - 18) + "px";
                 cube.style.transform = `translateZ(${(z * 46) - offset}px)`;
 
-                // 【修正点】『底面(bottom)』と『奥の面(back)』を追加し、完全な6面体にしました
-                const faces = [
+               const faces = [
                     { name: 'top', style: 'transform: translateZ(18px);' },
-                    { name: 'bottom', style: 'transform: rotateX(180deg) translateZ(18px); filter: brightness(0.45);' },
-                    { name: 'front', style: 'transform: rotateX(-90deg) translateZ(18px); filter: brightness(0.75);' },
-                    { name: 'back', style: 'transform: rotateX(90deg) translateZ(18px); filter: brightness(0.5);' },
-                    { name: 'right', style: 'transform: rotateY(90deg) translateZ(18px); filter: brightness(0.55);' },
-                    { name: 'left', style: 'transform: rotateY(-90deg) translateZ(18px); filter: brightness(0.65);' }
+                    { name: 'bottom', style: 'transform: rotateX(180deg) translateZ(18px);' },
+                    { name: 'front', style: 'transform: rotateX(-90deg) translateZ(18px);' },
+                    { name: 'back', style: 'transform: rotateX(90deg) translateZ(18px);' },
+                    { name: 'right', style: 'transform: rotateY(90deg) translateZ(18px);' },
+                    { name: 'left', style: 'transform: rotateY(-90deg) translateZ(18px);' }
                 ];
 
                 faces.forEach(f => {
