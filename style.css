@@ -7,28 +7,30 @@ body {
     align-items: center;
     justify-content: center;
     
-    /* 💡【最重要】iPhoneの底面メニューバーに邪魔されても、
-       見えている本当の高さ（svh）を100%基準にして、絶対に下側を突き抜けさせない設定 */
+    /* iPhoneの底面バー対策：見えている本当の高さを基準にします */
     min-height: 100vh;
     min-height: 100svh;
     height: 100svh;
     
     user-select: none;
     overflow: hidden;
-    padding: 10px;
+    padding: 0; /* 余白をゼロにして画面を広く使います */
     box-sizing: border-box;
 }
 
-/* 💡【下切れ対策の決定版】
-   ゲーム全体の大きさを、スマホの画面幅（横幅と高さ、どちらか狭い方）に合わせて
-   「自動的に縮小して画面内に収める」設定を、一番外側の大枠に直接適用します。
-   これなら位置ズレのバグを一切起こさずに、下側が絶対に画面内に収まります！ */
-/* ========================================================
-   👇 #game-aspect-wrapper の部分をこれに丸ごと置き換えます
-   ======================================================= */
+/* 💡【完全修正】倍率計算（scale）をやめ、
+   画面サイズ（svh / vw）に対して直接「％」で一回り小さく指定します。
+   これならiPhoneの3Dバグが発生せず、黒いゲーム画面ごと綺麗に縮小されます！ */
 #game-aspect-wrapper {
-    width: 960px;
-    height: 540px;
+    /* 🔴 元の 960x540 から、縦向き・横向きどちらでも絶対にハミ出さない
+       「一回り小さいサイズ（画面の縦幅の80%）」にガチッと固定します */
+    height: 80svh !important;
+    width: calc(80svh * 16 / 9) !important; /* 16:9 の比率を綺麗に維持 */
+    
+    /* スマホが縦向きで横幅が足りない時のためのセーフティ */
+    max-width: 95vw !important;
+    max-height: calc(95vw * 9 / 16) !important;
+
     display: flex;
     align-items: center;
     justify-content: center;
@@ -38,22 +40,9 @@ body {
     overflow: hidden;
     position: relative;
     
-    /* 💡 縮小の基準点は真ん中に完全固定 */
-    transform-origin: center center;
-
-    /* 💡【超縮小版・20%〜30%さらに小さくする魔法】
-       分母の数値を「横1020 ➡️ 1300」「縦620 ➡️ 760」へと一気に跳ね上げました。
-       これにより、これまでの表示からさらに約20%以上「キュッ」と小さく縮まります。
-       
-       iPhoneのChromeがどんなに底面バーを広げていようが、
-       その遥か内側のセーフエリアの中に、おもちゃのように一回り小さくすっぽりと収まります！
-    */
-    transform: scale(min(calc(100vw / 1300), calc(100svh / 760))) !important;
+    /* ズレの原因になる scale や origin はすべて完全に削除しました */
+    transform: none !important; 
 }
-/* ========================================================
-   👆 置き換えはここまで
-   ======================================================== */
-
 /* 横並びコンテナ（PCやiPad、スマホ横向きでの綺麗レイアウト） */
 #game-container {
     display: flex;
