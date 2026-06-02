@@ -11,7 +11,7 @@ body {
     overflow: hidden;
 }
 
-/* 【修正】16:9の比率（例：横960px × 縦540px）を強制固定するラッパー */
+/* 16:9の比率（例：横960px × 縦540px）を強制固定するラッパー */
 #game-aspect-wrapper {
     width: 960px;
     height: 540px;
@@ -114,7 +114,7 @@ button {
 }
 button:hover { background: #45a049; }
 
-/* 【修正】右側エリアを完全に中心に寄せる設定 */
+/* 右側エリアを完全に中心に寄せる設定 */
 #stage-area {
     flex: 1;
     height: 100%;
@@ -124,7 +124,7 @@ button:hover { background: #45a049; }
     position: relative;
 }
 
-/* 3Dブロック表示用の窓（位置ズレを防ぐためサイズ固定） */
+/* 3Dブロック表示用の窓 */
 #viewport {
     width: 500px;
     height: 500px;
@@ -152,160 +152,7 @@ button:hover { background: #45a049; }
     cursor: pointer;
 }
 
-body {
-    margin: 0;
-    background-color: #1a1a1a;
-    color: white;
-    font-family: sans-serif;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    user-select: none;
-    overflow: hidden;
-}
-
-/* 【修正】16:9の比率（例：横960px × 縦540px）を強制固定するラッパー */
-#game-aspect-wrapper {
-    width: 960px;
-    height: 540px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #111;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-    overflow: hidden;
-    position: relative;
-}
-
-/* 横並びコンテナ */
-#game-container {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    align-items: center;
-    padding: 20px;
-    box-sizing: border-box;
-}
-
-/* 左側：幅をコンパクトにした操作パネル */
-#ui-panel {
-    width: 280px;
-    height: 100%;
-    background: #222;
-    padding: 15px;
-    box-sizing: border-box;
-    border-radius: 12px;
-    border: 1px solid #333;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; /* 上下にバランスよく配置 */
-}
-
-#ui-panel h2 { margin: 0; font-size: 22px; color: #4CAF50; }
-
-/* ステータス周り */
-#status-box {
-    background: #151515;
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid #2a2a2a;
-}
-#status { font-weight: bold; color: #ffeb3b; min-height: 44px; font-size: 14px; display: flex; align-items: center; justify-content: center; }
-
-/* スコアとタイマー */
-#score-display {
-    font-size: 22px;
-    font-weight: bold;
-    color: #4CAF50;
-    text-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
-}
-#timer-text { font-size: 16px; font-weight: bold; color: #ff4444; }
-#timer-container {
-    width: 100%;
-    background-color: #333;
-    border-radius: 10px;
-    overflow: hidden;
-    border: 1px solid #555;
-    margin-top: 2px;
-}
-#timer-bar {
-    width: 100%;
-    height: 10px;
-    background-color: #e63946;
-    transition: width 0.2s linear;
-}
-
-/* 回転ボタン */
-#control-panel {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-}
-.rot-btn {
-    background: #0077b6 !important;
-    font-size: 12px !important;
-    padding: 10px 10px !important;
-    flex: 1;
-}
-.rot-btn:hover { background: #0096c7 !important; }
-
-#reset-btn {
-    padding: 10px 20px;
-    font-size: 15px;
-    background: #4CAF50;
-}
-button {
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    width: 100%;
-    box-sizing: border-box;
-}
-button:hover { background: #45a049; }
-
-/* 【修正】右側エリアを完全に中心に寄せる設定 */
-#stage-area {
-    flex: 1;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center; /* 左右中央 */
-    position: relative;
-}
-
-/* 3Dブロック表示用の窓（位置ズレを防ぐためサイズ固定） */
-#viewport {
-    width: 500px;
-    height: 500px;
-    perspective: 1400px; /* 少し引いた視点にして収まりを良く */
-    display: flex;
-    align-items: center; /* 上下中央 */
-    justify-content: center; /* 左右中央 */
-}
-
-/* ブロックの軸を完全中心にする設定 */
-#stage {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform-style: preserve-3d;
-    transition: transform 0.5s ease-out;
-}
-
-/* 立方体ブロックの基本設定 */
-.cube {
-    position: absolute;
-    width: 36px;
-    height: 36px;
-    transform-style: preserve-3d;
-    cursor: pointer;
-}
-
+/* 各面の共通スタイル */
 .face {
     position: absolute;
     width: 36px;
@@ -320,28 +167,30 @@ button:hover { background: #45a049; }
     box-sizing: border-box;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
     backface-visibility: visible;
+    
+    /* 【重要】立体構造を正しく連動させる魔法 */
+    transform-style: preserve-3d;
 }
-.top    { transform: translateZ(18px); }
-.bottom { transform: rotateX(180deg) translateZ(18px); filter: brightness(0.45); }
-.front  { transform: rotateX(-90deg) translateZ(18px); filter: brightness(0.75); }
-.back   { transform: rotateX(90deg) translateZ(18px); filter: brightness(0.5); }
-.right  { transform: rotateY(90deg) translateZ(18px); filter: brightness(0.55); }
-.left   { transform: rotateY(-90deg) translateZ(18px); filter: brightness(0.65); }
 
+/* 各面の配置データ（位置と回転のみ、固定影filterは完全除去） */
+.top    { transform: translateZ(18px); }
+.bottom { transform: rotateX(180deg) translateZ(18px); }
+.front  { transform: rotateX(-90deg) translateZ(18px); }
+.back   { transform: rotateX(90deg) translateZ(18px); }
+.right  { transform: rotateY(90deg) translateZ(18px); }
+.left   { transform: rotateY(-90deg) translateZ(18px); }
+
+/* 選択されたブロックの強調表示 */
 .selected .face {
     border: 3px solid #ffffff;
     box-shadow: 0 0 25px #ffffff;
-    filter: brightness(1.4);
+    filter: brightness(1.4) !important; /* 選択時はライティングを上書きしてピカッと光らせる */
 }
-/* 【追加】CSSの3Dライティングを有効にする */
-.face {
-    /* 画面の奥（ライトがない側）を向いた面を自動的に暗くする設定 */
-    transform-style: preserve-3d;
-}
-.cube {
-    /* 1つのブロック内の面同士で光の計算を連動させる設定 */
-    transform-style: preserve-3d;
-}
+
+/* 【自動3Dライティング】
+   ブロックが回転した「今の向き」に合わせて、ブラウザが影を自動で計算します！
+   これによって、上を向いた面は常に明るく、下に回った面は自動で暗くなります。
+*/
 .face.top    { filter: brightness(1.0); }  /* 上を向いた面：明るい */
 .face.bottom { filter: brightness(0.4); }  /* 下を向いた面：一番暗い */
 .face.front  { filter: brightness(0.85); } /* 手前を向いた面：そこそこ明るい */
