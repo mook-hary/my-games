@@ -133,7 +133,7 @@ function setupEvents() {
         if (isGameOver) return;
         const wrapper = document.getElementById("game-aspect-wrapper");
         const wrapperWidth = wrapper ? wrapper.clientWidth : 960;
-        const dynamicCubeSize = wrapperWidth * 0.036;
+        const dynamicCubeSize = wrapperWidth * 0.050;
         const offset = (SIZE - 1) * dynamicCubeSize / 2;
 
         blocks.forEach(b => {
@@ -148,7 +148,7 @@ function setupEvents() {
         if (isGameOver) return;
         const wrapper = document.getElementById("game-aspect-wrapper");
         const wrapperWidth = wrapper ? wrapper.clientWidth : 960;
-        const dynamicCubeSize = wrapperWidth * 0.036;
+        const dynamicCubeSize = wrapperWidth * 0.050;
         const offset = (SIZE - 1) * dynamicCubeSize / 2;
 
         blocks.forEach(b => {
