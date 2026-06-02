@@ -51,7 +51,14 @@ function initGame() {
     pool.sort(() => Math.random() - 0.5);
 
     let index = 0;
-    const offset = (SIZE - 1) * 46 / 2;
+    
+    // 💡【完全比率化】現在の外枠（#game-aspect-wrapper）の実際の横幅から、
+    // ブロック1マスと、3Dの厚みのサイズ（半分）を100%正確に逆算します。
+    const wrapper = document.getElementById("game-aspect-wrapper");
+    const wrapperWidth = wrapper ? wrapper.clientWidth : 960;
+    const dynamicCubeSize = wrapperWidth * 0.036; // CSSの 3.6cqw と完全に一致させる
+    const offset = (SIZE - 1) * dynamicCubeSize / 2;
+    const halfSize = dynamicCubeSize / 2; // 立方体の半分の厚み（translateZ用）
 
     for (let x = 0; x < SIZE; x++) {
         for (let y = 0; y < SIZE; y++) {
@@ -61,14 +68,13 @@ function initGame() {
                 const cube = document.createElement("div");
                 cube.className = "cube";
                 
-                updateCubePosition(cube, x, y, z, offset);
+                updateCubePosition(cube, x, y, z, offset, dynamicCubeSize);
 
-                // 💡【軽量化ポイント】初期生成時には、内側のブロックの中身（面）を空っぽにしてデータだけを持たせます
                 const blockData = { x, y, z, txt: tile.txt, color: tile.color, element: cube, active: true, hasFaces: false };
                 
                 cube.addEventListener("click", (e) => {
                     e.stopPropagation(); 
-                    handleClick(blockData);
+                    handleClick(blockData, halfSize);
                 });
 
                 let hasLeft = x > 0, hasRight = x < SIZE - 1;
@@ -76,12 +82,10 @@ function initGame() {
                 let hasBottom = z > 0, hasTop = z < SIZE - 1;
 
                 if (hasLeft && hasRight && hasFront && hasBack && hasBottom && hasTop) {
-                    // 内側に隠れている間は画面に表示せず、面も作らない
                     cube.style.display = "none"; 
                     stage.appendChild(cube);
                 } else {
-                    // 最初から外に見えているブロックだけ面を作って表示する
-                    createFacesForCube(blockData);
+                    createFacesForCube(blockData, halfSize);
                     stage.appendChild(cube);
                 }
                 blocks.push(blockData);
@@ -92,17 +96,17 @@ function initGame() {
     updateStageRotation();
 }
 
-// 💡【新設】必要になったタイミング（露出した時）で初めて6つの面を組み立てる関数
-function createFacesForCube(b) {
-    if (b.hasFaces) return; // 既に作成済みならスキップ
+// 💡 3Dの飛び出しの厚み（halfSize）も動的に受け取って、完璧な立方体に組み立てます
+function createFacesForCube(b, halfSize) {
+    if (b.hasFaces) return; 
     
     const faces = [
-        { name: 'top', style: 'transform: translateZ(18px);' },
-        { name: 'bottom', style: 'transform: rotateX(180deg) translateZ(18px);' },
-        { name: 'front', style: 'transform: rotateX(-90deg) translateZ(18px);' },
-        { name: 'back', style: 'transform: rotateX(90deg) translateZ(18px);' },
-        { name: 'right', style: 'transform: rotateY(90deg) translateZ(18px);' },
-        { name: 'left', style: 'transform: rotateY(-90deg) translateZ(18px);' }
+        { name: 'top', style: `transform: translateZ(${halfSize}px);` },
+        { name: 'bottom', style: `transform: rotateX(180deg) translateZ(${halfSize}px);` },
+        { name: 'front', style: `transform: rotateX(-90deg) translateZ(${halfSize}px);` },
+        { name: 'back', style: `transform: rotateX(90deg) translateZ(${halfSize}px);` },
+        { name: 'right', style: `transform: rotateY(90deg) translateZ(${halfSize}px);` },
+        { name: 'left', style: `transform: rotateY(-90deg) translateZ(${halfSize}px);` }
     ];
 
     faces.forEach(f => {
@@ -117,32 +121,41 @@ function createFacesForCube(b) {
     b.hasFaces = true;
 }
 
-function updateCubePosition(cube, x, y, z, offset) {
-    cube.style.left = ((x * 46) - offset - 18) + "px";
-    cube.style.top = ((y * 46) - offset - 18) + "px";
-    cube.style.transform = `translateZ(${(z * 46) - offset}px)`;
+function updateCubePosition(cube, x, y, z, offset, dynamicCubeSize) {
+    // ズレの原因を排除するため、中心点からの正確なピクセル位置を反映
+    cube.style.left = ((x * dynamicCubeSize) - offset) + "px";
+    cube.style.top = ((y * dynamicCubeSize) - offset) + "px";
+    cube.style.transform = `translateZ(${(z * dynamicCubeSize) - offset}px)`;
 }
 
 function setupEvents() {
     document.getElementById("rot-z-btn").addEventListener("click", () => {
         if (isGameOver) return;
-        const offset = (SIZE - 1) * 46 / 2;
+        const wrapper = document.getElementById("game-aspect-wrapper");
+        const wrapperWidth = wrapper ? wrapper.clientWidth : 960;
+        const dynamicCubeSize = wrapperWidth * 0.036;
+        const offset = (SIZE - 1) * dynamicCubeSize / 2;
+
         blocks.forEach(b => {
             const oldX = b.x;
             b.x = b.y;
             b.y = (SIZE - 1) - oldX;
-            updateCubePosition(b.element, b.x, b.y, b.z, offset);
+            updateCubePosition(b.element, b.x, b.y, b.z, offset, dynamicCubeSize);
         });
     });
 
     document.getElementById("rot-y-btn").addEventListener("click", () => {
         if (isGameOver) return;
-        const offset = (SIZE - 1) * 46 / 2;
+        const wrapper = document.getElementById("game-aspect-wrapper");
+        const wrapperWidth = wrapper ? wrapper.clientWidth : 960;
+        const dynamicCubeSize = wrapperWidth * 0.036;
+        const offset = (SIZE - 1) * dynamicCubeSize / 2;
+
         blocks.forEach(b => {
             const oldY = b.y;
             b.y = b.z;
             b.z = (SIZE - 1) - oldY;
-            updateCubePosition(b.element, b.x, b.y, b.z, offset);
+            updateCubePosition(b.element, b.x, b.y, b.z, offset, dynamicCubeSize);
         });
     });
 
@@ -197,7 +210,7 @@ function isSelectable(b) {
     return (openSides >= 2);
 }
 
-function handleClick(b) {
+function handleClick(b, halfSize) {
     if (isGameOver || !b.active) return;
     const status = document.getElementById("status");
 
@@ -231,11 +244,10 @@ function handleClick(b) {
             status.innerText = "消去成功！(+700pt)";
             status.style.color = "#4caf50";
             
-            // 💡【出現時の連携処理】周りが消えて露出した瞬間、初めて面(Face)を作り、画面に表示します
             blocks.forEach(o => {
                 if (o.active && o.element.style.display === "none") {
                     if (isSelectable(o)) {
-                        createFacesForCube(o); // 👈 ここで安全に中身を組み立てる
+                        createFacesForCube(o, halfSize); 
                         o.element.style.display = "block"; 
                     }
                 }
