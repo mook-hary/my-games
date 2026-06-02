@@ -214,11 +214,3 @@ button:hover { background: #45a049; }
 .face.right  { filter: brightness(0.7); }
 .face.left   { filter: brightness(0.7); }
 
-@media (max-width: 980px), (max-height: 450px) {
-    #viewport {
-        transform: scale(0.6) !important; 
-    }
-    #ui-panel {
-        transform: scale(0.8) !important; 
-    }
-}
