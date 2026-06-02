@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Untitled</title>
+    <link rel="stylesheet" href="./style.css">
+
+  </head>
+    
+  <body>
+  <!-- 16:9の比率をガチッと固定する大枠 -->
+<div id="game-aspect-wrapper">
+    <div id="game-container">
+        
+        <!-- 左側：操作パネルエリア -->
+        <div id="ui-panel">
+            <h2>えげブロ</h2>
+            <div id="score-display">SCORE: <span id="score">0</span> pt</div>
+            <div id="timer-text">残り時間: 120 秒</div>
+            <div id="timer-container"><div id="timer-bar"></div></div>
+            
+            <div id="status-box">
+                <div>残りブロック: <span id="count">216</span></div>
+                <div id="status">1つ目のブロックを選んでください</div>
+            </div>
+            
+            <div id="control-panel">
+                <button id="rot-y-btn" class="rot-btn">🔄 縦回転 (180°)</button>
+                <button id="rot-z-btn" class="rot-btn">🔄 横回転 (180°)</button>
+            </div>
+            
+            <button id="reset-btn">ゲームをリセット</button>
+        </div>
+
+        <!-- 右側：16:9の右側中央に完全固定する3Dエリア -->
+        <div id="stage-area">
+            <div id="viewport">
+                <div id="stage"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+    <script  src="./script.js"></script>
+
+  </body>
+  
+</html>
