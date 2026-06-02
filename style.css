@@ -33,8 +33,8 @@ body {
     height: calc(100vw * 9 / 16) !important; /* 16:9 を維持 */
     
     /* 縦幅がiPhoneの底面バーを超えないようにデッドロック */
-    max-height: 70svh !important;
-    max-width: calc(70svh * 16 / 9) !important;
+    max-height: 90svh !important;
+    max-width: calc(90svh * 16 / 9) !important;
 
     /* 🔴 中身のパーツに対して「自分（外枠）のサイズを基準にして伸縮しなさい」と命じる設定 */
     container-type: size; 
