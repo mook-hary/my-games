@@ -19,9 +19,9 @@ let timeLeft = 120;
 let timerId = null;
 let isGameOver = false;
 
-// 【最重要】初期の傾きバグを防ぐため、ここを 0 に固定します
-let rotX = 0;   
-let rotZ = 0;  
+// 【元に戻しました】最初の見やすい角度のまま固定します
+let rotX = 60;   
+let rotZ = -45;  
 
 function initGame() {
     const stage = document.getElementById("stage");
@@ -31,10 +31,9 @@ function initGame() {
     selected = null;
     isGameOver = false;
     
-    // 【最重要】リセット時も 0 からスタートするようにします
     currentScore = 0;
-    rotX = 0;
-    rotZ = 0;
+    rotX = 60;
+    rotZ = -45;
     document.getElementById("score").innerText = currentScore;
     
     document.getElementById("status").innerText = "1つ目のブロックを選んでください";
@@ -61,9 +60,9 @@ function initGame() {
                 
                 const cube = document.createElement("div");
                 cube.className = "cube";
-                cube.style.left = ((x * 46) - offset - 18) + "px";
-                cube.style.top = ((y * 46) - offset - 18) + "px";
-                cube.style.transform = `translateZ(${(z * 46) - offset}px)`;
+                
+                // 初期の配置スタイルを反映
+                updateCubePosition(cube, x, y, z, offset);
 
                 const faces = [
                     { name: 'top', style: 'transform: translateZ(18px);' },
@@ -99,20 +98,36 @@ function initGame() {
     updateStageRotation();
 }
 
+// 各ブロックの画面上の座標を更新する関数
+function updateCubePosition(cube, x, y, z, offset) {
+    cube.style.left = ((x * 46) - offset - 18) + "px";
+    cube.style.top = ((y * 46) - offset - 18) + "px";
+    cube.style.transform = `translateZ(${(z * 46) - offset}px)`;
+}
+
 function setupEvents() {
-    // 【修正】横回転：オブジェクト自体をその場でゴロンと横に回す
+    // 【横回転ボタン】中のブロックの座標データ(x, y)を90度入れ替えて、位置を再計算
     document.getElementById("rot-z-btn").addEventListener("click", () => {
         if (isGameOver) return;
-        rotZ += 180;
-        updateStageRotation();
+        const offset = (SIZE - 1) * 46 / 2;
+        blocks.forEach(b => {
+            const oldX = b.x;
+            b.x = b.y;
+            b.y = (SIZE - 1) - oldX;
+            updateCubePosition(b.element, b.x, b.y, b.z, offset);
+        });
     });
 
-    // 【修正】縦回転：オブジェクト自体をその場でゴロンと縦にひっくり返す
+    // 【縦回転ボタン】中のブロックの座標データ(y, z)を90度入れ替えて、位置を再計算
     document.getElementById("rot-y-btn").addEventListener("click", () => {
         if (isGameOver) return;
-        // 60度と240度を切り替えるのではなく、現在の角度に180度足してひっくり返します
-        rotX += 180; 
-        updateStageRotation();
+        const offset = (SIZE - 1) * 46 / 2;
+        blocks.forEach(b => {
+            const oldY = b.y;
+            b.y = b.z;
+            b.z = (SIZE - 1) - oldY;
+            updateCubePosition(b.element, b.x, b.y, b.z, offset);
+        });
     });
 
     document.getElementById("reset-btn").addEventListener("click", initGame);
@@ -121,9 +136,8 @@ function setupEvents() {
 function updateStageRotation() {
     const stage = document.getElementById("stage");
     if(stage) {
-        // カメラの基本の傾き（rotateX(60deg) rotateZ(-45deg)）を固定したまま、
-        // その後にボタンの回転量（rotZ と rotX）を計算させることで、傾きを真っ直ぐに直しつつライティングを連動させます。
-        stage.style.transform = `rotateX(60deg) rotateZ(-45deg) rotateY(${rotZ}deg) rotateX(${rotX}deg)`;
+        // ステージ自体の傾きは、最初の完璧な状態（60度と-45度）に完全固定します！
+        stage.style.transform = `rotateX(${rotX}deg) rotateZ(${rotZ}deg)`;
     }
 }
 
