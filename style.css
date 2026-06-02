@@ -224,3 +224,13 @@ button:hover { background: #45a049; }
 .face.back   { filter: brightness(0.55); }
 .face.right  { filter: brightness(0.7); }
 .face.left   { filter: brightness(0.7); }
+
+/* style.css の一番最後に貼り付けてください */
+@media (max-width: 980px), (max-height: 560px) {
+    #viewport {
+        transform: scale(0.6) !important; /* 3D表示の窓自体を強制的に60%に縮めます */
+    }
+    #ui-panel {
+        transform: scale(0.8) !important; /* 操作パネルも強制的に80%に縮めます */
+    }
+}
