@@ -7,8 +7,7 @@ body {
     align-items: center;
     justify-content: center;
     
-    /* 💡 iPhoneのメニューバー対策：
-       100vhの代わりに、ブラウザの見えている本当の高さ（svh）を基準にします */
+    /* 💡 iPhoneのメニューバー・URLバーのせいで下が切れるバグを完全に防ぐ最新の指定 */
     min-height: 100vh;
     min-height: 100svh;
     
@@ -44,25 +43,14 @@ body {
 }
 
 /* 💡【iPhone・スマホ専用の強制ピッタリ縮小システム】
-   画面の横幅や高さがゲーム盤面より1ピクセルでも小さければ、
-   iPhoneの画面サイズ（メニューバーを引いた本当のセーフエリア）に合わせて
-   16:9を維持したまま、絶対に画面内に収まるように縮小率を強制再計算します！
+   iPhoneのChromeが見失いがちな「実際の画面サイズ（svh/vw）」だけをピンポイントで計算させ、
+   ゲーム画面が下や右に突き抜けるのを100%防ぎます。
 */
 @media (max-width: 980px), (max-height: 560px) {
     #game-aspect-wrapper {
-        /* 横幅と高さ、どちらか狭い方に合わせて限界まで自動縮小します */
-        transform: scale(min(calc(100vw / 980), calc(100vh / 560), calc(100svh / 560))) !important;
+        /* 混ざっていたvhを削除し、完全にsvh（見えている本当の高さ）基準に絞りました */
+        transform: scale(min(calc(100vw / 980), calc(100svh / 560))) !important;
     }
-}
-
-/* 横並びコンテナ */
-#game-container {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    align-items: center;
-    padding: 20px;
-    box-sizing: border-box;
 }
 
 /* 左側：幅をコンパクトにした操作パネル */
@@ -210,28 +198,17 @@ button:hover { background: #45a049; }
 .right  { transform: rotateY(90deg) translateZ(18px); }
 .left   { transform: rotateY(-90deg) translateZ(18px); }
 
-/* 選択されたブロックの強調表示 */
 /* 【改善版】元の色を残しつつ、選択状態を分かりやすくする設定 */
 .selected .face {
-    /* 枠線を太い黄色にして、内側に少し食い込ませることで元の色を残します */
     border: 4px solid #ffeb3b !important;
-    
-    /* 背景色（元の色）や文字色を上書きせず、そのまま活かします */
     background-color: inherit !important;
     color: inherit !important;
-    
-    /* 重いボカシ影の代わりに、クッキリした2重枠線風のエフェクトで軽量化 */
     outline: 2px solid #ffffff;
-    
-    /* 念のため重いフィルターはオフのままにします */
     box-shadow: none !important;
     filter: none !important;
 }
 
-/* 【自動3Dライティング】
-   ブロックが回転した「今の向き」に合わせて、ブラウザが影を自動で計算します！
-   これによって、上を向いた面は常に明るく、下に回った面は自動で暗くなります。
-*/
+/* 【自動3Dライティング】 */
 .face.top    { filter: brightness(1.0); }  /* 上を向いた面：明るい */
 .face.bottom { filter: brightness(0.4); }  /* 下を向いた面：一番暗い */
 .face.front  { filter: brightness(0.85); } /* 手前を向いた面：そこそこ明るい */
