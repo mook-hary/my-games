@@ -19,6 +19,7 @@ let timeLeft = 120;
 let timerId = null;
 let isGameOver = false;
 
+// 【最重要】初期の傾きバグを防ぐため、ここを 0 に固定します
 let rotX = 0;   
 let rotZ = 0;  
 
@@ -30,9 +31,10 @@ function initGame() {
     selected = null;
     isGameOver = false;
     
+    // 【最重要】リセット時も 0 からスタートするようにします
     currentScore = 0;
-    rotX = 60;
-    rotZ = -45;
+    rotX = 0;
+    rotZ = 0;
     document.getElementById("score").innerText = currentScore;
     
     document.getElementById("status").innerText = "1つ目のブロックを選んでください";
@@ -44,9 +46,8 @@ function initGame() {
     timerId = setInterval(countdown, 1000);
 
     let pool = [];
-    // 27種類 × 8回 = 216個のブロックを生成
     for (let i = 0; i < 8; i++) {
-    tileTypes.forEach(t => pool.push({ ...t }));
+        tileTypes.forEach(t => pool.push({ ...t }));
     }
     pool.sort(() => Math.random() - 0.5);
 
@@ -64,7 +65,7 @@ function initGame() {
                 cube.style.top = ((y * 46) - offset - 18) + "px";
                 cube.style.transform = `translateZ(${(z * 46) - offset}px)`;
 
-               const faces = [
+                const faces = [
                     { name: 'top', style: 'transform: translateZ(18px);' },
                     { name: 'bottom', style: 'transform: rotateX(180deg) translateZ(18px);' },
                     { name: 'front', style: 'transform: rotateX(-90deg) translateZ(18px);' },
@@ -76,7 +77,7 @@ function initGame() {
                 faces.forEach(f => {
                     const face = document.createElement("div");
                     face.className = `face ${f.name}`;
-                    face.style.cssText = f.style; // 各面固有の回転・位置を適用
+                    face.style.cssText = f.style;
                     face.style.backgroundColor = tile.color;
                     face.innerText = tile.txt;
                     cube.appendChild(face);
@@ -120,14 +121,8 @@ function setupEvents() {
 function updateStageRotation() {
     const stage = document.getElementById("stage");
     if(stage) {
-        /* 【完全修正版】
-           まず、3Dゲームとして一番見やすい基本の傾き（X軸に60度、Z軸に-45度）にカメラを固定します。
-           その後に、ボタンで変更された角度（rotZ と rotX）を掛け合わせます。
-           
-           こうすることで、ブロックのカタマリはピシッとまっすぐ綺麗な向きのまま固定され、
-           ボタンを押したときは「上からの光（ライティング）」を維持したまま、
-           中身だけがゴロゴロと綺麗にその場で回転するようになります！
-        */
+        // カメラの基本の傾き（rotateX(60deg) rotateZ(-45deg)）を固定したまま、
+        // その後にボタンの回転量（rotZ と rotX）を計算させることで、傾きを真っ直ぐに直しつつライティングを連動させます。
         stage.style.transform = `rotateX(60deg) rotateZ(-45deg) rotateY(${rotZ}deg) rotateX(${rotX}deg)`;
     }
 }
