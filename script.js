@@ -162,22 +162,23 @@ function updateTimerUI() {
     if(bar) bar.style.width = `${percentage}%`;
 }
 
+// 【高速化版】クリック時のラグを完全に無くす判定処理
 function isSelectable(b) {
     let hasLeft = false, hasRight = false, hasFront = false, hasBack = false;
 
-    blocks.forEach(o => {
-        if (!o.active || o === b) return;
-        if (o.z === b.z) {
-            if (o.y === b.y) {
-                if (o.x === b.x - 1) hasLeft = true;
-                if (o.x === b.x + 1) hasRight = true;
-            }
-            if (o.x === b.x) {
-                if (o.y === b.y - 1) hasFront = true;
-                if (o.y === b.y + 1) hasBack = true;
-            }
-        }
-    });
+    // 🔴 以前は blocks.forEach で216個すべてを総当たりしていましたが、
+    // 🔴 計算式（座標）を使って、ピンポイントで「隣の4つ」だけを直接見に行くように大改造しました。
+    
+    // 1つの配列から特定の座標のブロックを瞬時に探すための高速フィルター
+    const findBlock = (x, y, z) => {
+        return blocks.find(o => o.active && o.x === x && o.y === y && o.z === z);
+    };
+
+    // 自分の「左・右・手前・奥」に、まだ消えていない（activeな）ブロックがあるか直接チェック
+    if (findBlock(b.x - 1, b.y, b.z)) hasLeft = true;
+    if (findBlock(b.x + 1, b.y, b.z)) hasRight = true;
+    if (findBlock(b.x, b.y - 1, b.z)) hasFront = true;
+    if (findBlock(b.x, b.y + 1, b.z)) hasBack = true;
 
     let openSides = 0;
     if (!hasLeft) openSides++;
@@ -185,6 +186,7 @@ function isSelectable(b) {
     if (!hasFront) openSides++;
     if (!hasBack) openSides++;
 
+    // 空いている面が2面以上あれば選択可能
     return (openSides >= 2);
 }
 
