@@ -56,7 +56,7 @@ function initGame() {
     // ブロック1マスと、3Dの厚みのサイズ（半分）を100%正確に逆算します。
     const wrapper = document.getElementById("game-aspect-wrapper");
     const wrapperWidth = wrapper ? wrapper.clientWidth : 960;
-    const dynamicCubeSize = wrapperWidth * 0.036; // CSSの 3.6cqw と完全に一致させる
+    const dynamicCubeSize = wrapperWidth * 0.050; // CSSの 3.6cqw と完全に一致させる
     const offset = (SIZE - 1) * dynamicCubeSize / 2;
     const halfSize = dynamicCubeSize / 2; // 立方体の半分の厚み（translateZ用）
 
