@@ -19,8 +19,8 @@ let timeLeft = 120;
 let timerId = null;
 let isGameOver = false;
 
-let rotX = 60;   
-let rotZ = -45;  
+let rotX = 0;   
+let rotZ = 0;  
 
 function initGame() {
     const stage = document.getElementById("stage");
@@ -120,8 +120,15 @@ function setupEvents() {
 function updateStageRotation() {
     const stage = document.getElementById("stage");
     if(stage) {
-        // 【最重要】塊そのものを回転させてから、最初に見やすい角度（X軸に60度）傾ける計算にします
-        stage.style.transform = `rotateY(${rotZ}deg) rotateX(${rotX}deg)`;
+        /* 【完全修正版】
+           まず、3Dゲームとして一番見やすい基本の傾き（X軸に60度、Z軸に-45度）にカメラを固定します。
+           その後に、ボタンで変更された角度（rotZ と rotX）を掛け合わせます。
+           
+           こうすることで、ブロックのカタマリはピシッとまっすぐ綺麗な向きのまま固定され、
+           ボタンを押したときは「上からの光（ライティング）」を維持したまま、
+           中身だけがゴロゴロと綺麗にその場で回転するようになります！
+        */
+        stage.style.transform = `rotateX(60deg) rotateZ(-45deg) rotateY(${rotZ}deg) rotateX(${rotX}deg)`;
     }
 }
 
