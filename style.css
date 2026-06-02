@@ -188,7 +188,9 @@ button:hover { background: #45a049; }
     /* 1つのブロック内の面同士で光の計算を連動させる設定 */
     transform-style: preserve-3d;
 }
-#stage {
-    /* 上からの環境光（陰影）を自動で計算させるCSSの魔法 */
-    contain: layout;
-}
+.face.top    { filter: brightness(1.0); }  /* 上を向いた面：明るい */
+.face.bottom { filter: brightness(0.4); }  /* 下を向いた面：一番暗い */
+.face.front  { filter: brightness(0.85); } /* 手前を向いた面：そこそこ明るい */
+.face.back   { filter: brightness(0.55); } /* 奥を向いた面：少し暗い */
+.face.right  { filter: brightness(0.7); }  /* 右を向いた面：中間の暗さ */
+.face.left   { filter: brightness(0.7); }  /* 左を向いた面：中間の暗さ */
