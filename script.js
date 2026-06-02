@@ -4,11 +4,12 @@ const tileTypes = [
     { txt: "④", color: "#ff006e" }, { txt: "⑤", color: "#fb5607" }, { txt: "⑥", color: "#ffbe0b" },
     { txt: "⑦", color: "#06d6a0" }, { txt: "⑧", color: "#118ab2" }, { txt: "⑨", color: "#4a5759" },
     { txt: "⑩", color: "#2a9d8f" }, { txt: "⑪", color: "#e76f51" }, { txt: "⑫", color: "#a8dadc" },
-    { txt: "⑬", color: "#9b5de5" }, { txt: "⑭", color: "#f15bb5" }, { txt: "⑮", color: "#00f5d4" },
-    { txt: "⑯", color: "#00bbf9" }, { txt: "⑰", color: "#fee440" }, { txt: "⑱", color: "#31572c" },
-    { txt: "⑲", color: "#90e0ef" }, { txt: "⑳", color: "#0096c7" }, { txt: "㉑", color: "#f77f00" },
-    { txt: "㉒", color: "#fcbf49" }, { txt: "㉓", color: "#eae2b7" }, { txt: "㉔", color: "#d62828" },
-    { txt: "㉕", color: "#003049" }, { txt: "㉖", color: "#ffcdb2" }, { txt: "㉗", color: "#b5e2fa" }
+    // 🍎 13番以降を楽しい絵文字バージョンにアップデート！
+    { txt: "🍎", color: "#ff4d6d" }, { txt: "💎", color: "#00b4d8" }, { txt: "🌟", color: "#ffb703" },
+    { txt: "🍀", color: "#38b000" }, { txt: "🔥", color: "#ff4a00" }, { txt: "👾", color: "#a2d2ff" },
+    { txt: "🐱", color: "#ffb5a7" }, { txt: "🐼", color: "#f0f0f0" }, { txt: "🚀", color: "#90e0ef" },
+    { txt: "👻", color: "#e0aaff" }, { txt: "🍕", color: "#ffb703" }, { txt: "🍩", color: "#ff85a1" },
+    { txt: "🌍", color: "#48cae4" }, { txt: "🏁", color: "#ffffff" }, { txt: "👑", color: "#ffbe0b" }
 ];
 
 let blocks = [];
