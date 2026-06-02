@@ -27,8 +27,8 @@ body {
    今後、この width と height の数値を変更するだけで、中身のパーツが100%完璧な比率で自動追従します！ */
 #game-aspect-wrapper {
     /* 🔴 iPhone横向きで絶対にハミ出さない「安全なサイズ」に設定 */
-    width: 80vw !important; 
-    height: calc(80vw * 9 / 16) !important; /* 16:9 を維持 */
+    width: 90vw !important; 
+    height: calc(90vw * 9 / 16) !important; /* 16:9 を維持 */
     
     /* 縦幅がiPhoneの底面バーを超えないようにデッドロック */
     max-height: 70svh !important;
