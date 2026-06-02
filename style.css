@@ -182,11 +182,11 @@ button:hover { background: #45a049; }
 
 /* 選択されたブロックの強調表示 */
 .selected .face {
-    border: 4px solid #ffeb3b !important; /* 枠線を太くして目立つ黄色にするだけ */
-    background-color: #ffffff !important; /* ブロック自体の色をパッと白に変える */
-    color: #000000 !important;            /* 文字の色を黒にして見やすくする */
-    box-shadow: none !important;          /* 影の計算を完全にストップ */
-    filter: none !important;              /* フィルターの計算を完全にストップ */
+    border: 4px solid #ffeb3b !important; /* 枠線を太い黄色にして目立たせる */
+    background-color: #ffffff !important; /* ブロック自体の色を白に変える */
+    color: #000000 !important;            /* 文字の色を黒にして見やすく */
+    box-shadow: none !important;          /* 🔴一番重い原因の「光る影」をカット */
+    filter: none !important;              /* 🔴重い原因の「明るさ変更」をカット */
 }
 
 /* 【自動3Dライティング】
