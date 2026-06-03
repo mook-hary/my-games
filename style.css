@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【可変コンテナクエリ結合・表示の対象 × 向き完全分離】 最終確定CSS
+   ✨ 【原点回帰・極限シンプル】 確定CSS
    ======================================================== */
 
 body {
@@ -20,11 +20,9 @@ body {
     touch-action: manipulation;
 }
 
-/* ========================================================
-   🖥️ パターン①：PC・大画面環境（画面幅 960px 以上）
-   ======================================================== */
+/* 🖥️ ① PC・大画面環境（画面幅 960px 以上） */
 @media (min-width: 960px) {
-    #game-body-box {
+    #game-aspect-wrapper, #start-overlay {
         width: 800px !important;                 
         height: 450px !important;                
         position: relative;
@@ -33,12 +31,10 @@ body {
     }
 }
 
-/* ========================================================
-   📱 パターン②：スマホ環境・横持ち（画面幅 960px 未満 ＆ 横向き）
-   🌟 iPhoneのChrome横向きで大成功していた完璧な数式をそのまま100%引用
-   ======================================================== */
-@media (max-width: 959px) and (orientation: landscape) {
-    #game-body-box {
+/* 📱 ② スマホ環境（画面幅 960px 未満）
+   🌟 縦持ちだろうが横持ちだろうが、スマホなら「この完璧な横長サイズ」をベースとして1つだけ組み立てる */
+@media (max-width: 959px) {
+    #game-aspect-wrapper, #start-overlay {
         width: 95vw !important;                 
         height: calc(95vw * 9 / 16) !important; 
         max-height: 93svh !important;           
@@ -49,32 +45,17 @@ body {
     }
 }
 
-/* ========================================================
-   📱 パターン③：スマホ環境・縦持ち（画面幅 960px 未満 ＆ 縦向き）
-   🌟 縦持ちの時は、スマホの「短い方の横幅(vw)」に合わせてブレーキが正しく動作するように
-   　 ロジックを修正。表示領域がギュッと縮んでも中身が完璧に追随します。
-   ======================================================== */
+/* 🔄 ③ スマホの向き判定
+   🌟 縦持ち（portrait）の時は、上の完璧な横長サイズのまま、ただ90度お辞儀させるだけ。
+   　 サイズの引き算やブレーキを一切書かないため、横持ちと100%全く同じ表示になります。 */
 @media (max-width: 959px) and (orientation: portrait) {
-    #game-body-box {
-        width: 93svh !important; 
-        height: calc(93svh * 9 / 16) !important;
-        max-width: 95vw !important;  
-        max-height: calc(95vw * 9 / 16) !important;
-        position: relative;
-        border-radius: 16px;
-        overflow: hidden;
-    }
-    /* 縦持ちの時だけ、この完成した表示の対象（ガワ）を丸ごと90度スピンさせます */
-    #game-screen-wrapper {
+    #game-aspect-wrapper, #start-overlay {
         transform: rotate(90deg) !important; 
         transform-origin: center center;
     }
 }
 
-/* ========================================================
-   ⚙️ 内部コンテナ・パーツのデザイン（16:9の中に収まる共通定義）
-   ======================================================== */
-#game-body-box {
+#game-aspect-wrapper {
     container-type: size; 
     display: flex;
     align-items: center;
@@ -90,7 +71,7 @@ body {
     box-sizing: border-box;
 }
 
-/* 操作パネル（元の美しい18%幅、絶対に切れない左端から15px基準に完全固定） */
+/* 操作パネル */
 #ui-panel {
     width: 18cqw; 
     height: 52cqh; 
@@ -162,27 +143,10 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 #stage { position: relative; width: 0; height: 0; transform-style: preserve-3d; transition: transform 0.5s ease-out; }
 
 /* 立方体・面 */
-.cube { 
-    position: absolute; 
-    transform-style: preserve-3d; 
-    cursor: pointer; 
-}
-
+.cube { position: absolute; transform-style: preserve-3d; cursor: pointer; }
 .face { 
-    position: absolute; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    font-weight: bold; 
-    color: white; 
-    border: 1px solid rgba(255,255,255,0.25); 
-    box-sizing: border-box; 
-    text-shadow: 1px 1px 1px rgba(0,0,0,0.6);
-    backface-visibility: visible; 
-    transform-style: preserve-3d; 
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; 
+    position: absolute; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; border: 1px solid rgba(255,255,255,0.25); box-sizing: border-box; text-shadow: 1px 1px 1px rgba(0,0,0,0.6); backface-visibility: visible; transform-style: preserve-3d; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; 
 }
-
 .selected .face { border: 2px solid #ffeb3b !important; outline: 1px solid #ffffff; opacity: 0.6 !important; box-shadow: 0 0 10px #ffeb3b; filter: brightness(1.2) !important; }
 .face.top { filter: brightness(1.0); }
 .face.bottom { filter: brightness(0.4); }
@@ -191,20 +155,12 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 .face.right { filter: brightness(0.7); }
 .face.left { filter: brightness(0.7); }
 
-/* ========================================================
-   👑 3. 【スタート画面オーバーレイ】（最速コンテナクエリ可変縛り）
-   🌟 パーセントや画面幅（vw）を一切使わず、表示領域のサイズ「cqw / cqh」に
-   　 100%完全連動させることで、回転バグを完全シャットアウト。画像のアスペクト比も完全に一致します。
-   ======================================================== */
+/* タイトル画面オーバーレイ */
 #start-overlay {
-    position: absolute; 
-    top: 0; left: 0; 
-    width: 100cqw !important; 
-    height: 100cqh !important;
-    background: radial-gradient(circle at center, #2a2a2a 0%, #111111 100%);
-    background-size: 100cqw 100cqh !important;
+    position: fixed; top: 0; left: 0; width: 100% !important; height: 100% !important;
+    background: radial-gradient(circle, #2a2a2a 0%, #111111 100%);
     z-index: 10000; display: flex; align-items: center; justify-content: center;
-    transition: opacity 0.5s ease;
+    transition: opacity 0.5s ease; box-shadow: none; border: none; max-width: none !important; max-height: none !important;
 }
 .start-card { text-align: center; background: rgba(40, 40, 40, 0.9); padding: 30px; border-radius: 20px; border: 2px solid #4CAF50; box-shadow: 0 20px 50px rgba(0,0,0,0.8); max-width: 400px; width: 80%; box-sizing: border-box; }
 .start-card h1 { margin: 0 0 10px 0; font-size: 32px; color: #4CAF50; text-shadow: 0 0 10px rgba(76,175,80,0.5); }
