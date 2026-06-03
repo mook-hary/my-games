@@ -1,3 +1,7 @@
+/* ========================================================
+   ✨ 【UIパネル幅復旧＆限界左寄せ：完全最適化版】 確定CSS
+   ======================================================== */
+
 body {
     margin: 0;
     background-color: #1a1a1a;
@@ -16,6 +20,7 @@ body {
     touch-action: manipulation;
 }
 
+/* 💡【共通の標準サイズ】16:9の外枠 */
 #game-aspect-wrapper, #start-overlay {
     width: 95vw !important;                 
     height: calc(95vw * 9 / 16) !important; 
@@ -43,11 +48,15 @@ body {
     box-sizing: border-box;
 }
 
+/* 💡【あなたのアイデアを完全反映！】
+   ・横幅を、一番見やすかった元の「18cqw」に完全復旧！
+   ・その代わり、左側の無駄な隙間（余白）を 2cqw ➡️「0.6cqw」まで極限まで引き締め（左寄せ）！
+   ・前回の『ブロックと高さを揃える（56cqh）』『上下のド真ん中配置』も完璧に維持しています。 */
 #ui-panel {
-    width: 18cqw; 
-    height: calc(100% - 4cqw); 
+    width: 18cqw; /* 🌟 ゆったり見やすい元の幅に復旧 */
+    height: 56cqh; /* ブロックの塊と揃えたコンパクトな高さを維持 */
     background: #222;
-    padding: 1.5cqw 1.0cqw; 
+    padding: 1.0cqw 1.0cqw; 
     box-sizing: border-box;
     border-radius: 12px;
     border: 1px solid #333;
@@ -56,13 +65,16 @@ body {
     flex-direction: column;
     justify-content: space-between;
     flex-shrink: 0;
+    
     position: absolute;
-    left: 2cqw;  
-    top: 2cqw;   
+    left: 0.6cqw;  /* 🌟 無駄な左のデッドスペースを限界まで詰めて左寄せ！ */
+    top: 50%; 
+    transform: translateY(-50%); /* 上下中央配置 */
     z-index: 10; 
-    letter-spacing: -0.02em; 
+    letter-spacing: -0.02em; /* 文字の詰まりも元に戻して読みやすく */
 }
 
+/* 幅が元に戻ったので、中の文字サイズや余白も一番バランスの良かった大きさに100%復旧 */
 #ui-panel h2 { margin: 0; font-size: 2.2cqw; color: #4CAF50; }
 #status-box { background: #151515; padding: 0.6cqw; border-radius: 6px; border: 1px solid #2a2a2a; }
 #status { font-weight: bold; color: #ffeb3b; min-height: 4.5cqw; font-size: 1.3cqw; display: flex; align-items: center; justify-content: center; line-height: 1.2; letter-spacing: -0.04em; }
@@ -89,6 +101,7 @@ body {
 #reset-btn { padding: 1cqw 15px; font-size: 1.4cqw; background: #4CAF50; }
 button { color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; box-sizing: border-box; }
 
+/* 右側3Dエリア */
 #stage-area {
     width: 100% !important;
     height: 100%;
@@ -106,11 +119,11 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
     display: flex; 
     align-items: center; 
     justify-content: center; 
-    transform: scale(1.0) !important; /* カメラ倍率は標準の1倍にリセット */
+    transform: scale(1.0) !important; 
 }
 #stage { position: relative; width: 0; height: 0; transform-style: preserve-3d; transition: transform 0.5s ease-out; }
 
-/* 💡【軽量化】サイズを「32px」の固定値にします */
+/* 立方体（32px固定を維持） */
 .cube { 
     position: absolute; 
     width: 32px; 
@@ -119,7 +132,7 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
     cursor: pointer; 
 }
 
-/* 💡【軽量化】面も「32px」、フォントは「18px」に固定してブラウザの計算を無くします */
+/* 立体面 */
 .face { 
     position: absolute; 
     width: 32px; 
@@ -132,7 +145,7 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
     color: white; 
     border: 1px solid rgba(255,255,255,0.25); 
     box-sizing: border-box; 
-    text-shadow: 1px 1px 1px rgba(0,0,0,0.6); /* 影をシンプルにして描画を軽く */
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.6);
     backface-visibility: visible; 
     transform-style: preserve-3d; 
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; 
