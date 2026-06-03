@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【vmax/vmin絶対値指定・表示の対象 × 向き完全分離】 最終確定CSS
+   ✨ 【えげブロ：15%特大クローズアップ微調整版】 確定CSS
    ======================================================== */
 
 body {
@@ -32,8 +32,7 @@ body {
 }
 
 /* 📱 ② スマホ環境（画面幅 960px 未満）
-   🌟 縦・横という曖昧な情報ではなく、画面の長い辺(vmax)と短い辺(vmin)の絶対値をブラウザに渡します。
-   　 これにより、スマホを回してもサイズが縮んだり細くなったりするバグは物理的に消滅します。 */
+   🌟 画面の長い辺(vmax)と短い辺(vmin)の絶対値で16:9をガチッと固定 */
 @media (max-width: 959px) {
     #game-body-box {
         width: 95vmax !important;                 
@@ -46,8 +45,7 @@ body {
     }
 }
 
-/* 🔄 ③ スマホの向き判定（外枠の回転制御）
-   🌟 縦持ち（portrait）の時は、上の完璧な16:9サイズのまま、ただ全体を90度スピンさせます。 */
+/* 🔄 ③ スマホの向き判定（外枠の回転制御） */
 @media (max-width: 959px) and (orientation: portrait) {
     #game-screen-wrapper {
         transform: rotate(90deg) !important; 
@@ -71,10 +69,10 @@ body {
     box-sizing: border-box;
 }
 
-/* 操作パネル（美しい18%幅固定） */
+/* 🛠️ 操作パネル（ひと回り大きく 21%幅 × 55%高 にアップ！） */
 #ui-panel {
-    width: 18cqw; 
-    height: 52cqh; 
+    width: 21cqw; 
+    height: 55cqh; 
     background: #222;
     padding: 1.0cqw 1.0cqw; 
     box-sizing: border-box;
@@ -131,6 +129,7 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
     z-index: 1; 
 }
 
+/* 🛠️ ビューポート（3Dブロックの塊を1.15倍にクローズアップ拡大！） */
 #viewport { 
     width: 100% !important; 
     height: 100% !important; 
@@ -138,7 +137,7 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
     display: flex; 
     align-items: center; 
     justify-content: center; 
-    transform: scale(1.0) !important; 
+    transform: scale(1.15) !important; /* 🌟1.0から1.15へズームアップ */
 }
 #stage { position: relative; width: 0; height: 0; transform-style: preserve-3d; transition: transform 0.5s ease-out; }
 
