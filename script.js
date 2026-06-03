@@ -24,13 +24,11 @@ let rotZ = -45;
 
 // 💡【PC・スマホ環境判定連動システム】
 function getDynamicSizes() {
-    // 画面幅が960px以上ならPC、それ未満ならスマホ環境
     const isPC = window.innerWidth >= 960;
     
     // PCなら1マス40px、スマホ（縦持ち・横持ち共通）なら28pxで完全固定
     const dynamicCubeSize = isPC ? 40 : 28; 
     
-    // 中心点と面の奥行きを固定値から自動連動
     const offset = (SIZE - 1) * dynamicCubeSize / 2;
     const halfSize = dynamicCubeSize / 2;
     
