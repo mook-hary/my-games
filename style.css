@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【えげブロ：表示の対象 × 向き完全分離】 最終確定CSS
+   ✨ 【可変コンテナクエリ結合・表示の対象 × 向き完全分離】 最終確定CSS
    ======================================================== */
 
 body {
@@ -21,35 +21,50 @@ body {
 }
 
 /* ========================================================
-   📦 1. 【表示の対象】（ゲームの本体サイズ・比率の定義）
-   🌟 横持ちで完璧にいっていたサイズ計算をこの「#game-body-box」に直接適用。
+   🖥️ パターン①：PC・大画面環境（画面幅 960px 以上）
    ======================================================== */
-#game-body-box {
-    width: 95vw !important;                 
-    height: calc(95vw * 9 / 16) !important; 
-    max-height: 93svh !important;           /* ツールバーに隠れない完璧な高さ */
-    max-width: calc(93svh * 16 / 9) !important;
-    position: relative;
-    border-radius: 16px;
-    overflow: hidden;
-}
-
-/* 🖥️ PC・大画面（画面幅 960px 以上）の時だけ、本体サイズをPC用に上書きします */
 @media (min-width: 960px) {
     #game-body-box {
         width: 800px !important;                 
         height: 450px !important;                
-        max-width: none !important;
-        max-height: none !important;
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
     }
 }
 
 /* ========================================================
-   🔄 2. 【スマホの向き】（外枠による回転制御スイッチ）
-   🌟 スマホが縦持ち（portrait）の時だけ、外枠を丸ごと90度回します。
-   　 これによりタイトル画像もゲーム画面も「横向きと完全に同じ絵」が強制されます。
+   📱 パターン②：スマホ環境・横持ち（画面幅 960px 未満 ＆ 横向き）
+   🌟 iPhoneのChrome横向きで大成功していた完璧な数式をそのまま100%引用
+   ======================================================== */
+@media (max-width: 959px) and (orientation: landscape) {
+    #game-body-box {
+        width: 95vw !important;                 
+        height: calc(95vw * 9 / 16) !important; 
+        max-height: 93svh !important;           
+        max-width: calc(93svh * 16 / 9) !important;
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+}
+
+/* ========================================================
+   📱 パターン③：スマホ環境・縦持ち（画面幅 960px 未満 ＆ 縦向き）
+   🌟 縦持ちの時は、スマホの「短い方の横幅(vw)」に合わせてブレーキが正しく動作するように
+   　 ロジックを修正。表示領域がギュッと縮んでも中身が完璧に追随します。
    ======================================================== */
 @media (max-width: 959px) and (orientation: portrait) {
+    #game-body-box {
+        width: 93svh !important; 
+        height: calc(93svh * 9 / 16) !important;
+        max-width: 95vw !important;  
+        max-height: calc(95vw * 9 / 16) !important;
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    /* 縦持ちの時だけ、この完成した表示の対象（ガワ）を丸ごと90度スピンさせます */
     #game-screen-wrapper {
         transform: rotate(90deg) !important; 
         transform-origin: center center;
@@ -176,13 +191,18 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 .face.right { filter: brightness(0.7); }
 .face.left { filter: brightness(0.7); }
 
-/* 👑 【スタート画面オーバーレイ】
-   本体の16:9の箱（#game-body-box）に100%完全同期するため、背景画像やグラデーションの
-   アスペクト比（見え方）も横向きの時とミリ単位で完全に一致します。 */
+/* ========================================================
+   👑 3. 【スタート画面オーバーレイ】（最速コンテナクエリ可変縛り）
+   🌟 パーセントや画面幅（vw）を一切使わず、表示領域のサイズ「cqw / cqh」に
+   　 100%完全連動させることで、回転バグを完全シャットアウト。画像のアスペクト比も完全に一致します。
+   ======================================================== */
 #start-overlay {
     position: absolute; 
-    top: 0; left: 0; width: 100% !important; height: 100% !important;
-    background: radial-gradient(circle, #2a2a2a 0%, #111111 100%);
+    top: 0; left: 0; 
+    width: 100cqw !important; 
+    height: 100cqh !important;
+    background: radial-gradient(circle at center, #2a2a2a 0%, #111111 100%);
+    background-size: 100cqw 100cqh !important;
     z-index: 10000; display: flex; align-items: center; justify-content: center;
     transition: opacity 0.5s ease;
 }
