@@ -134,7 +134,6 @@ function setupEvents() {
 
     document.getElementById("rot-y-btn").addEventListener("click", () => {
         if (isGameOver) return;
-        // 縦回転のデータ変更
         const { dynamicCubeSize, offset, halfSize } = getDynamicSizes();
         blocks.forEach(b => {
             const oldY = b.y;
@@ -148,7 +147,6 @@ function setupEvents() {
     document.getElementById("reset-btn").addEventListener("click", initGame);
 }
 
-// 横回転の処理（共通化）
 function triggerResizeAndRefresh() {
     const { dynamicCubeSize, offset, halfSize } = getDynamicSizes();
     blocks.forEach(b => {
@@ -269,20 +267,19 @@ function updateCount() {
         const timeBonus = timeLeft * 2000; const clearBonus = 75600;
         currentScore += (clearBonus + timeBonus);
         document.getElementById("score").innerText = currentScore;
-        document.getElementById("status").innerText = `🎉 全クリア達成!! 【全消し:+${clearBonus}pt】`;
+        document.getElementById("status").innerText = "🎉 全クリア達成!!";
         document.getElementById("status").style.color = "#4caf50";
     }
 }
 
-// 💡【変更：PC版判定付きスタート処理】
+// 💡【確定修正：画面横幅ベースのPC/スマホ切り分け】
 document.getElementById("actual-start-btn").addEventListener("click", async () => {
     const docEl = document.documentElement;
     
-    // ⭐【プロの判定】マウス操作（PC）か、タッチ操作（スマホ）かを調べます
-    const isMobile = window.matchMedia("(pointer: coarse)").matches;
+    // ⭐【100%確実な判定】画面の横幅が960px未満なら「スマホ・タブレット」とみなす
+    const isMobileSize = window.innerWidth < 960;
 
-    if (isMobile) {
-        // 📱 スマホの時だけ、バーを消してフルスクリーン化＋横固定を試みる
+    if (isMobileSize) {
         try {
             if (docEl.requestFullscreen) await docEl.requestFullscreen();
             else if (docEl.webkitRequestFullscreen) await docEl.webkitRequestFullscreen();
@@ -292,11 +289,10 @@ document.getElementById("actual-start-btn").addEventListener("click", async () =
             if (screen.orientation && screen.orientation.lock) await screen.orientation.lock("landscape");
         } catch (err) { console.log("向きロック拒否"); }
     } else {
-        // 💻 PCの時は、上記のフルスクリーン命令を完全にスルー（何もしない）
-        console.log("PC環境を検知：通常のブラウザ表示モードで起動します");
+        // 💻 横幅が広いPC環境なら、フルスクリーン化を「絶対に」発動させない
+        console.log("PC環境を確定：フルスクリーンおよび回転をスキップします。");
     }
 
-    // スタート画面を消してゲーム開始
     const overlay = document.getElementById("start-overlay");
     document.body.classList.add("game-started");
     overlay.style.opacity = "0";
@@ -306,23 +302,20 @@ document.getElementById("actual-start-btn").addEventListener("click", async () =
     }, 500);
 });
 
-// フルスクリーン状態変化時のリサイズ（保険として維持）
+// フルスクリーン状態変化時のリサイズ（保険）
 const fullscreenEvents = ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'];
 fullscreenEvents.forEach(eventType => {
     document.addEventListener(eventType, () => {
-        const { dynamicCubeSize, offset, halfSize } = getDynamicSizes();
-        blocks.forEach(b => {
-            if (b.active) {
-                updateCubePosition(b.element, b.x, b.y, b.z, offset, dynamicCubeSize);
-                refreshFaceSizes(b, halfSize);
-            }
-        });
-        updateStageRotation();
+        forceResizeAll();
     });
 });
 
-// PCウィンドウのドラッグ変形（リサイズ）にも追従させるプロの処理
+// ウィンドウリサイズ時
 window.addEventListener("resize", () => {
+    forceResizeAll();
+});
+
+function forceResizeAll() {
     const { dynamicCubeSize, offset, halfSize } = getDynamicSizes();
     blocks.forEach(b => {
         if (b.active) {
@@ -330,6 +323,7 @@ window.addEventListener("resize", () => {
             refreshFaceSizes(b, halfSize);
         }
     });
-});
+    updateStageRotation();
+}
 
 setupEvents();
