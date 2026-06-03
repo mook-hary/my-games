@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【CSS＆JS完全同期：超軽量サクサク起動版】 確定CSS
+   ✨ 【サイズ最適化・枠内ジャストフィット版】 確定CSS
    ======================================================== */
 
 body {
@@ -20,7 +20,7 @@ body {
     touch-action: manipulation;
 }
 
-/* 💡【共通の標準サイズ】 */
+/* 💡【共通の標準サイズ】16:9の外枠 */
 #game-aspect-wrapper, #start-overlay {
     width: 95vw !important;                 
     height: calc(95vw * 9 / 16) !important; 
@@ -48,7 +48,7 @@ body {
     box-sizing: border-box;
 }
 
-/* 左操作パネル */
+/* 左操作パネル（スリム大文字版を維持） */
 #ui-panel {
     width: 18cqw; 
     height: calc(100% - 4cqw); 
@@ -109,25 +109,24 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 #viewport { width: 100% !important; height: 100% !important; perspective: 1400px; display: flex; align-items: center; justify-content: center; transform: scale(1.2) !important; }
 #stage { position: relative; width: 0; height: 0; transform-style: preserve-3d; transition: transform 0.5s ease-out; }
 
-/* 💡【工夫2】サイズを 42px に完全固定 */
+/* 💡【重要調整】サイズを 42px ➡️ 枠内にきれいに収まる 28px へスリム化 */
 .cube { 
     position: absolute; 
-    width: 42px; 
-    height: 42px; 
+    width: 28px; 
+    height: 28px; 
     transform-style: preserve-3d; 
     cursor: pointer; 
 }
 
-/* 💡【工夫2】面の組み立ても 42px で統一し、文字サイズは 24px に固定。
-   さらに、影を 1px にしてブラウザの描画の負担を劇的に減らします。 */
+/* 💡【重要調整】面も 28px に同期し、文字サイズはブロックに収まる 16px に調整 */
 .face { 
     position: absolute; 
-    width: 42px; 
-    height: 42px; 
+    width: 28px; 
+    height: 28px; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
-    font-size: 24px; 
+    font-size: 16px; /* 24pxから16pxへ縮小 */
     font-weight: bold; 
     color: white; 
     border: 1px solid rgba(255,255,255,0.25); 
@@ -138,7 +137,7 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; 
 }
 
-.selected .face { border: 3px solid #ffeb3b !important; outline: 1px solid #ffffff; opacity: 0.6 !important; box-shadow: 0 0 10px #ffeb3b; filter: brightness(1.2) !important; }
+.selected .face { border: 2px solid #ffeb3b !important; outline: 1px solid #ffffff; opacity: 0.6 !important; box-shadow: 0 0 8px #ffeb3b; filter: brightness(1.2) !important; }
 .face.top { filter: brightness(1.0); }
 .face.bottom { filter: brightness(0.4); }
 .face.front { filter: brightness(0.85); }
