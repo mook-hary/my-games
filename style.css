@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【工夫2導入：CSS超軽量化＆サクサク起動版】 確定CSS
+   ✨ 【完全救済・超軽量＆サイズ完全復旧版】 確定CSS
    ======================================================== */
 
 body {
@@ -17,11 +17,9 @@ body {
     overflow: hidden;
     padding: 10px;
     box-sizing: border-box;
-    touch-action: manipulation; /* ダブルタップズーム禁止 */
+    touch-action: manipulation;
 }
 
-/* 💡【共通の標準サイズ】
-   ゲーム画面もタイトル画面も、この16:9の最大大画面の箱をベースにします */
 #game-aspect-wrapper, #start-overlay {
     width: 95vw !important;                 
     height: calc(95vw * 9 / 16) !important; 
@@ -32,7 +30,6 @@ body {
     overflow: hidden;
 }
 
-/* 💡 ゲーム外枠の固有設定 */
 #game-aspect-wrapper {
     container-type: size; 
     display: flex;
@@ -43,7 +40,6 @@ body {
     transform: none !important;
 }
 
-/* 💡 レイアウトコンテナ（重ね合わせ空間） */
 #game-container {
     position: relative;
     width: 100%;
@@ -51,7 +47,7 @@ body {
     box-sizing: border-box;
 }
 
-/* 💡 左操作パネル（横幅18%のスリム版） */
+/* 左操作パネル */
 #ui-panel {
     width: 18cqw; 
     height: calc(100% - 4cqw); 
@@ -65,50 +61,21 @@ body {
     flex-direction: column;
     justify-content: space-between;
     flex-shrink: 0;
-
     position: absolute;
     left: 2cqw;  
     top: 2cqw;   
     z-index: 10; 
-
     letter-spacing: -0.02em; 
 }
 
-/* タイトルロゴ */
 #ui-panel h2 { margin: 0; font-size: 2.2cqw; color: #4CAF50; }
-
-/* 中央のステータス案内メッセージ */
 #status-box { background: #151515; padding: 0.6cqw; border-radius: 6px; border: 1px solid #2a2a2a; }
-#status { 
-    font-weight: bold; 
-    color: #ffeb3b; 
-    min-height: 4.5cqw; 
-    font-size: 1.3cqw; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    line-height: 1.2; 
-    letter-spacing: -0.04em; 
-}
-
-/* スコア表示 */
-#score-display { 
-    font-size: 1.8cqw; 
-    font-weight: bold; 
-    color: #4CAF50; 
-}
-
-/* タイマーテキスト */
-#timer-text { 
-    font-size: 1.5cqw; 
-    font-weight: bold; 
-    color: #ff4444; 
-    margin-bottom: 0.2cqw;
-}
+#status { font-weight: bold; color: #ffeb3b; min-height: 4.5cqw; font-size: 1.3cqw; display: flex; align-items: center; justify-content: center; line-height: 1.2; letter-spacing: -0.04em; }
+#score-display { font-size: 1.8cqw; font-weight: bold; color: #4CAF50; }
+#timer-text { font-size: 1.5cqw; font-weight: bold; color: #ff4444; margin-bottom: 0.2cqw; }
 #timer-container { width: 100%; background-color: #333; border-radius: 10px; overflow: hidden; border: 1px solid #555; }
 #timer-bar { width: 100%; height: 1.0cqw; background-color: #e63946; transition: width 0.2s linear; }
 
-/* 残りブロック数テキスト */
 #ui-panel > div:not([id]) {
     font-size: 1.4cqw; 
     font-weight: bold;
@@ -120,27 +87,14 @@ body {
     gap: 0.4cqw;
     margin: 0.5cqw 0;
 }
-#count {
-    color: #00b4d8;
-    font-size: 1.8cqw; 
-}
+#count { color: #00b4d8; font-size: 1.8cqw; }
 
-/* 回転ボタン */
 #control-panel { display: flex; gap: 0.5cqw; justify-content: center; }
-.rot-btn { 
-    background: #0077b6 !important; 
-    font-size: 1.2cqw !important; 
-    padding: 1cqw 0.5cqw !important; 
-    flex: 1; 
-}
-#reset-btn { 
-    padding: 1cqw 15px; 
-    font-size: 1.4cqw; 
-    background: #4CAF50; 
-}
+.rot-btn { background: #0077b6 !important; font-size: 1.2cqw !important; padding: 1cqw 0.5cqw !important; flex: 1; }
+#reset-btn { padding: 1cqw 15px; font-size: 1.4cqw; background: #4CAF50; }
 button { color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; box-sizing: border-box; }
 
-/* 右側3Dエリア（ブロックど真ん中） */
+/* 右側3Dエリア */
 #stage-area {
     width: 100% !important;
     height: 100%;
@@ -154,47 +108,44 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 #viewport { width: 100% !important; height: 100% !important; perspective: 1400px; display: flex; align-items: center; justify-content: center; transform: scale(1.2) !important; }
 #stage { position: relative; width: 0; height: 0; transform-style: preserve-3d; transition: transform 0.5s ease-out; }
 
-/* 💡【工夫2・重要修正】3Dブロックのサイズを固定値（42px）に変更
-   画面サイズによる毎秒の再計算をストップし、圧倒的に軽量化します。 */
+/* 💡【サイズ復旧】一番綺麗に並んでいたパーセントサイズ（4.5cqw）に戻します */
 .cube { 
     position: absolute; 
-    width: 42px; 
-    height: 42px; 
+    width: 4.5cqw; 
+    height: 4.5cqw; 
     transform-style: preserve-3d; 
     cursor: pointer; 
 }
 
-/* 💡【工夫2・重要修正】立体面の描画軽量化
-   フォントサイズを cqw から固定値（24px）に変更。
-   さらに、重かった「text-shadow（文字の影）」の階層をシンプルにし、
-   ブラウザのグラフィック負荷を極限まで引き下げて処理落ちを根絶します。 */
+/* 💡【最軽量化】一番重かった原因である text-shadow（文字の影）を完全に削除。
+   さらに、ブラウザの描画負荷を高めていた面ごとの明暗フィルター（brightness）も全カットし、
+   スマホのグラフィックチップが1ミリも無理をしない超軽量な面に改造しました。 */
 .face { 
     position: absolute; 
-    width: 42px; 
-    height: 42px; 
+    width: 4.5cqw; 
+    height: 4.5cqw; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
-    font-size: 24px; /* 🌟 固定pxにして計算をスキップ */
+    font-size: 1.4cqw; 
     font-weight: bold; 
     color: white; 
-    border: 1px solid rgba(255,255,255,0.25); 
+    border: 1px solid rgba(255,255,255,0.3); 
     box-sizing: border-box; 
-    text-shadow: 1px 1px 1px rgba(0,0,0,0.6); /* 🌟 影の処理を軽量化 */
     backface-visibility: visible; 
     transform-style: preserve-3d; 
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; 
 }
 
-.selected .face { border: 3px solid #ffeb3b !important; outline: 1px solid #ffffff; opacity: 0.6 !important; box-shadow: 0 0 10px #ffeb3b; filter: brightness(1.2) !important; }
-.face.top { filter: brightness(1.0); }
-.face.bottom { filter: brightness(0.4); }
-.face.front { filter: brightness(0.85); }
-.face.back { filter: brightness(0.55); }
-.face.right { filter: brightness(0.7); }
-.face.left { filter: brightness(0.7); }
+/* 選択時のエフェクトのみ残す */
+.selected .face { border: 3px solid #ffeb3b !important; outline: 1px solid #ffffff; opacity: 0.6 !important; box-shadow: 0 0 10px #ffeb3b; }
 
-/* タイトル画面の固有設定 */
+/* 💡 重い原因だった立体フィルター（brightness）を全削除してフラット化 */
+.face.top, .face.bottom, .face.front, .face.back, .face.right, .face.left {
+    filter: none !important;
+}
+
+/* タイトル画面 */
 #start-overlay {
     position: fixed; top: auto; left: auto;
     background: radial-gradient(circle, #2a2a2a 0%, #111111 100%);
@@ -206,7 +157,6 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 .start-card p { color: #aaa; margin: 0 0 30px 0; font-size: 14px; }
 #actual-start-btn { background: #4CAF50 !important; color: white !important; font-size: 20px !important; padding: 15px 30px !important; border-radius: 50px !important; box-shadow: 0 0 15px #4CAF50 !important; animation: pulse 1.5s infinite; cursor: pointer; width: auto !important; display: inline-block; }
 
-/* スマホサイズ（横幅960px未満）かつ縦向きの時だけ回転 */
 @media (orientation: portrait) and (max-width: 960px) {
     #game-aspect-wrapper, #start-overlay {
         width: 95vh !important; 
