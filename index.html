@@ -1,47 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
-
-  <head>
+<html lang="ja">
+<head>
     <meta charset="UTF-8">
-    <title>Untitled</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="stylesheet" href="./style.css">
+    <title>3Dブロックパズル『えげブロ』</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-  </head>
-    
-  <body>
-  <div id="game-aspect-wrapper">
-    <div id="game-container">
-        
-        <div id="ui-panel">
-            <h2>えげブロ</h2>
-            <div id="score-display">SCORE: <span id="score">0</span> pt</div>
-            <div id="timer-text">残り時間: 120 秒</div>
-            <div id="timer-container"><div id="timer-bar"></div></div>
-            
-            <div id="status-box">
-                <div>残りブロック: <span id="count">216</span></div>
-                <div id="status">1つ目のブロックを選んでください</div>
-            </div>
-            
-            <div id="control-panel">
-                <button id="rot-y-btn" class="rot-btn">🔄 縦回転 (180°)</button>
-                <button id="rot-z-btn" class="rot-btn">🔄 横回転 (180°)</button>
-            </div>
-            
-            <button id="reset-btn">ゲームをリセット</button>
+    <div id="start-overlay">
+        <div class="start-card">
+            <h1>えげブロ 3D</h1>
+            <p>立体ブロックコネクトパズル</p>
+            <div class="phone-hint"></div>
+            <button id="actual-start-btn">TAP TO PLAY</button>
         </div>
-
-        <div id="stage-area">
-            <div id="viewport">
-                <div id="stage"></div>
-            </div>
-        </div>
-
     </div>
-</div>
-    <script  src="./script.js"></script>
 
-  </body>
-  
+    <div id="game-aspect-wrapper">
+        <div id="game-container">
+            <div id="ui-panel">
+                <h2>えげブロ</h2>
+                <div id="status-box">
+                    <div id="status">STARTボタンを押してね</div>
+                </div>
+                <div id="score-display">SCORE: <span id="score">0</span></div>
+                <div id="timer-box">
+                    <div id="timer-text">残り時間: 120 秒</div>
+                    <div id="timer-container"><div id="timer-bar"></div></div>
+                </div>
+                <div>残りブロック: <span id="count">0</span></div>
+                <div id="control-panel">
+                    <button id="rot-z-btn" class="rot-btn">🔄 横回転</button>
+                    <button id="rot-y-btn" class="rot-btn">🔃 縦回転</button>
+                </div>
+                <button id="reset-btn">リセット</button>
+            </div>
+
+            <div id="stage-area">
+                <div id="viewport">
+                    <div id="stage"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
 </html>
