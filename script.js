@@ -204,6 +204,7 @@ function updateTimerUI() {
     if(bar) bar.style.width = `${percentage}%`;
 }
 
+// 選択判定
 function isSelectable(b) {
     let hasLeft = false, hasRight = false, hasFront = false, hasBack = false;
     const findBlock = (x, y, z) => blocks.find(o => o.active && o.x === x && o.y === y && o.z === z);
@@ -216,6 +217,7 @@ function isSelectable(b) {
     return (openSides >= 2);
 }
 
+// 露出判定
 function isExposed(b) {
     const findBlock = (x, y, z) => blocks.find(o => o.active && o.x === x && o.y === y && o.z === z);
     let openSides = 0;
@@ -296,8 +298,6 @@ document.getElementById("actual-start-btn").addEventListener("click", async () =
         try {
             if (screen.orientation && screen.orientation.lock) await screen.orientation.lock("landscape");
         } catch (err) { console.log("向きロック拒否"); }
-    } else {
-        console.log("PC環境：フルスクリーンおよび回転をスキップします。");
     }
 
     const overlay = document.getElementById("start-overlay");
