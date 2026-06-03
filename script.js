@@ -22,10 +22,10 @@ let isGameOver = false;
 let rotX = 60;   
 let rotZ = -45;  
 
-// 💡【最重要同期】CSSの42pxに、JavaScriptの計算サイズも完全に一致させます。
-// これにより、画面サイズに連動した毎秒の重い割り算ループが完全に消滅し、処理が爆速化します。
+// 💡【サイズ最適化】CSSの28pxに完全同期。
+// 6マスの立体が一番美しく画面中央にすっぽり収まるゴールデンサイズです。
 function getDynamicSizes() {
-    const dynamicCubeSize = 42; 
+    const dynamicCubeSize = 28; 
     const offset = (SIZE - 1) * dynamicCubeSize / 2;
     const halfSize = dynamicCubeSize / 2;
     return { dynamicCubeSize, offset, halfSize };
@@ -114,9 +114,9 @@ function createFacesForCube(b, halfSize) {
         face.style.backgroundColor = b.color;
         face.innerText = b.txt;
         
-        // 絵文字サイズも固定px（18px）に同期
+        // 絵文字サイズも縮小に同期（12px）
         if (b.txt.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]/) || b.txt.length > 2 || b.txt.charCodeAt(0) > 255) {
-            face.style.fontSize = "18px"; 
+            face.style.fontSize = "12px"; 
         }
         b.element.appendChild(face);
     });
