@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【現状総括：表示の対象 × スマホの向き 完全分離】 確定CSS
+   ✨ 【えげブロ：表示の対象 × 向き完全分離】 最終確定CSS
    ======================================================== */
 
 body {
@@ -22,10 +22,9 @@ body {
 
 /* ========================================================
    📦 1. 【表示の対象】（ゲームの本体サイズ・比率の定義）
-   🌟 iPhoneのChrome横向きで100%成功していたサイズ計算を、
-   　 この「#game-body-box」に直接適用して、比率の土台をガチッと縛ります。
+   🌟 横持ちで完璧にいっていたサイズ計算をこの「#game-body-box」に直接適用。
    ======================================================== */
-#game-body-box, #start-overlay {
+#game-body-box {
     width: 95vw !important;                 
     height: calc(95vw * 9 / 16) !important; 
     max-height: 93svh !important;           /* ツールバーに隠れない完璧な高さ */
@@ -37,7 +36,7 @@ body {
 
 /* 🖥️ PC・大画面（画面幅 960px 以上）の時だけ、本体サイズをPC用に上書きします */
 @media (min-width: 960px) {
-    #game-body-box, #start-overlay {
+    #game-body-box {
         width: 800px !important;                 
         height: 450px !important;                
         max-width: none !important;
@@ -47,8 +46,8 @@ body {
 
 /* ========================================================
    🔄 2. 【スマホの向き】（外枠による回転制御スイッチ）
-   🌟 スマホが縦持ち（portrait）の時だけ、一番外枠を丸ごと90度回します。
-   　 内側の本体の数値（cqwや比率）はそのまま引き継がれるため、絶対に崩れません。
+   🌟 スマホが縦持ち（portrait）の時だけ、外枠を丸ごと90度回します。
+   　 これによりタイトル画像もゲーム画面も「横向きと完全に同じ絵」が強制されます。
    ======================================================== */
 @media (max-width: 959px) and (orientation: portrait) {
     #game-screen-wrapper {
@@ -147,7 +146,7 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 }
 #stage { position: relative; width: 0; height: 0; transform-style: preserve-3d; transition: transform 0.5s ease-out; }
 
-/* 立方体・面（JavaScriptから渡されるインラインサイズと100%完全同期） */
+/* 立方体・面 */
 .cube { 
     position: absolute; 
     transform-style: preserve-3d; 
@@ -177,14 +176,17 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 .face.right { filter: brightness(0.7); }
 .face.left { filter: brightness(0.7); }
 
-/* タイトル画面オーバーレイ */
+/* 👑 【スタート画面オーバーレイ】
+   本体の16:9の箱（#game-body-box）に100%完全同期するため、背景画像やグラデーションの
+   アスペクト比（見え方）も横向きの時とミリ単位で完全に一致します。 */
 #start-overlay {
-    position: fixed; top: auto; left: auto;
+    position: absolute; 
+    top: 0; left: 0; width: 100% !important; height: 100% !important;
     background: radial-gradient(circle, #2a2a2a 0%, #111111 100%);
     z-index: 10000; display: flex; align-items: center; justify-content: center;
-    transition: opacity 0.5s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.7); border: 1px solid #333;
+    transition: opacity 0.5s ease;
 }
 .start-card { text-align: center; background: rgba(40, 40, 40, 0.9); padding: 30px; border-radius: 20px; border: 2px solid #4CAF50; box-shadow: 0 20px 50px rgba(0,0,0,0.8); max-width: 400px; width: 80%; box-sizing: border-box; }
 .start-card h1 { margin: 0 0 10px 0; font-size: 32px; color: #4CAF50; text-shadow: 0 0 10px rgba(76,175,80,0.5); }
-.start-card p { color: #aaa; margin: 0 0 30px 0; font-size: 14px; }
+.start-card p { color: #aaa; margin: 0 0 30px 0; font-size: 14px; line-height: 1.6; }
 #actual-start-btn { background: #4CAF50 !important; color: white !important; font-size: 20px !important; padding: 15px 30px !important; border-radius: 50px !important; box-shadow: 0 0 15px #4CAF50 !important; animation: pulse 1.5s infinite; cursor: pointer; width: auto !important; display: inline-block; }
