@@ -22,7 +22,7 @@ body {
 
 /* 🖥️ ① PC・大画面環境（画面幅 960px 以上） */
 @media (min-width: 960px) {
-    #game-aspect-wrapper, #start-overlay {
+    #game-body-box {
         width: 800px !important;                 
         height: 450px !important;                
         position: relative;
@@ -32,9 +32,9 @@ body {
 }
 
 /* 📱 ② スマホ環境（画面幅 960px 未満）
-   🌟 縦持ちだろうが横持ちだろうが、スマホなら「この完璧な横長サイズ」をベースとして1つだけ組み立てる */
+   🌟 縦だろうが横だろうが、スマホなら一律で「あの横持ち大成功時の完璧な16:9サイズ」の箱を1つだけ定義します。 */
 @media (max-width: 959px) {
-    #game-aspect-wrapper, #start-overlay {
+    #game-body-box {
         width: 95vw !important;                 
         height: calc(95vw * 9 / 16) !important; 
         max-height: 93svh !important;           
@@ -45,17 +45,16 @@ body {
     }
 }
 
-/* 🔄 ③ スマホの向き判定
-   🌟 縦持ち（portrait）の時は、上の完璧な横長サイズのまま、ただ90度お辞儀させるだけ。
-   　 サイズの引き算やブレーキを一切書かないため、横持ちと100%全く同じ表示になります。 */
+/* 🔄 ③ スマホの向き判定（回転のスイッチ）
+   🌟 縦持ち（portrait）の時は、中身のサイズ指定には触れず、一番外側の枠だけを90度スピンさせます。 */
 @media (max-width: 959px) and (orientation: portrait) {
-    #game-aspect-wrapper, #start-overlay {
+    #game-screen-wrapper {
         transform: rotate(90deg) !important; 
         transform-origin: center center;
     }
 }
 
-#game-aspect-wrapper {
+#game-body-box {
     container-type: size; 
     display: flex;
     align-items: center;
@@ -71,7 +70,7 @@ body {
     box-sizing: border-box;
 }
 
-/* 操作パネル */
+/* 操作パネル（18%幅固定） */
 #ui-panel {
     width: 18cqw; 
     height: 52cqh; 
@@ -157,10 +156,10 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 
 /* タイトル画面オーバーレイ */
 #start-overlay {
-    position: fixed; top: 0; left: 0; width: 100% !important; height: 100% !important;
+    position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important;
     background: radial-gradient(circle, #2a2a2a 0%, #111111 100%);
     z-index: 10000; display: flex; align-items: center; justify-content: center;
-    transition: opacity 0.5s ease; box-shadow: none; border: none; max-width: none !important; max-height: none !important;
+    transition: opacity 0.5s ease;
 }
 .start-card { text-align: center; background: rgba(40, 40, 40, 0.9); padding: 30px; border-radius: 20px; border: 2px solid #4CAF50; box-shadow: 0 20px 50px rgba(0,0,0,0.8); max-width: 400px; width: 80%; box-sizing: border-box; }
 .start-card h1 { margin: 0 0 10px 0; font-size: 32px; color: #4CAF50; text-shadow: 0 0 10px rgba(76,175,80,0.5); }
