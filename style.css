@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【原点回帰・極限シンプル】 確定CSS
+   ✨ 【vmax/vmin絶対値指定・表示の対象 × 向き完全分離】 最終確定CSS
    ======================================================== */
 
 body {
@@ -32,21 +32,22 @@ body {
 }
 
 /* 📱 ② スマホ環境（画面幅 960px 未満）
-   🌟 縦だろうが横だろうが、スマホなら一律で「あの横持ち大成功時の完璧な16:9サイズ」の箱を1つだけ定義します。 */
+   🌟 縦・横という曖昧な情報ではなく、画面の長い辺(vmax)と短い辺(vmin)の絶対値をブラウザに渡します。
+   　 これにより、スマホを回してもサイズが縮んだり細くなったりするバグは物理的に消滅します。 */
 @media (max-width: 959px) {
     #game-body-box {
-        width: 95vw !important;                 
-        height: calc(95vw * 9 / 16) !important; 
-        max-height: 93svh !important;           
-        max-width: calc(93svh * 16 / 9) !important;
+        width: 95vmax !important;                 
+        height: calc(95vmax * 9 / 16) !important; 
+        max-height: 93vmin !important;           
+        max-width: calc(93vmin * 16 / 9) !important;
         position: relative;
         border-radius: 16px;
         overflow: hidden;
     }
 }
 
-/* 🔄 ③ スマホの向き判定（回転のスイッチ）
-   🌟 縦持ち（portrait）の時は、中身のサイズ指定には触れず、一番外側の枠だけを90度スピンさせます。 */
+/* 🔄 ③ スマホの向き判定（外枠の回転制御）
+   🌟 縦持ち（portrait）の時は、上の完璧な16:9サイズのまま、ただ全体を90度スピンさせます。 */
 @media (max-width: 959px) and (orientation: portrait) {
     #game-screen-wrapper {
         transform: rotate(90deg) !important; 
@@ -70,7 +71,7 @@ body {
     box-sizing: border-box;
 }
 
-/* 操作パネル（18%幅固定） */
+/* 操作パネル（美しい18%幅固定） */
 #ui-panel {
     width: 18cqw; 
     height: 52cqh; 
