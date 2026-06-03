@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【UIパネル幅復旧＆限界左寄せ：完全最適化版】 確定CSS
+   ✨ 【縦持ちでも強制横画面表示・プレイヤー誘導版】 確定CSS
    ======================================================== */
 
 body {
@@ -20,7 +20,7 @@ body {
     touch-action: manipulation;
 }
 
-/* 💡【共通の標準サイズ】16:9の外枠 */
+/* 💡【横持ち（通常時）の標準サイズ：16:9】 */
 #game-aspect-wrapper, #start-overlay {
     width: 95vw !important;                 
     height: calc(95vw * 9 / 16) !important; 
@@ -48,13 +48,10 @@ body {
     box-sizing: border-box;
 }
 
-/* 💡【あなたのアイデアを完全反映！】
-   ・横幅を、一番見やすかった元の「18cqw」に完全復旧！
-   ・その代わり、左側の無駄な隙間（余白）を 2cqw ➡️「0.6cqw」まで極限まで引き締め（左寄せ）！
-   ・前回の『ブロックと高さを揃える（56cqh）』『上下のド真ん中配置』も完璧に維持しています。 */
+/* 左操作パネル（限界左寄せ・ブロックと高さ統一版） */
 #ui-panel {
-    width: 18cqw; /* 🌟 ゆったり見やすい元の幅に復旧 */
-    height: 56cqh; /* ブロックの塊と揃えたコンパクトな高さを維持 */
+    width: 18cqw; 
+    height: 56cqh; 
     background: #222;
     padding: 1.0cqw 1.0cqw; 
     box-sizing: border-box;
@@ -65,16 +62,14 @@ body {
     flex-direction: column;
     justify-content: space-between;
     flex-shrink: 0;
-    
     position: absolute;
-    left: 0.6cqw;  /* 🌟 無駄な左のデッドスペースを限界まで詰めて左寄せ！ */
+    left: 0.6cqw;  
     top: 50%; 
-    transform: translateY(-50%); /* 上下中央配置 */
+    transform: translateY(-50%); 
     z-index: 10; 
-    letter-spacing: -0.02em; /* 文字の詰まりも元に戻して読みやすく */
+    letter-spacing: -0.02em;
 }
 
-/* 幅が元に戻ったので、中の文字サイズや余白も一番バランスの良かった大きさに100%復旧 */
 #ui-panel h2 { margin: 0; font-size: 2.2cqw; color: #4CAF50; }
 #status-box { background: #151515; padding: 0.6cqw; border-radius: 6px; border: 1px solid #2a2a2a; }
 #status { font-weight: bold; color: #ffeb3b; min-height: 4.5cqw; font-size: 1.3cqw; display: flex; align-items: center; justify-content: center; line-height: 1.2; letter-spacing: -0.04em; }
@@ -123,7 +118,7 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 }
 #stage { position: relative; width: 0; height: 0; transform-style: preserve-3d; transition: transform 0.5s ease-out; }
 
-/* 立方体（32px固定を維持） */
+/* 立方体（32px固定・超軽量を維持） */
 .cube { 
     position: absolute; 
     width: 32px; 
@@ -159,6 +154,7 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 .face.right { filter: brightness(0.7); }
 .face.left { filter: brightness(0.7); }
 
+/* タイトル画面 */
 #start-overlay {
     position: fixed; top: auto; left: auto;
     background: radial-gradient(circle, #2a2a2a 0%, #111111 100%);
@@ -170,13 +166,17 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 .start-card p { color: #aaa; margin: 0 0 30px 0; font-size: 14px; }
 #actual-start-btn { background: #4CAF50 !important; color: white !important; font-size: 20px !important; padding: 15px 30px !important; border-radius: 50px !important; box-shadow: 0 0 15px #4CAF50 !important; animation: pulse 1.5s infinite; cursor: pointer; width: auto !important; display: inline-block; }
 
+/* 💡【最重要：プレイヤーを横持ちに誘導するマジック】
+   スマホを「縦（portrait）」に持っているときだけ、この特殊命令が発動します。
+   画面の幅と高さ（vwとvh）の基準をそっくり入れ替え、全体を90度ぐるりと回転させることで、
+   縦に持った状態の画面のなかに「横長のゲーム画面」を強制的に出現させます。 */
 @media (orientation: portrait) and (max-width: 960px) {
     #game-aspect-wrapper, #start-overlay {
-        width: 95vh !important; 
+        width: 95vh !important; /* 縦持ちの時は高さを基準に横幅を決める */
         height: calc(95vh * 9 / 16) !important;
         max-height: 93vw !important;
         max-width: calc(93vw * 16 / 9) !important;
-        transform: rotate(90deg) !important;
+        transform: rotate(90deg) !important; /* 90度回転させて横向きにする */
         transform-origin: center center;
     }
 }
