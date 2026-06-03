@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【縦横サイズ完全同一化・限界突破限界サイズ】 確定CSS
+   ✨ 【2段階設計：表示の対象 × スマホの向き】 最終確定CSS
    ======================================================== */
 
 body {
@@ -21,60 +21,46 @@ body {
 }
 
 /* ========================================================
-   🖥️ パターン①：PC・大画面環境（画面幅 960px 以上）
+   📦 第1段階：【表示の対象】（ゲームの表示領域＋uipanel＋stage）
+   🌟 スマホ環境における「理想の正解サイズ・配置」をここで1つだけ定義します。
+   　 今後中身のサイズや微調整を行いたい場合は、このブロックだけを変更すればOKです。
    ======================================================== */
+#game-aspect-wrapper, #start-overlay {
+    width: 95vw !important;                 
+    height: calc(95vw * 9 / 16) !important; 
+    max-height: 93svh !important;           /* ツールバーに隠れない完璧な高さ */
+    max-width: calc(93svh * 16 / 9) !important;
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+/* PC・大画面（画面幅 960px 以上）の時だけ、この「表示の対象」のサイズをPC用に上書き変更します */
 @media (min-width: 960px) {
     #game-aspect-wrapper, #start-overlay {
-        width: 800px !important;                 /* PCは横800pxに完全固定 */
-        height: 450px !important;                /* 縦は16:9比率の450pxに完全固定 */
-        position: relative;
-        border-radius: 16px;
-        overflow: hidden;
+        width: 800px !important;                 
+        height: 450px !important;                
+        max-width: none !important;
+        max-height: none !important;
     }
 }
 
 /* ========================================================
-   📱 パターン②：スマホ環境・横持ち（画面幅 960px 未満）
-   ======================================================== */
-@media (max-width: 959px) and (orientation: landscape) {
-    #game-aspect-wrapper, #start-overlay {
-        width: 95vw !important;                 
-        height: calc(95vw * 9 / 16) !important; 
-        max-height: 93svh !important;           /* ツールバーに隠れない絶妙な高さ */
-        max-width: calc(93svh * 16 / 9) !important;
-        position: relative;
-        border-radius: 16px;
-        overflow: hidden;
-    }
-}
-
-/* ========================================================
-   📱 パターン③：スマホ環境・縦持ち（画面幅 960px 未満 ＆ 縦向き）
-   🌟 あなたのアイデア「高さの数値を横幅にする」を完全具現化！
+   🔄 第2段階：【スマホの向き】（回転させるかどうかの分岐スイッチ）
+   🌟 やることは「縦持ちの時に、完成している表示の対象を90度回す」それだけです。
+   　 中身の数値（cqwや比率）には1ミリも触れないため、絶対に表示が崩れません。
    ======================================================== */
 @media (max-width: 959px) and (orientation: portrait) {
     #game-aspect-wrapper, #start-overlay {
-        /* 縮みの原因になっていた画面幅（vw）による制限ブレーキを完全に破壊 */
-        max-width: none !important;
-        max-height: none !important;
-
-        /* 🌟 スマホの高さ（100vh）から、bodyの上下余白（20px分）を引いた数値を
-           そのままゲームの「横幅」として100%限界まで使い切ります！ */
-        width: calc(100vh - 20px) !important;                 
-        
-        /* 🌟 高さは、上記で決まった横幅を基準に「16分の9」で完全に同じ比率で逆算します */
-        height: calc((100vh - 20px) * 9 / 16) !important; 
-        
-        position: relative;
-        border-radius: 16px;
-        overflow: hidden;
-        
-        /* その状態で、中身のパーツの比率を一切狂わせずに見た目だけ90度回転 */
-        transform: rotate(90deg) !important;    
+        transform: rotate(90deg) !important; 
         transform-origin: center center;
     }
 }
 
+/* ========================================================
+   ⚙️ 以下のコンテナ内部の設定は、上の「表示の対象」の中に
+   　 綺麗にレイアウトされるための不変の共通デザインです。
+   ======================================================== */
 #game-aspect-wrapper {
     container-type: size; 
     display: flex;
@@ -82,6 +68,7 @@ body {
     justify-content: center;
     background-color: #111;
     box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+    transform: none; /* 回転は上のメディアクエリ側だけで一括管理 */
 }
 
 #game-container {
@@ -91,7 +78,7 @@ body {
     box-sizing: border-box;
 }
 
-/* 操作パネル（元の18%幅、絶対に切れない左端基準） */
+/* 操作パネル（元の見やすい18%幅、絶対に切れない左端から15px基準） */
 #ui-panel {
     width: 18cqw; 
     height: 52cqh; 
@@ -107,9 +94,9 @@ body {
     flex-shrink: 0;
     
     position: absolute;
-    left: 15px;  /* 左の壁から15px固定。これで絶対に画面外に切れません */
+    left: 15px;  
     top: 50%; 
-    transform: translateY(-50%); /* 上下ド真ん中配置 */
+    transform: translateY(-50%); 
     z-index: 10; 
     letter-spacing: -0.02em;
 }
@@ -135,22 +122,4 @@ body {
 }
 #count { color: #00b4d8; font-size: 1.8cqw; }
 
-#control-panel { display: flex; gap: 0.5cqw; justify-content: center; }
-.rot-btn { background: #0077b6 !important; font-size: 1.2cqw !important; padding: 1cqw 0.5cqw !important; flex: 1; }
-#reset-btn { padding: 1cqw 15px; font-size: 1.4cqw; background: #4CAF50; }
-button { color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; box-sizing: border-box; }
-
-/* 右側3Dエリア */
-#stage-area {
-    width: 100% !important;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    z-index: 1; 
-}
-
-#viewport { 
-    width: 100% !important; 
-    height:
+#control-panel { display
