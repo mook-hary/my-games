@@ -95,6 +95,7 @@ function initGame() {
     }
     updateCount();
     updateStageRotation();
+    handleOrientationAspect(); // サイズ情報の引き渡し
 }
 
 function createFacesForCube(b, halfSize, dynamicCubeSize) {
@@ -204,7 +205,6 @@ function updateTimerUI() {
     if(bar) bar.style.width = `${percentage}%`;
 }
 
-// 選択判定
 function isSelectable(b) {
     let hasLeft = false, hasRight = false, hasFront = false, hasBack = false;
     const findBlock = (x, y, z) => blocks.find(o => o.active && o.x === x && o.y === y && o.z === z);
@@ -217,7 +217,6 @@ function isSelectable(b) {
     return (openSides >= 2);
 }
 
-// 露出判定
 function isExposed(b) {
     const findBlock = (x, y, z) => blocks.find(o => o.active && o.x === x && o.y === y && o.z === z);
     let openSides = 0;
@@ -336,6 +335,31 @@ function forceResizeAll() {
         }
     });
     updateStageRotation();
+    handleOrientationAspect(); // 画面リサイズ時にもブラウザへ情報を再引き渡し
+}
+
+/* ========================================================
+   🌟 【ブラウザ情報引き渡しロジック】
+   スマホの縦持ち・横持ちを完全に感知し、ブラウザに対して
+   「今絶対に正方形に潰さない正しい16:9のサイズ数値」を直接上書きして渡します。
+   ======================================================== */
+function handleOrientationAspect() {
+    const box = document.getElementById("game-body-box");
+    if (!box || window.innerWidth >= 960) return;
+
+    // スマホが縦持ち（画面の高さが幅より長い）状態かチェック
+    if (window.innerHeight > window.innerWidth) {
+        // 縦持ちの時は、ブラウザに「横持ちの時の完璧な16:9比率」をシミュレートした数値を直接渡す
+        const targetWidth = window.innerHeight * 0.93; // 93svh相当
+        const targetHeight = targetWidth * 9 / 16;
+        
+        box.style.setProperty("width", `${targetHeight}px`, "important");
+        box.style.setProperty("height", `${targetWidth}px`, "important");
+    } else {
+        // 横持ちの時は、CSSの本来の完璧な指定（vw / svhベース）をそのままブラウザに使わせる
+        box.style.removeProperty("width");
+        box.style.removeProperty("height");
+    }
 }
 
 setupEvents();
