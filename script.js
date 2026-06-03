@@ -22,10 +22,11 @@ let isGameOver = false;
 let rotX = 60;   
 let rotZ = -45;  
 
+// 💡【変更】共通のサイズ司令塔の比率を「0.050 ➡️ 0.045 (4.5%)」に変更
 function getDynamicSizes() {
     const wrapper = document.getElementById("game-aspect-wrapper");
     const wrapperWidth = wrapper ? wrapper.clientWidth : 960;
-    const dynamicCubeSize = wrapperWidth * 0.050; 
+    const dynamicCubeSize = wrapperWidth * 0.045; // CSSの 4.5cqw と完全同期
     const offset = (SIZE - 1) * dynamicCubeSize / 2;
     const halfSize = dynamicCubeSize / 2;
     return { dynamicCubeSize, offset, halfSize };
@@ -72,7 +73,7 @@ function initGame() {
                 
                 updateCubePosition(cube, x, y, z, offset, dynamicCubeSize);
 
-                const blockData = { x, y, z, txt: tile.txt, color: tile.color, element: cube, active: true, hasFaces: false };
+                const blockData = { txt: tile.txt, color: tile.color, element: cube, active: true, hasFaces: false, x, y, z };
                 
                 cube.addEventListener("click", (e) => {
                     e.stopPropagation(); 
@@ -116,6 +117,12 @@ function createFacesForCube(b, halfSize) {
         face.style.cssText = f.style;
         face.style.backgroundColor = b.color;
         face.innerText = b.txt;
+        
+        // 💡【新設】中身が「絵文字」の場合のみ、CSSで一回り大きくなるようにクラスを付与
+        if (b.txt.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]/) || b.txt.length > 2 || b.txt.charCodeAt(0) > 255) {
+            face.style.fontSize = "2.0cqw"; // 通常の1.4から2.0へ拡大（約1.4倍）
+        }
+        
         b.element.appendChild(face);
     });
     
@@ -201,7 +208,6 @@ function updateTimerUI() {
     if(bar) bar.style.width = `${percentage}%`;
 }
 
-// 💡【選択可否判定】今すぐタップして消せるかどうかを調べる関数（これはルール通り維持）
 function isSelectable(b) {
     let hasLeft = false, hasRight = false, hasFront = false, hasBack = false;
 
@@ -223,23 +229,20 @@ function isSelectable(b) {
     return (openSides >= 2);
 }
 
-// 💡【新設：露出判定】上下左右前後のどこか1面でも世界に露出したかを調べる関数
-// これにより、選べないブロックであっても「目に見える状態」になったら確実に画面に出現させます。
 function isExposed(b) {
     const findBlock = (x, y, z) => {
         return blocks.find(o => o.active && o.x === x && o.y === y && o.z === z);
     };
 
-    // 6方向のうち、隣にアクティブなブロックが「いない（＝空いている）」場所をカウント
     let openSides = 0;
     if (!findBlock(b.x - 1, b.y, b.z)) openSides++;
     if (!findBlock(b.x + 1, b.y, b.z)) openSides++;
     if (!findBlock(b.x, b.y - 1, b.z)) openSides++;
     if (!findBlock(b.x, b.y + 1, b.z)) openSides++;
-    if (!findBlock(b.x, b.y, b.z - 1)) openSides++; // 下
-    if (!findBlock(b.x, b.y, b.z + 1)) openSides++; // 上
+    if (!findBlock(b.x, b.y, b.z - 1)) openSides++; 
+    if (!findBlock(b.x, b.y, b.z + 1)) openSides++; 
 
-    return (openSides > 0); // 1方向でも空いていれば、露出しているとみなす
+    return (openSides > 0); 
 }
 
 function handleClick(b) {
@@ -278,10 +281,8 @@ function handleClick(b) {
             
             const { halfSize } = getDynamicSizes();
             
-            // 🔴【重要修正】非表示だった内側のブロックを再スキャンする処理
             blocks.forEach(o => {
                 if (o.active && o.element.style.display === "none") {
-                    // 💡 isSelectable ではなく、新設した「露出判定（isExposed）」でチェックします！
                     if (isExposed(o)) {
                         createFacesForCube(o, halfSize); 
                         o.element.style.display = "block"; 
