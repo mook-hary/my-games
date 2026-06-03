@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 領域拡大＆ブロック微調整＆絵文字大型化版 style.css
+   ✨ 縦持ち・横持ち 完全同サイズ表示版 確定CSS
    ======================================================== */
 
 body {
@@ -10,25 +10,30 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    
+    /* iPhoneの操作バーに干渉させないための本当の画面高さ */
     min-height: 100vh;
     min-height: 100svh;
     height: 100svh;
+    
     user-select: none;
     overflow: hidden;
     padding: 10px;
     box-sizing: border-box;
-    touch-action: manipulation; /* ダブルタップズーム禁止 */
+    touch-action: manipulation; /* 🔴 ダブルタップズームを完全に禁止 */
 }
 
-/* 💡【変更】ゲーム表示領域をさらに5%広く（最大化） */
+/* 💡【標準設定：スマホが横向きの時】
+   液晶の横幅（vw）の95%を基準に、大迫力な16:9の画面を作ります。 */
 #game-aspect-wrapper {
-    width: 95vw !important;                 /* 90vw ➡️ 95vw (5%拡大) */
+    width: 95vw !important;                 
     height: calc(95vw * 9 / 16) !important; 
     
-    max-height: 93svh !important;           /* 88svh ➡️ 93svh (バー回避の限界値) */
+    /* iPhone Chromeの上下バーを擦りむく一歩手前の最大高さにデッドロック */
+    max-height: 93svh !important;           
     max-width: calc(93svh * 16 / 9) !important;
 
-    container-type: size; 
+    container-type: size; /* 中身をこの外枠に比率連動させる設定 */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -43,7 +48,7 @@ body {
 /* レイアウトコンテナ */
 #game-container {
     display: flex !important;
-    flex-direction: row !important;
+    flex-direction: row !important; /* 操作パネルと3Dエリアの左右並びを固定 */
     width: 100%;
     height: 100%;
     align-items: center;
@@ -67,7 +72,6 @@ body {
     justify-content: space-between;
     flex-shrink: 0;
 }
-
 #ui-panel h2 { margin: 0; font-size: 2.2cqw; color: #4CAF50; }
 
 /* ステータス周り */
@@ -88,11 +92,7 @@ body {
 }
 
 /* スコアとタイマー */
-#score-display {
-    font-size: 2cqw;
-    font-weight: bold;
-    color: #4CAF50;
-}
+#score-display { font-size: 2cqw; font-weight: bold; color: #4CAF50; }
 #timer-text { font-size: 1.5cqw; font-weight: bold; color: #ff4444; }
 #timer-container {
     width: 100%;
@@ -120,7 +120,6 @@ body {
     padding: 1cqw 0.5cqw !important;
     flex: 1;
 }
-
 #reset-btn {
     padding: 1cqw 20px;
     font-size: 1.4cqw;
@@ -145,7 +144,6 @@ button {
     justify-content: center;
     position: relative;
 }
-
 #viewport {
     width: 100% !important;
     height: 100% !important;
@@ -153,9 +151,8 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    transform: scale(1.2) !important; /* 3D空間の独自拡大 */
+    transform: scale(1.2) !important; /* 🔴 3D盤面だけの20%独自拡大 */
 }
-
 #stage {
     position: relative;
     width: 0;
@@ -164,7 +161,7 @@ button {
     transition: transform 0.5s ease-out;
 }
 
-/* 💡【変更】ブロックサイズを 5.0cqw ➡️ 4.5cqw に微調整 */
+/* 立方体ブロック */
 .cube {
     position: absolute;
     width: 4.5cqw;
@@ -172,8 +169,6 @@ button {
     transform-style: preserve-3d;
     cursor: pointer;
 }
-
-/* 💡【変更】各面も 5.0cqw ➡️ 4.5cqw に変更、文字ベースサイズは 1.4cqw */
 .face {
     position: absolute;
     width: 4.5cqw;
@@ -189,14 +184,15 @@ button {
     text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
     backface-visibility: visible;
     transform-style: preserve-3d;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
 }
 
-/* 選択されたブロック */
+/* 🔴 選択時の半透明＋発光エフェクト（元の色が透けて見えます） */
 .selected .face {
     border: 3px solid #ffeb3b !important;
     outline: 1px solid #ffffff;
-    opacity: 0.6 !important; 
-    box-shadow: 0 0 15px #ffeb3b, inset 0 0 10px #ffeb3b !important;
+    opacity: 0.6 !important; /* 元の色を60%の薄さで透かす */
+    box-shadow: 0 0 15px #ffeb3b, inset 0 0 10px #ffeb3b !important; /* ネオン発光 */
     filter: brightness(1.2) !important;
 }
 
@@ -208,13 +204,28 @@ button {
 .face.right  { filter: brightness(0.7); }
 .face.left   { filter: brightness(0.7); }
 
-/* 💡【新設：絵文字の大型化】
-   面（.face）の中身が数字ではなく「絵文字」である場合、
-   自動的に文字サイズを「1.4cqw ➡️ 2.0cqw」へと一回り大きく拡張します！ */
-.face:not(:empty) {
-    font-size: 1.4cqw;
-}
-/* Unicodeの絵文字が含まれる場合、フォントサイズを上書き拡張 */
-.face {
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+/* 絵文字がセットされた時だけ、自動で文字サイズをドカンと大きくする */
+.face:not(:empty) { font-size: 1.4cqw; }
+
+
+/* ========================================================
+   💡【今回の主役：縦持ち（Portrait）の時だけの強制横画面化マジック】
+   スマホを縦に持っている時は、液晶の「高さ（vh）」を基準にすることで、
+   横持ちの時と「1ミリもサイズが変わらない全く同じ大画面」を維持したまま、
+   全体を右に90度ゴロッと回転させます。
+   ======================================================== */
+@media (orientation: portrait) {
+    #game-aspect-wrapper {
+        /* 🔴 縦画面の「高さ（vh）」は横画面の「横幅（vw）」と物理的に同じ長さになります */
+        width: 95vh !important; 
+        height: calc(95vh * 9 / 16) !important;
+        
+        /* スマホの横幅を突き破ってハミ出さないようにロック */
+        max-height: 93vw !important;
+        max-width: calc(93vw * 16 / 9) !important;
+        
+        /* 🔴 大枠ごと右に90度回転。中心点を基準に回すのでズレません */
+        transform: rotate(90deg) !important;
+        transform-origin: center center;
+    }
 }
