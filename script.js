@@ -43,6 +43,9 @@ function initGame() {
     rotX = 60;
     rotZ = -45;
     document.getElementById("score").innerText = currentScore;
+    
+    // 💡【重要修正】不要だった「STARTボタンを押してね」のテキスト代入を完全に撤廃。
+    // タップして始まった瞬間から、プレイヤーが迷わない「1つ目のブロックを選んでください」を直接表示させます。
     document.getElementById("status").innerText = "1つ目のブロックを選んでください";
     document.getElementById("status").style.color = "#ffeb3b";
 
@@ -272,11 +275,8 @@ function updateCount() {
     }
 }
 
-// 💡【確定修正：画面横幅ベースのPC/スマホ切り分け】
 document.getElementById("actual-start-btn").addEventListener("click", async () => {
     const docEl = document.documentElement;
-    
-    // ⭐【100%確実な判定】画面の横幅が960px未満なら「スマホ・タブレット」とみなす
     const isMobileSize = window.innerWidth < 960;
 
     if (isMobileSize) {
@@ -289,7 +289,6 @@ document.getElementById("actual-start-btn").addEventListener("click", async () =
             if (screen.orientation && screen.orientation.lock) await screen.orientation.lock("landscape");
         } catch (err) { console.log("向きロック拒否"); }
     } else {
-        // 💻 横幅が広いPC環境なら、フルスクリーン化を「絶対に」発動させない
         console.log("PC環境を確定：フルスクリーンおよび回転をスキップします。");
     }
 
@@ -302,7 +301,6 @@ document.getElementById("actual-start-btn").addEventListener("click", async () =
     }, 500);
 });
 
-// フルスクリーン状態変化時のリサイズ（保険）
 const fullscreenEvents = ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'];
 fullscreenEvents.forEach(eventType => {
     document.addEventListener(eventType, () => {
@@ -310,7 +308,6 @@ fullscreenEvents.forEach(eventType => {
     });
 });
 
-// ウィンドウリサイズ時
 window.addEventListener("resize", () => {
     forceResizeAll();
 });
