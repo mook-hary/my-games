@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【UIパネルハミ出し完全解消・位置微調整版】 確定CSS
+   ✨ 【PC・スマホ条件分岐：表示領域レスポンシブ版】 確定CSS
    ======================================================== */
 
 body {
@@ -20,15 +20,32 @@ body {
     touch-action: manipulation;
 }
 
-/* 💡【16:9の外枠】縦でも横でも固定 */
-#game-aspect-wrapper, #start-overlay {
-    width: 95vw !important;                 
-    height: calc(95vw * 9 / 16) !important; 
-    max-height: 93svh !important;           
-    max-width: calc(93svh * 16 / 9) !important;
-    position: relative;
-    border-radius: 16px;
-    overflow: hidden;
+/* ========================================================
+   🖥️ パターン①：PC・大画面環境（画面幅 960px 以上）
+   ======================================================== */
+@media (min-width: 960px) {
+    #game-aspect-wrapper, #start-overlay {
+        width: 800px !important;                 /* PCは横800pxに完全固定 */
+        height: 450px !important;                /* 縦は16:9比率の450pxに完全固定 */
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+}
+
+/* ========================================================
+   📱 パターン②：スマホ・LINEブラウザ環境（画面幅 960px 未満）
+   ======================================================== */
+@media (max-width: 959px) {
+    #game-aspect-wrapper, #start-overlay {
+        width: 95vw !important;                 
+        height: calc(95vw * 9 / 16) !important; 
+        max-height: 93svh !important;           /* 🌟ツールバーに隠れない高さを100%維持 */
+        max-width: calc(93svh * 16 / 9) !important;
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+    }
 }
 
 #game-aspect-wrapper {
@@ -48,13 +65,10 @@ body {
     box-sizing: border-box;
 }
 
-/* 💡【重要修正：引き戻し距離の最適化】
-   ・中央から左に引っ張る距離を、切れていた「49.4cqw」から、安全に枠内に収まる「45cqw」に変更しました。
-   ・もしこれでも「まだ少し切れる」場合は、下の【45cqw】の数字を【43cqw】や【40cqw】に小さくするだけで、
-     中央のcubeに向かってパネルがどんどん右（内側）に寄っていきます。お好みの位置に一発で調整可能です。 */
+/* 操作パネル（ゆったり元の18%幅、絶対に切れない左端基準に統一） */
 #ui-panel {
     width: 18cqw; 
-    height: 56cqh; /* 3Dブロックの塊と揃えたコンパクトな高さを維持 */
+    height: 52cqh; /* 上下中央配置と相性の良いスッキリした高さ */
     background: #222;
     padding: 1.0cqw 1.0cqw; 
     box-sizing: border-box;
@@ -67,10 +81,9 @@ body {
     flex-shrink: 0;
     
     position: absolute;
-    left: 50%;
+    left: 15px;  /* 左の壁から15px固定。これで絶対に画面外に切れません */
     top: 50%; 
-    /* 🌟「-45cqw」に数値を縮めて内側に寄せました。これで画面外へのハミ出し（切れ）を完全解消します */
-    transform: translate(calc(-50% - 45cqw), -50%); 
+    transform: translateY(-50%); /* 上下ド真ん中配置 */
     z-index: 10; 
     letter-spacing: -0.02em;
 }
@@ -123,24 +136,18 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 }
 #stage { position: relative; width: 0; height: 0; transform-style: preserve-3d; transition: transform 0.5s ease-out; }
 
-/* 立方体（32px固定・超軽量） */
+/* 💡 立方体・面（サイズはJavaScript側の変数を100%そのまま吸い込むように連動化） */
 .cube { 
     position: absolute; 
-    width: 32px; 
-    height: 32px; 
     transform-style: preserve-3d; 
     cursor: pointer; 
 }
 
-/* 立体面 */
 .face { 
     position: absolute; 
-    width: 32px; 
-    height: 32px; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
-    font-size: 18px; 
     font-weight: bold; 
     color: white; 
     border: 1px solid rgba(255,255,255,0.25); 
@@ -171,14 +178,5 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 .start-card p { color: #aaa; margin: 0 0 30px 0; font-size: 14px; }
 #actual-start-btn { background: #4CAF50 !important; color: white !important; font-size: 20px !important; padding: 15px 30px !important; border-radius: 50px !important; box-shadow: 0 0 15px #4CAF50 !important; animation: pulse 1.5s infinite; cursor: pointer; width: auto !important; display: inline-block; }
 
-/* 💡【縦持ち用の90度回転命令】 */
-@media (orientation: portrait) and (max-width: 960px) {
-    #game-aspect-wrapper, #start-overlay {
-        width: 95vh !important; 
-        height: calc(95vh * 9 / 16) !important;
-        max-height: 93vw !important;
-        max-width: calc(93vw * 16 / 9) !important;
-        transform: rotate(90deg) !important; 
-        transform-origin: center center;
-    }
-}
+/* 💡【スマホ縦持ち用の90度回転命令：無駄な記述を完全に大掃除】 */
+@media (orientation: portrait) and (max-
