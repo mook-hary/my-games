@@ -22,10 +22,10 @@ let isGameOver = false;
 let rotX = 60;   
 let rotZ = -45;  
 
-// 💡【サイズ最適化】CSSの28pxに完全同期。
-// 6マスの立体が一番美しく画面中央にすっぽり収まるゴールデンサイズです。
+// 💡【重要同期】CSSの「32px」とプログラムの計算を完全に一致させます。
+// 面倒な自動計算が無くなり、スマホのCPU負荷がほぼゼロになります。
 function getDynamicSizes() {
-    const dynamicCubeSize = 28; 
+    const dynamicCubeSize = 32; 
     const offset = (SIZE - 1) * dynamicCubeSize / 2;
     const halfSize = dynamicCubeSize / 2;
     return { dynamicCubeSize, offset, halfSize };
@@ -114,9 +114,8 @@ function createFacesForCube(b, halfSize) {
         face.style.backgroundColor = b.color;
         face.innerText = b.txt;
         
-        // 絵文字サイズも縮小に同期（12px）
         if (b.txt.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]/) || b.txt.length > 2 || b.txt.charCodeAt(0) > 255) {
-            face.style.fontSize = "12px"; 
+            face.style.fontSize = "14px"; 
         }
         b.element.appendChild(face);
     });
