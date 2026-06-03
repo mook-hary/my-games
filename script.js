@@ -363,3 +363,41 @@ document.getElementById("actual-start-btn").addEventListener("click", async () =
         initGame();
     }, 500);
 });
+
+// ========================================================
+// 💡【最下部に追加】PCのEscキーや、全画面解除時の崩壊を完全に防ぐプロの処理
+// ========================================================
+// ブラウザのフルスクリーン状態が「変化した瞬間」（Escキー押下など）を常時監視します
+const fullscreenEvents = ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'];
+
+fullscreenEvents.forEach(eventType => {
+    document.addEventListener(eventType, () => {
+        // フルスクリーンが開始された、または「解除された」瞬間にここが発動します
+        
+        // 1. 最新の画面サイズから、正しい dynamicCubeSize と halfSize を逆算
+        const { dynamicCubeSize, offset, halfSize } = getDynamicSizes();
+
+        // 2. 画面上にあるすべてのブロックの位置と、立体の厚み（面）を現在の画面サイズに100%強制同期
+        blocks.forEach(b => {
+            if (b.active) {
+                // ブロックの配置座標（left, top, translateZ）を再計算して修正
+                updateCubePosition(b.element, b.x, b.y, b.z, offset, dynamicCubeSize);
+                
+                // すでに組み立てられている3Dの面（厚み）も、新しいサイズ（halfSize）にミリ単位で再修正
+                if (b.hasFaces) {
+                    b.element.querySelectorAll('.face.top').forEach(el => el.style.transform = `translateZ(${halfSize}px)`);
+                    b.element.querySelectorAll('.face.bottom').forEach(el => el.style.transform = `rotateX(180deg) translateZ(${halfSize}px)`);
+                    b.element.querySelectorAll('.face.front').forEach(el => el.style.transform = `rotateX(-90deg) translateZ(${halfSize}px)`);
+                    b.element.querySelectorAll('.face.back').forEach(el => el.style.transform = `rotateX(90deg) translateZ(${halfSize}px)`);
+                    b.element.querySelectorAll('.face.right').forEach(el => el.style.transform = `rotateY(90deg) translateZ(${halfSize}px)`);
+                    b.element.querySelectorAll('.face.left').forEach(el => el.style.transform = `rotateY(-90deg) translateZ(${halfSize}px)`);
+                }
+            }
+        });
+
+        // 3. 3Dステージ全体の回転データもリフレッシュして位置ズレを防止
+        updateStageRotation();
+        
+        console.log("🛠️ フルスクリーン状態の変化を検知：画面の3D比率を完全に再適合しました。");
+    });
+});
