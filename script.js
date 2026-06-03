@@ -322,3 +322,44 @@ function updateCount() {
 
 setupEvents();
 initGame();
+
+// ========================================================
+// 💡【最下部に追加】タップ時に完全フルスクリーン＆横向き固定化するプロの処理
+// ========================================================
+document.getElementById("actual-start-btn").addEventListener("click", async () => {
+    const docEl = document.documentElement;
+    
+    // 1. ブラウザのアドレスバーを完全に消し去る（フルスクリーン化）
+    try {
+        if (docEl.requestFullscreen) {
+            await docEl.requestFullscreen();
+        } else if (docEl.mozRequestFullScreen) { /* Firefox */
+            await docEl.mozRequestFullScreen();
+        } else if (docEl.webkitRequestFullscreen) { /* Chrome, Safari, Opera */
+            await docEl.webkitRequestFullscreen();
+        } else if (docEl.msRequestFullscreen) { /* IE/Edge */
+            await docEl.msRequestFullscreen();
+        }
+    } catch (err) {
+        console.log("フルスクリーン化は拒否されましたが、通常のレスポンシブで続行します");
+    }
+
+    // 2. 画面の向きを「横向き（Landscape）」にロック命令を出す
+    try {
+        if (screen.orientation && screen.orientation.lock) {
+            await screen.orientation.lock("landscape");
+        }
+    } catch (err) {
+        console.log("OS側の回転ロック、またはiOSの制限により向きの強制固定はスキップされました（CSS側で自動ケアされます）");
+    }
+
+    // 3. スタート画面をフワッと消して、ゲーム画面を表に出す
+    const overlay = document.getElementById("start-overlay");
+    document.body.classList.add("game-started");
+    overlay.style.opacity = "0";
+    setTimeout(() => {
+        overlay.style.display = "none";
+        // ゲームのタイマーなどをここから綺麗に再始動
+        initGame();
+    }, 500);
+});
