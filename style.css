@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【3Dブロックど真ん中＆左パネル固定版】 確定CSS
+   ✨ 【操作パネルスリム化＆3Dブロック余白最適化版】 確定CSS
    ======================================================== */
 
 body {
@@ -43,9 +43,7 @@ body {
     transform: none !important;
 }
 
-/* 💡【重要修正】レイアウトコンテナ
-   display: flex (横並び) をやめて、重ね合わせができる空間（relative）にします。
-   これにより、3Dブロックがパネルの縛りから解き放たれて100%中央へ移動します。 */
+/* 💡 レイアウトコンテナ（重ね合わせ空間） */
 #game-container {
     position: relative;
     width: 100%;
@@ -54,13 +52,13 @@ body {
 }
 
 /* 💡【重要修正】左操作パネル
-   右の3Dエリアからの押し込みを完全に無視して、左端にピタッと張り付かせます。
-   z-index: 10 で3Dブロックの背景よりも手前に重ねて表示させます。 */
+   横幅を 28cqw ➡️ 18cqw に10%スリム化しました！
+   これにより、中央の3Dブロックとの間に抜群の『ゆとり（空間）』が生まれます。 */
 #ui-panel {
-    width: 28cqw; 
-    height: calc(100% - 4cqw); /* 上下の余白分を引いて綺麗に収める */
+    width: 18cqw; /* 🌟 28% から 18% へ縮小 */
+    height: calc(100% - 4cqw); 
     background: #222;
-    padding: 1.5cqw;
+    padding: 1.2cqw; /* パネルが細くなった分、中の余白も少し引き締め */
     box-sizing: border-box;
     border-radius: 12px;
     border: 1px solid #333;
@@ -71,31 +69,31 @@ body {
     flex-shrink: 0;
 
     position: absolute;
-    left: 2cqw;  /* 左端から少し隙間を空ける */
-    top: 2cqw;   /* 上からも少し隙間を空ける */
-    z-index: 10; /* 3Dブロックより手前に重ねる */
+    left: 2cqw;  
+    top: 2cqw;   
+    z-index: 10; 
 }
-#ui-panel h2 { margin: 0; font-size: 2.2cqw; color: #4CAF50; }
+
+/* 💡 パネルが細くなったので、文字サイズもスマートに微調整 */
+#ui-panel h2 { margin: 0; font-size: 1.8cqw; color: #4CAF50; }
 
 /* ステータス周り */
-#status-box { background: #151515; padding: 0.8cqw; border-radius: 6px; border: 1px solid #2a2a2a; }
-#status { font-weight: bold; color: #ffeb3b; min-height: 4.5cqw; font-size: 1.3cqw; display: flex; align-items: center; justify-content: center; }
+#status-box { background: #151515; padding: 0.6cqw; border-radius: 6px; border: 1px solid #2a2a2a; }
+#status { font-weight: bold; color: #ffeb3b; min-height: 4.0cqw; font-size: 1.1cqw; display: flex; align-items: center; justify-content: center; line-height: 1.2; }
 
 /* スコアとタイマー */
-#score-display { font-size: 2cqw; font-weight: bold; color: #4CAF50; }
-#timer-text { font-size: 1.5cqw; font-weight: bold; color: #ff4444; }
+#score-display { font-size: 1.5cqw; font-weight: bold; color: #4CAF50; }
+#timer-text { font-size: 1.2cqw; font-weight: bold; color: #ff4444; }
 #timer-container { width: 100%; background-color: #333; border-radius: 10px; overflow: hidden; border: 1px solid #555; }
-#timer-bar { width: 100%; height: 1cqw; background-color: #e63946; transition: width 0.2s linear; }
+#timer-bar { width: 100%; height: 0.8cqw; background-color: #e63946; transition: width 0.2s linear; }
 
 /* 回転ボタン */
-#control-panel { display: flex; gap: 0.8cqw; justify-content: center; }
-.rot-btn { background: #0077b6 !important; font-size: 1.1cqw !important; padding: 1cqw 0.5cqw !important; flex: 1; }
-#reset-btn { padding: 1cqw 20px; font-size: 1.4cqw; background: #4CAF50; }
+#control-panel { display: flex; gap: 0.5cqw; justify-content: center; }
+.rot-btn { background: #0077b6 !important; font-size: 1.0cqw !important; padding: 0.8cqw 0.4cqw !important; flex: 1; }
+#reset-btn { padding: 0.8cqw 15px; font-size: 1.2cqw; background: #4CAF50; }
 button { color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; box-sizing: border-box; }
 
-/* 💡【重要修正】右側3Dエリア
-   左パネルに遠慮するのをやめて、画面の横幅100%をフルに占有させます。
-   中の3Dブロックが、自動的に「画面の本当のド真ん中」に配置されます！ */
+/* 💡 右側3Dエリア：画面横幅100%フル占有（ブロックど真ん中） */
 #stage-area {
     width: 100% !important;
     height: 100%;
@@ -103,7 +101,7 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
     align-items: center;
     justify-content: center;
     position: relative;
-    z-index: 1; /* パネルの後ろ側 */
+    z-index: 1; 
 }
 
 #viewport { width: 100% !important; height: 100% !important; perspective: 1400px; display: flex; align-items: center; justify-content: center; transform: scale(1.2) !important; }
