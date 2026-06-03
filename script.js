@@ -22,10 +22,10 @@ let isGameOver = false;
 let rotX = 60;   
 let rotZ = -45;  
 
+// 💡【最重要同期】CSSの42pxに、JavaScriptの計算サイズも完全に一致させます。
+// これにより、画面サイズに連動した毎秒の重い割り算ループが完全に消滅し、処理が爆速化します。
 function getDynamicSizes() {
-    const wrapper = document.getElementById("game-aspect-wrapper");
-    const wrapperWidth = wrapper ? wrapper.clientWidth : 960;
-    const dynamicCubeSize = wrapperWidth * 0.045; 
+    const dynamicCubeSize = 42; 
     const offset = (SIZE - 1) * dynamicCubeSize / 2;
     const halfSize = dynamicCubeSize / 2;
     return { dynamicCubeSize, offset, halfSize };
@@ -44,8 +44,6 @@ function initGame() {
     rotZ = -45;
     document.getElementById("score").innerText = currentScore;
     
-    // 💡【重要修正】不要だった「STARTボタンを押してね」のテキスト代入を完全に撤廃。
-    // タップして始まった瞬間から、プレイヤーが迷わない「1つ目のブロックを選んでください」を直接表示させます。
     document.getElementById("status").innerText = "1つ目のブロックを選んでください";
     document.getElementById("status").style.color = "#ffeb3b";
 
@@ -115,8 +113,10 @@ function createFacesForCube(b, halfSize) {
         face.style.cssText = f.style;
         face.style.backgroundColor = b.color;
         face.innerText = b.txt;
+        
+        // 絵文字サイズも固定px（18px）に同期
         if (b.txt.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]/) || b.txt.length > 2 || b.txt.charCodeAt(0) > 255) {
-            face.style.fontSize = "2.0cqw"; 
+            face.style.fontSize = "18px"; 
         }
         b.element.appendChild(face);
     });
