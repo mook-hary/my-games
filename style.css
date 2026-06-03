@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【ステータス改行防止＆文字サイズ最適化版】 確定CSS
+   ✨ 【文字サイズ拡大＆視認性最大化版】 確定CSS
    ======================================================== */
 
 body {
@@ -56,7 +56,7 @@ body {
     width: 18cqw; 
     height: calc(100% - 4cqw); 
     background: #222;
-    padding: 1.2cqw; 
+    padding: 1.5cqw 1.0cqw; /* 🌟 上下の余白を広げ、左右を締めて文字スペースを確保 */
     box-sizing: border-box;
     border-radius: 12px;
     border: 1px solid #333;
@@ -71,55 +71,74 @@ body {
     top: 2cqw;   
     z-index: 10; 
 
-    /* 💡【新設】パネル内のすべてのテキストの文字間隔をほんの少しだけ詰め、
-       横幅が狭いパネル内でも絶対にハミ出したり改行したりしないようにディフェンスします */
-    letter-spacing: -0.03em;
+    letter-spacing: -0.02em; /* 🌟 文字詰めの圧迫感を少し緩和 */
 }
 
-/* タイトルロゴ */
-#ui-panel h2 { margin: 0; font-size: 1.8cqw; color: #4CAF50; }
+/* タイトルロゴ（一回り大きく強調） */
+#ui-panel h2 { margin: 0; font-size: 2.2cqw; color: #4CAF50; }
 
 /* 💡【重要修正】中央のステータス案内メッセージ */
 #status-box { background: #151515; padding: 0.6cqw; border-radius: 6px; border: 1px solid #2a2a2a; }
 #status { 
     font-weight: bold; 
     color: #ffeb3b; 
-    min-height: 4.0cqw; 
-    font-size: 1.0cqw; /* 1.1 から 1.0 へ微調整 */
+    min-height: 4.5cqw; 
+    font-size: 1.3cqw; /* 🌟 1.0 から 1.3 へ拡大！大画面化 */
     display: flex; 
     align-items: center; 
     justify-content: center; 
     line-height: 1.2; 
-    letter-spacing: -0.05em; /* 文字の隙間を詰めて改行を防止 */
+    letter-spacing: -0.04em; 
 }
 
-/* スコアとタイマー */
-#score-display { font-size: 1.4cqw; font-weight: bold; color: #4CAF50; }
-#timer-text { font-size: 1.1cqw; font-weight: bold; color: #ff4444; }
-#timer-container { width: 100%; background-color: #333; border-radius: 10px; overflow: hidden; border: 1px solid #555; }
-#timer-bar { width: 100%; height: 0.8cqw; background-color: #e63946; transition: width 0.2s linear; }
+/* 💡【重要修正】スコア表示の拡大 */
+#score-display { 
+    font-size: 1.8cqw; /* 🌟 1.5 から 1.8 へ拡大 */
+    font-weight: bold; 
+    color: #4CAF50; 
+}
 
-/* 💡【重要修正】残りブロック数テキストの改行・ハミ出し絶対防止 */
+/* 💡【重要修正】タイマーテキストの拡大 */
+#timer-text { 
+    font-size: 1.5cqw; /* 🌟 1.2 から 1.5 へ拡大 */
+    font-weight: bold; 
+    color: #ff4444; 
+    margin-bottom: 0.2cqw;
+}
+#timer-container { width: 100%; background-color: #333; border-radius: 10px; overflow: hidden; border: 1px solid #555; }
+#timer-bar { width: 100%; height: 1.0cqw; background-color: #e63946; transition: width 0.2s linear; }
+
+/* 💡【重要修正】残りブロック数テキストの大幅拡大＆改行絶対防止 */
 #ui-panel > div:not([id]) {
-    font-size: 1.1cqw;
+    font-size: 1.4cqw; /* 🌟 1.1 から 1.4 へ大幅拡大 */
     font-weight: bold;
-    white-space: nowrap; /* 🌟 絶対に途中で自動改行させない魔法の命令 */
-    letter-spacing: -0.05em; /* 🌟 文字の間隔を詰めてスッキリ1行に収める */
+    white-space: nowrap; 
+    letter-spacing: -0.04em; 
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.3cqw;
+    gap: 0.4cqw;
+    margin: 0.5cqw 0;
 }
-/* 数字部分（216など）だけをさらに見やすく強調 */
+/* 数字部分（216など）をさらに大きくクッキリ */
 #count {
     color: #00b4d8;
-    font-size: 1.3cqw;
+    font-size: 1.8cqw; /* 🌟 1.3 から 1.8 へ拡大 */
 }
 
 /* 回転ボタン */
 #control-panel { display: flex; gap: 0.5cqw; justify-content: center; }
-.rot-btn { background: #0077b6 !important; font-size: 1.0cqw !important; padding: 0.8cqw 0.4cqw !important; flex: 1; }
-#reset-btn { padding: 0.8cqw 15px; font-size: 1.2cqw; background: #4CAF50; }
+.rot-btn { 
+    background: #0077b6 !important; 
+    font-size: 1.2cqw !important; /* 🌟 1.0 から 1.2 へ拡大 */
+    padding: 1cqw 0.5cqw !important; 
+    flex: 1; 
+}
+#reset-btn { 
+    padding: 1cqw 15px; 
+    font-size: 1.4cqw; /* 🌟 1.2 から 1.4 へ拡大 */
+    background: #4CAF50; 
+}
 button { color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; box-sizing: border-box; }
 
 /* 右側3Dエリア（ブロックど真ん中） */
