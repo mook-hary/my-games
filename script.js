@@ -22,12 +22,19 @@ let isGameOver = false;
 let rotX = 60;   
 let rotZ = -45;  
 
-// 💡【あなたのひらめきを完全反映！】
-// 縦持ち・横持ちで処理（計算結果）が変わる最大の原因だった「画面幅の自動計測」を完全に廃止しました。
-// サイズ32pxに対して、中心点は常に「80」、マスの半分は常に「16」とハードコーディングすることで、
-// どんなブラウザ、どんな持ち方であっても、100%完全に同じ位置に3Dブロックを狂いなく並べます。
+// 💡【最重要：CSS連動レスポンシブ関数】
+// 画面の横幅を判定し、PC環境なら大きめ、スマホ環境ならツールバーを避けるスリムな固定値へ自動連動します。
 function getDynamicSizes() {
-    return { dynamicCubeSize: 32, offset: 80, halfSize: 16 };
+    const isPC = window.innerWidth >= 960;
+    
+    // PCなら1マス40px、スマホなら重なりも切れも起きない安全な28px
+    const dynamicCubeSize = isPC ? 40 : 28; 
+    
+    // 数値に基づいて中心点（offset）と面の組み立て（halfSize）を綺麗に自動計算
+    const offset = (SIZE - 1) * dynamicCubeSize / 2;
+    const halfSize = dynamicCubeSize / 2;
+    
+    return { dynamicCubeSize, offset, halfSize };
 }
 
 function initGame() {
@@ -67,6 +74,10 @@ function initGame() {
                 const cube = document.createElement("div");
                 cube.className = "cube";
                 
+                // 💡 CSS側へ決定したサイズ（32pxや26pxなど）を100%完全に伝える連動処理
+                cube.style.width = dynamicCubeSize + "px";
+                cube.style.height = dynamicCubeSize + "px";
+                
                 updateCubePosition(cube, x, y, z, offset, dynamicCubeSize);
                 const blockData = { txt: tile.txt, color: tile.color, element: cube, active: true, hasFaces: false, x, y, z };
                 
@@ -83,7 +94,7 @@ function initGame() {
                     cube.style.display = "none"; 
                     stage.appendChild(cube);
                 } else {
-                    createFacesForCube(blockData, halfSize);
+                    createFacesForCube(blockData, halfSize, dynamicCubeSize);
                     stage.appendChild(cube);
                 }
                 blocks.push(blockData);
@@ -94,7 +105,7 @@ function initGame() {
     updateStageRotation();
 }
 
-function createFacesForCube(b, halfSize) {
+function createFacesForCube(b, halfSize, dynamicCubeSize) {
     if (b.hasFaces) return; 
     
     const faces = [
@@ -110,11 +121,20 @@ function createFacesForCube(b, halfSize) {
         const face = document.createElement("div");
         face.className = `face ${f.name}`;
         face.style.cssText = f.style;
+        
+        // 💡 面の大きさもJavaScriptからCSSへ完璧にパスして連動
+        face.style.width = dynamicCubeSize + "px";
+        face.style.height = dynamicCubeSize + "px";
+        
         face.style.backgroundColor = b.color;
         face.innerText = b.txt;
         
+        // 文字サイズ（PCなら大きめ、スマホなら収まるサイズに自動連動）
+        const isPC = window.innerWidth >= 960;
+        face.style.fontSize = isPC ? "22px" : "16px";
+        
         if (b.txt.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]/) || b.txt.length > 2 || b.txt.charCodeAt(0) > 255) {
-            face.style.fontSize = "14px"; 
+            face.style.fontSize = isPC ? "16px" : "12px"; 
         }
         b.element.appendChild(face);
     });
@@ -194,7 +214,6 @@ function updateTimerUI() {
     if(bar) bar.style.width = `${percentage}%`;
 }
 
-// （以下、変更無しの軽量化ロジックを100%維持）
 function isSelectable(b) {
     let hasLeft = false, hasRight = false, hasFront = false, hasBack = false;
     const findBlock = (x, y, z) => blocks.find(o => o.active && o.x === x && o.y === y && o.z === z);
@@ -247,7 +266,7 @@ function handleClick(b) {
             const { halfSize } = getDynamicSizes();
             blocks.forEach(o => {
                 if (o.active && o.element.style.display === "none" && isExposed(o)) {
-                    createFacesForCube(o, halfSize); 
+                    createFacesForCube(o, halfSize, 28); 
                     o.element.style.display = "block"; 
                 }
             });
@@ -308,6 +327,7 @@ fullscreenEvents.forEach(eventType => {
 });
 
 window.addEventListener("resize", () => {
+    // 💡 画面サイズやスマホの回転が起きた時、自動で再配置して連動をキープ
     forceResizeAll();
 });
 
@@ -315,7 +335,16 @@ function forceResizeAll() {
     const { dynamicCubeSize, offset, halfSize } = getDynamicSizes();
     blocks.forEach(b => {
         if (b.active) {
+            // リサイズ時に各ブロックの大きさと位置を最新化
+            b.element.style.width = dynamicCubeSize + "px";
+            b.element.style.height = dynamicCubeSize + "px";
             updateCubePosition(b.element, b.x, b.y, b.z, offset, dynamicCubeSize);
+            
+            // 面の大きさも同期
+            b.element.querySelectorAll('.face').forEach(el => {
+                el.style.width = dynamicCubeSize + "px";
+                el.style.height = dynamicCubeSize + "px";
+            });
             refreshFaceSizes(b, halfSize);
         }
     });
