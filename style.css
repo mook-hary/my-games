@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【シンプル原点回帰：箱ごと90度回転・崩壊完全抑止】 確定CSS
+   ✨ 【縦横サイズ完全同一化・限界突破限界サイズ】 確定CSS
    ======================================================== */
 
 body {
@@ -34,14 +34,13 @@ body {
 }
 
 /* ========================================================
-   📱 パターン②：スマホ環境・一括共通（画面幅 960px 未満）
-   🌟 縦持ち・横持ちの個別計算を廃止し、まずは共通で「完璧な16:9の箱」を作ります
+   📱 パターン②：スマホ環境・横持ち（画面幅 960px 未満）
    ======================================================== */
-@media (max-width: 959px) {
+@media (max-width: 959px) and (orientation: landscape) {
     #game-aspect-wrapper, #start-overlay {
         width: 95vw !important;                 
         height: calc(95vw * 9 / 16) !important; 
-        max-height: 93svh !important;           /* 🌟ツールバーで絶対に隠れない高さ */
+        max-height: 93svh !important;           /* ツールバーに隠れない絶妙な高さ */
         max-width: calc(93svh * 16 / 9) !important;
         position: relative;
         border-radius: 16px;
@@ -49,12 +48,29 @@ body {
     }
 }
 
-/* 🌟【ここが今回のマジック】
-   スマホが縦持ち（portrait）の時だけ、上記で完成した「完璧な16:9の箱」を
-   中身のパーツ計算（cqwなど）を一切狂わせずに、見た目だけ丸ごと90度ゴロッと回転させます。 */
+/* ========================================================
+   📱 パターン③：スマホ環境・縦持ち（画面幅 960px 未満 ＆ 縦向き）
+   🌟 あなたのアイデア「高さの数値を横幅にする」を完全具現化！
+   ======================================================== */
 @media (max-width: 959px) and (orientation: portrait) {
     #game-aspect-wrapper, #start-overlay {
-        transform: rotate(90deg) !important; 
+        /* 縮みの原因になっていた画面幅（vw）による制限ブレーキを完全に破壊 */
+        max-width: none !important;
+        max-height: none !important;
+
+        /* 🌟 スマホの高さ（100vh）から、bodyの上下余白（20px分）を引いた数値を
+           そのままゲームの「横幅」として100%限界まで使い切ります！ */
+        width: calc(100vh - 20px) !important;                 
+        
+        /* 🌟 高さは、上記で決まった横幅を基準に「16分の9」で完全に同じ比率で逆算します */
+        height: calc((100vh - 20px) * 9 / 16) !important; 
+        
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+        
+        /* その状態で、中身のパーツの比率を一切狂わせずに見た目だけ90度回転 */
+        transform: rotate(90deg) !important;    
         transform-origin: center center;
     }
 }
@@ -137,53 +153,4 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 
 #viewport { 
     width: 100% !important; 
-    height: 100% !important; 
-    perspective: 1400px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    transform: scale(1.0) !important; 
-}
-#stage { position: relative; width: 0; height: 0; transform-style: preserve-3d; transition: transform 0.5s ease-out; }
-
-/* 立方体・面（JavaScriptから受け取ったサイズ変数に完全自動連動） */
-.cube { 
-    position: absolute; 
-    transform-style: preserve-3d; 
-    cursor: pointer; 
-}
-
-.face { 
-    position: absolute; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    font-weight: bold; 
-    color: white; 
-    border: 1px solid rgba(255,255,255,0.25); 
-    box-sizing: border-box; 
-    text-shadow: 1px 1px 1px rgba(0,0,0,0.6);
-    backface-visibility: visible; 
-    transform-style: preserve-3d; 
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; 
-}
-
-.selected .face { border: 2px solid #ffeb3b !important; outline: 1px solid #ffffff; opacity: 0.6 !important; box-shadow: 0 0 10px #ffeb3b; filter: brightness(1.2) !important; }
-.face.top { filter: brightness(1.0); }
-.face.bottom { filter: brightness(0.4); }
-.face.front { filter: brightness(0.85); }
-.face.back { filter: brightness(0.55); }
-.face.right { filter: brightness(0.7); }
-.face.left { filter: brightness(0.7); }
-
-/* タイトル画面 */
-#start-overlay {
-    position: fixed; top: auto; left: auto;
-    background: radial-gradient(circle, #2a2a2a 0%, #111111 100%);
-    z-index: 10000; display: flex; align-items: center; justify-content: center;
-    transition: opacity 0.5s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.7); border: 1px solid #333;
-}
-.start-card { text-align: center; background: rgba(40, 40, 40, 0.9); padding: 30px; border-radius: 20px; border: 2px solid #4CAF50; box-shadow: 0 20px 50px rgba(0,0,0,0.8); max-width: 400px; width: 80%; box-sizing: border-box; }
-.start-card h1 { margin: 0 0 10px 0; font-size: 32px; color: #4CAF50; text-shadow: 0 0 10px rgba(76,175,80,0.5); }
-.start-card p { color: #aaa; margin: 0 0 30px 0; font-size: 14px; }
-#actual-start-btn { background: #4CAF50 !important; color: white !important; font-size: 20px !important; padding: 15px 30px !important; border-radius: 50px !important; box-shadow: 0 0 15px #4CAF50 !important; animation: pulse 1.5s infinite; cursor: pointer; width: auto !important; display: inline-block; }
+    height:
