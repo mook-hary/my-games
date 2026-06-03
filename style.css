@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【完全救済・超軽量＆サイズ完全復旧版】 確定CSS
+   ✨ 【CSS＆JS完全同期：超軽量サクサク起動版】 確定CSS
    ======================================================== */
 
 body {
@@ -20,6 +20,7 @@ body {
     touch-action: manipulation;
 }
 
+/* 💡【共通の標準サイズ】 */
 #game-aspect-wrapper, #start-overlay {
     width: 95vw !important;                 
     height: calc(95vw * 9 / 16) !important; 
@@ -108,42 +109,42 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 #viewport { width: 100% !important; height: 100% !important; perspective: 1400px; display: flex; align-items: center; justify-content: center; transform: scale(1.2) !important; }
 #stage { position: relative; width: 0; height: 0; transform-style: preserve-3d; transition: transform 0.5s ease-out; }
 
-/* 💡【サイズ復旧】一番綺麗に並んでいたパーセントサイズ（4.5cqw）に戻します */
+/* 💡【工夫2】サイズを 42px に完全固定 */
 .cube { 
     position: absolute; 
-    width: 4.5cqw; 
-    height: 4.5cqw; 
+    width: 42px; 
+    height: 42px; 
     transform-style: preserve-3d; 
     cursor: pointer; 
 }
 
-/* 💡【最軽量化】一番重かった原因である text-shadow（文字の影）を完全に削除。
-   さらに、ブラウザの描画負荷を高めていた面ごとの明暗フィルター（brightness）も全カットし、
-   スマホのグラフィックチップが1ミリも無理をしない超軽量な面に改造しました。 */
+/* 💡【工夫2】面の組み立ても 42px で統一し、文字サイズは 24px に固定。
+   さらに、影を 1px にしてブラウザの描画の負担を劇的に減らします。 */
 .face { 
     position: absolute; 
-    width: 4.5cqw; 
-    height: 4.5cqw; 
+    width: 42px; 
+    height: 42px; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
-    font-size: 1.4cqw; 
+    font-size: 24px; 
     font-weight: bold; 
     color: white; 
-    border: 1px solid rgba(255,255,255,0.3); 
+    border: 1px solid rgba(255,255,255,0.25); 
     box-sizing: border-box; 
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.6);
     backface-visibility: visible; 
     transform-style: preserve-3d; 
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; 
 }
 
-/* 選択時のエフェクトのみ残す */
-.selected .face { border: 3px solid #ffeb3b !important; outline: 1px solid #ffffff; opacity: 0.6 !important; box-shadow: 0 0 10px #ffeb3b; }
-
-/* 💡 重い原因だった立体フィルター（brightness）を全削除してフラット化 */
-.face.top, .face.bottom, .face.front, .face.back, .face.right, .face.left {
-    filter: none !important;
-}
+.selected .face { border: 3px solid #ffeb3b !important; outline: 1px solid #ffffff; opacity: 0.6 !important; box-shadow: 0 0 10px #ffeb3b; filter: brightness(1.2) !important; }
+.face.top { filter: brightness(1.0); }
+.face.bottom { filter: brightness(0.4); }
+.face.front { filter: brightness(0.85); }
+.face.back { filter: brightness(0.55); }
+.face.right { filter: brightness(0.7); }
+.face.left { filter: brightness(0.7); }
 
 /* タイトル画面 */
 #start-overlay {
