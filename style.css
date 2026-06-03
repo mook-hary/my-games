@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【文字サイズ拡大＆視認性最大化版】 確定CSS
+   ✨ 【工夫2導入：CSS超軽量化＆サクサク起動版】 確定CSS
    ======================================================== */
 
 body {
@@ -56,7 +56,7 @@ body {
     width: 18cqw; 
     height: calc(100% - 4cqw); 
     background: #222;
-    padding: 1.5cqw 1.0cqw; /* 🌟 上下の余白を広げ、左右を締めて文字スペースを確保 */
+    padding: 1.5cqw 1.0cqw; 
     box-sizing: border-box;
     border-radius: 12px;
     border: 1px solid #333;
@@ -71,19 +71,19 @@ body {
     top: 2cqw;   
     z-index: 10; 
 
-    letter-spacing: -0.02em; /* 🌟 文字詰めの圧迫感を少し緩和 */
+    letter-spacing: -0.02em; 
 }
 
-/* タイトルロゴ（一回り大きく強調） */
+/* タイトルロゴ */
 #ui-panel h2 { margin: 0; font-size: 2.2cqw; color: #4CAF50; }
 
-/* 💡【重要修正】中央のステータス案内メッセージ */
+/* 中央のステータス案内メッセージ */
 #status-box { background: #151515; padding: 0.6cqw; border-radius: 6px; border: 1px solid #2a2a2a; }
 #status { 
     font-weight: bold; 
     color: #ffeb3b; 
     min-height: 4.5cqw; 
-    font-size: 1.3cqw; /* 🌟 1.0 から 1.3 へ拡大！大画面化 */
+    font-size: 1.3cqw; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
@@ -91,16 +91,16 @@ body {
     letter-spacing: -0.04em; 
 }
 
-/* 💡【重要修正】スコア表示の拡大 */
+/* スコア表示 */
 #score-display { 
-    font-size: 1.8cqw; /* 🌟 1.5 から 1.8 へ拡大 */
+    font-size: 1.8cqw; 
     font-weight: bold; 
     color: #4CAF50; 
 }
 
-/* 💡【重要修正】タイマーテキストの拡大 */
+/* タイマーテキスト */
 #timer-text { 
-    font-size: 1.5cqw; /* 🌟 1.2 から 1.5 へ拡大 */
+    font-size: 1.5cqw; 
     font-weight: bold; 
     color: #ff4444; 
     margin-bottom: 0.2cqw;
@@ -108,9 +108,9 @@ body {
 #timer-container { width: 100%; background-color: #333; border-radius: 10px; overflow: hidden; border: 1px solid #555; }
 #timer-bar { width: 100%; height: 1.0cqw; background-color: #e63946; transition: width 0.2s linear; }
 
-/* 💡【重要修正】残りブロック数テキストの大幅拡大＆改行絶対防止 */
+/* 残りブロック数テキスト */
 #ui-panel > div:not([id]) {
-    font-size: 1.4cqw; /* 🌟 1.1 から 1.4 へ大幅拡大 */
+    font-size: 1.4cqw; 
     font-weight: bold;
     white-space: nowrap; 
     letter-spacing: -0.04em; 
@@ -120,23 +120,22 @@ body {
     gap: 0.4cqw;
     margin: 0.5cqw 0;
 }
-/* 数字部分（216など）をさらに大きくクッキリ */
 #count {
     color: #00b4d8;
-    font-size: 1.8cqw; /* 🌟 1.3 から 1.8 へ拡大 */
+    font-size: 1.8cqw; 
 }
 
 /* 回転ボタン */
 #control-panel { display: flex; gap: 0.5cqw; justify-content: center; }
 .rot-btn { 
     background: #0077b6 !important; 
-    font-size: 1.2cqw !important; /* 🌟 1.0 から 1.2 へ拡大 */
+    font-size: 1.2cqw !important; 
     padding: 1cqw 0.5cqw !important; 
     flex: 1; 
 }
 #reset-btn { 
     padding: 1cqw 15px; 
-    font-size: 1.4cqw; /* 🌟 1.2 から 1.4 へ拡大 */
+    font-size: 1.4cqw; 
     background: #4CAF50; 
 }
 button { color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; box-sizing: border-box; }
@@ -154,16 +153,46 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 
 #viewport { width: 100% !important; height: 100% !important; perspective: 1400px; display: flex; align-items: center; justify-content: center; transform: scale(1.2) !important; }
 #stage { position: relative; width: 0; height: 0; transform-style: preserve-3d; transition: transform 0.5s ease-out; }
-.cube { position: absolute; width: 4.5cqw; height: 4.5cqw; transform-style: preserve-3d; cursor: pointer; }
-.face { position: absolute; width: 4.5cqw; height: 4.5cqw; display: flex; align-items: center; justify-content: center; font-size: 1.4cqw; font-weight: bold; color: white; border: 1px solid rgba(255,255,255,0.3); box-sizing: border-box; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); backface-visibility: visible; transform-style: preserve-3d; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
-.selected .face { border: 3px solid #ffeb3b !important; outline: 1px solid #ffffff; opacity: 0.6 !important; box-shadow: 0 0 15px #ffeb3b, inset 0 0 10px #ffeb3b !important; filter: brightness(1.2) !important; }
+
+/* 💡【工夫2・重要修正】3Dブロックのサイズを固定値（42px）に変更
+   画面サイズによる毎秒の再計算をストップし、圧倒的に軽量化します。 */
+.cube { 
+    position: absolute; 
+    width: 42px; 
+    height: 42px; 
+    transform-style: preserve-3d; 
+    cursor: pointer; 
+}
+
+/* 💡【工夫2・重要修正】立体面の描画軽量化
+   フォントサイズを cqw から固定値（24px）に変更。
+   さらに、重かった「text-shadow（文字の影）」の階層をシンプルにし、
+   ブラウザのグラフィック負荷を極限まで引き下げて処理落ちを根絶します。 */
+.face { 
+    position: absolute; 
+    width: 42px; 
+    height: 42px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 24px; /* 🌟 固定pxにして計算をスキップ */
+    font-weight: bold; 
+    color: white; 
+    border: 1px solid rgba(255,255,255,0.25); 
+    box-sizing: border-box; 
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.6); /* 🌟 影の処理を軽量化 */
+    backface-visibility: visible; 
+    transform-style: preserve-3d; 
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; 
+}
+
+.selected .face { border: 3px solid #ffeb3b !important; outline: 1px solid #ffffff; opacity: 0.6 !important; box-shadow: 0 0 10px #ffeb3b; filter: brightness(1.2) !important; }
 .face.top { filter: brightness(1.0); }
 .face.bottom { filter: brightness(0.4); }
 .face.front { filter: brightness(0.85); }
 .face.back { filter: brightness(0.55); }
 .face.right { filter: brightness(0.7); }
 .face.left { filter: brightness(0.7); }
-.face:not(:empty) { font-size: 1.4cqw; }
 
 /* タイトル画面の固有設定 */
 #start-overlay {
