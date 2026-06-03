@@ -106,7 +106,7 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
     z-index: 1; 
 }
 
-#viewport { width: 100% !important; height: 100% !important; perspective: 1400px; display: flex; align-items: center; justify-content: center; transform: scale0.8) !important; }
+#viewport { width: 100% !important; height: 100% !important; perspective: 1400px; display: flex; align-items: center; justify-content: center; transform: scale1.0) !important; }
 #stage { position: relative; width: 0; height: 0; transform-style: preserve-3d; transition: transform 0.5s ease-out; }
 
 /* 💡【重要調整】サイズを 42px ➡️ 枠内にきれいに収まる 28px へスリム化 */
