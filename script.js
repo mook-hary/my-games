@@ -297,7 +297,7 @@ document.getElementById("actual-start-btn").addEventListener("click", async () =
             if (screen.orientation && screen.orientation.lock) await screen.orientation.lock("landscape");
         } catch (err) { console.log("向きロック拒否"); }
     } else {
-        console.log("PC環境を確定：フルスクリーンおよび回転をスキップします。");
+        console.log("PC環境：フルスクリーンおよび回転をスキップします。");
     }
 
     const overlay = document.getElementById("start-overlay");
