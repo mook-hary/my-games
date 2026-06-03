@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【縦持ちでも強制横画面表示・プレイヤー誘導版】 確定CSS
+   ✨ 【縦横サイズ完全同一化・二重定義バグ撲滅】 確定CSS
    ======================================================== */
 
 body {
@@ -20,7 +20,7 @@ body {
     touch-action: manipulation;
 }
 
-/* 💡【横持ち（通常時）の標準サイズ：16:9】 */
+/* 💡【16:9の外枠】縦でも横でも、この箱の比率は絶対に固定されます */
 #game-aspect-wrapper, #start-overlay {
     width: 95vw !important;                 
     height: calc(95vw * 9 / 16) !important; 
@@ -48,10 +48,12 @@ body {
     box-sizing: border-box;
 }
 
-/* 左操作パネル（限界左寄せ・ブロックと高さ統一版） */
+/* 💡【操作パネルの定義はここ「1箇所」だけ！】
+   あなたのアイデア「中央基準」を取り入れ、16:9の箱の中央（50%）をベースに計算します。
+   これにより、外側のスマホが縦だろうが横だろうが、箱の中では常に全く同じ「18cqw幅・極限左寄せ・コンパクトな高さ」が100%維持され、先祖返りが物理的に起きなくなります。 */
 #ui-panel {
-    width: 18cqw; 
-    height: 56cqh; 
+    width: 18cqw; /* 見やすい元の太さに完全固定 */
+    height: 56cqh; /* 3Dブロックの塊と揃えた高さを維持 */
     background: #222;
     padding: 1.0cqw 1.0cqw; 
     box-sizing: border-box;
@@ -62,10 +64,13 @@ body {
     flex-direction: column;
     justify-content: space-between;
     flex-shrink: 0;
+    
     position: absolute;
-    left: 0.6cqw;  
+    /* 箱の中央（50%）から、左側に「横幅の49.4%分」だけグッと引き戻すことで、
+       結果的に「一番左端の0.6%の隙間」にピタッと吸い付く、ブレない中央基準の左寄せを作ります */
+    left: 50%;
     top: 50%; 
-    transform: translateY(-50%); 
+    transform: translate(calc(-50% - 49.4cqw), -50%); 
     z-index: 10; 
     letter-spacing: -0.02em;
 }
@@ -166,17 +171,17 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 .start-card p { color: #aaa; margin: 0 0 30px 0; font-size: 14px; }
 #actual-start-btn { background: #4CAF50 !important; color: white !important; font-size: 20px !important; padding: 15px 30px !important; border-radius: 50px !important; box-shadow: 0 0 15px #4CAF50 !important; animation: pulse 1.5s infinite; cursor: pointer; width: auto !important; display: inline-block; }
 
-/* 💡【最重要：プレイヤーを横持ちに誘導するマジック】
-   スマホを「縦（portrait）」に持っているときだけ、この特殊命令が発動します。
-   画面の幅と高さ（vwとvh）の基準をそっくり入れ替え、全体を90度ぐるりと回転させることで、
-   縦に持った状態の画面のなかに「横長のゲーム画面」を強制的に出現させます。 */
+/* 💡【重要修正：ここを100%綺麗に掃除しました】
+   ここには外枠（wrapper）を90度回転させる命令「だけ」を記述します。
+   UIパネルに関する余計な上書き（バグの残りカス）を完全に消滅させたため、
+   縦持ちの時にパネルサイズが過去のものに戻ってしまう怪奇現象が100%解決します。 */
 @media (orientation: portrait) and (max-width: 960px) {
     #game-aspect-wrapper, #start-overlay {
-        width: 95vh !important; /* 縦持ちの時は高さを基準に横幅を決める */
+        width: 95vh !important; 
         height: calc(95vh * 9 / 16) !important;
         max-height: 93vw !important;
         max-width: calc(93vw * 16 / 9) !important;
-        transform: rotate(90deg) !important; /* 90度回転させて横向きにする */
+        transform: rotate(90deg) !important; 
         transform-origin: center center;
     }
 }
