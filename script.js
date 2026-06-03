@@ -22,18 +22,11 @@ let isGameOver = false;
 let rotX = 60;   
 let rotZ = -45;  
 
-// 💡【総括：PC・スマホ環境固定値システム】
 function getDynamicSizes() {
-    // 画面幅が960px以上ならPC、それ未満ならすべてのスマホ環境
     const isPC = window.innerWidth >= 960;
-    
-    // PCなら大画面用の40px、スマホなら重なりも切れも絶対に起きない安全な28pxにガチッと固定
     const dynamicCubeSize = isPC ? 40 : 28; 
-    
-    // 中心点（offset）と面の組み立て（halfSize）を固定値から完璧に自動逆算
     const offset = (SIZE - 1) * dynamicCubeSize / 2;
     const halfSize = dynamicCubeSize / 2;
-    
     return { dynamicCubeSize, offset, halfSize };
 }
 
@@ -74,7 +67,6 @@ function initGame() {
                 const cube = document.createElement("div");
                 cube.className = "cube";
                 
-                // 💡 CSS側へ決定サイズを100%伝えるインライン処理
                 cube.style.width = dynamicCubeSize + "px";
                 cube.style.height = dynamicCubeSize + "px";
                 
@@ -122,14 +114,12 @@ function createFacesForCube(b, halfSize, dynamicCubeSize) {
         face.className = `face ${f.name}`;
         face.style.cssText = f.style;
         
-        // 💡 面の大きさもJavaScriptからCSSへ完璧にパスして連動
         face.style.width = dynamicCubeSize + "px";
         face.style.height = dynamicCubeSize + "px";
         
         face.style.backgroundColor = b.color;
         face.innerText = b.txt;
         
-        // 文字サイズ（PCなら大文字、スマホならぴったり収まるサイズに自動連動）
         const isPC = window.innerWidth >= 960;
         face.style.fontSize = isPC ? "22px" : "16px";
         
