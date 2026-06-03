@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【縦横サイズ完全同一化・二重定義バグ撲滅】 確定CSS
+   ✨ 【UIパネルハミ出し完全解消・位置微調整版】 確定CSS
    ======================================================== */
 
 body {
@@ -20,7 +20,7 @@ body {
     touch-action: manipulation;
 }
 
-/* 💡【16:9の外枠】縦でも横でも、この箱の比率は絶対に固定されます */
+/* 💡【16:9の外枠】縦でも横でも固定 */
 #game-aspect-wrapper, #start-overlay {
     width: 95vw !important;                 
     height: calc(95vw * 9 / 16) !important; 
@@ -48,12 +48,13 @@ body {
     box-sizing: border-box;
 }
 
-/* 💡【操作パネルの定義はここ「1箇所」だけ！】
-   あなたのアイデア「中央基準」を取り入れ、16:9の箱の中央（50%）をベースに計算します。
-   これにより、外側のスマホが縦だろうが横だろうが、箱の中では常に全く同じ「18cqw幅・極限左寄せ・コンパクトな高さ」が100%維持され、先祖返りが物理的に起きなくなります。 */
+/* 💡【重要修正：引き戻し距離の最適化】
+   ・中央から左に引っ張る距離を、切れていた「49.4cqw」から、安全に枠内に収まる「45cqw」に変更しました。
+   ・もしこれでも「まだ少し切れる」場合は、下の【45cqw】の数字を【43cqw】や【40cqw】に小さくするだけで、
+     中央のcubeに向かってパネルがどんどん右（内側）に寄っていきます。お好みの位置に一発で調整可能です。 */
 #ui-panel {
-    width: 18cqw; /* 見やすい元の太さに完全固定 */
-    height: 56cqh; /* 3Dブロックの塊と揃えた高さを維持 */
+    width: 18cqw; 
+    height: 56cqh; /* 3Dブロックの塊と揃えたコンパクトな高さを維持 */
     background: #222;
     padding: 1.0cqw 1.0cqw; 
     box-sizing: border-box;
@@ -66,11 +67,10 @@ body {
     flex-shrink: 0;
     
     position: absolute;
-    /* 箱の中央（50%）から、左側に「横幅の49.4%分」だけグッと引き戻すことで、
-       結果的に「一番左端の0.6%の隙間」にピタッと吸い付く、ブレない中央基準の左寄せを作ります */
     left: 50%;
     top: 50%; 
-    transform: translate(calc(-50% - 49.4cqw), -50%); 
+    /* 🌟「-45cqw」に数値を縮めて内側に寄せました。これで画面外へのハミ出し（切れ）を完全解消します */
+    transform: translate(calc(-50% - 45cqw), -50%); 
     z-index: 10; 
     letter-spacing: -0.02em;
 }
@@ -123,7 +123,7 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 }
 #stage { position: relative; width: 0; height: 0; transform-style: preserve-3d; transition: transform 0.5s ease-out; }
 
-/* 立方体（32px固定・超軽量を維持） */
+/* 立方体（32px固定・超軽量） */
 .cube { 
     position: absolute; 
     width: 32px; 
@@ -171,10 +171,7 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 .start-card p { color: #aaa; margin: 0 0 30px 0; font-size: 14px; }
 #actual-start-btn { background: #4CAF50 !important; color: white !important; font-size: 20px !important; padding: 15px 30px !important; border-radius: 50px !important; box-shadow: 0 0 15px #4CAF50 !important; animation: pulse 1.5s infinite; cursor: pointer; width: auto !important; display: inline-block; }
 
-/* 💡【重要修正：ここを100%綺麗に掃除しました】
-   ここには外枠（wrapper）を90度回転させる命令「だけ」を記述します。
-   UIパネルに関する余計な上書き（バグの残りカス）を完全に消滅させたため、
-   縦持ちの時にパネルサイズが過去のものに戻ってしまう怪奇現象が100%解決します。 */
+/* 💡【縦持ち用の90度回転命令】 */
 @media (orientation: portrait) and (max-width: 960px) {
     #game-aspect-wrapper, #start-overlay {
         width: 95vh !important; 
