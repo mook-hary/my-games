@@ -22,15 +22,15 @@ let isGameOver = false;
 let rotX = 60;   
 let rotZ = -45;  
 
-// 💡【最重要：CSS連動レスポンシブ関数】
-// 画面の横幅を判定し、PC環境なら大きめ、スマホ環境ならツールバーを避けるスリムな固定値へ自動連動します。
+// 💡【PC・スマホ環境判定連動システム】
 function getDynamicSizes() {
+    // 画面幅が960px以上ならPC、それ未満ならスマホ環境
     const isPC = window.innerWidth >= 960;
     
-    // PCなら1マス40px、スマホなら重なりも切れも起きない安全な28px
+    // PCなら1マス40px、スマホ（縦持ち・横持ち共通）なら28pxで完全固定
     const dynamicCubeSize = isPC ? 40 : 28; 
     
-    // 数値に基づいて中心点（offset）と面の組み立て（halfSize）を綺麗に自動計算
+    // 中心点と面の奥行きを固定値から自動連動
     const offset = (SIZE - 1) * dynamicCubeSize / 2;
     const halfSize = dynamicCubeSize / 2;
     
@@ -74,7 +74,6 @@ function initGame() {
                 const cube = document.createElement("div");
                 cube.className = "cube";
                 
-                // 💡 CSS側へ決定したサイズ（32pxや26pxなど）を100%完全に伝える連動処理
                 cube.style.width = dynamicCubeSize + "px";
                 cube.style.height = dynamicCubeSize + "px";
                 
@@ -122,14 +121,12 @@ function createFacesForCube(b, halfSize, dynamicCubeSize) {
         face.className = `face ${f.name}`;
         face.style.cssText = f.style;
         
-        // 💡 面の大きさもJavaScriptからCSSへ完璧にパスして連動
         face.style.width = dynamicCubeSize + "px";
         face.style.height = dynamicCubeSize + "px";
         
         face.style.backgroundColor = b.color;
         face.innerText = b.txt;
         
-        // 文字サイズ（PCなら大きめ、スマホなら収まるサイズに自動連動）
         const isPC = window.innerWidth >= 960;
         face.style.fontSize = isPC ? "22px" : "16px";
         
@@ -327,7 +324,6 @@ fullscreenEvents.forEach(eventType => {
 });
 
 window.addEventListener("resize", () => {
-    // 💡 画面サイズやスマホの回転が起きた時、自動で再配置して連動をキープ
     forceResizeAll();
 });
 
@@ -335,12 +331,10 @@ function forceResizeAll() {
     const { dynamicCubeSize, offset, halfSize } = getDynamicSizes();
     blocks.forEach(b => {
         if (b.active) {
-            // リサイズ時に各ブロックの大きさと位置を最新化
             b.element.style.width = dynamicCubeSize + "px";
             b.element.style.height = dynamicCubeSize + "px";
             updateCubePosition(b.element, b.x, b.y, b.z, offset, dynamicCubeSize);
             
-            // 面の大きさも同期
             b.element.querySelectorAll('.face').forEach(el => {
                 el.style.width = dynamicCubeSize + "px";
                 el.style.height = dynamicCubeSize + "px";
