@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【表示エリア下部拡張・vmax絶対値維持】 最終微調整CSS
+   ✨ 【操作パネル高さをブロック上限に同期】 最終確定CSS
    ======================================================== */
 
 body {
@@ -15,7 +15,7 @@ body {
     height: 100svh;
     user-select: none;
     overflow: hidden;
-    padding: 5px; /* 🌟上下左右の余白を少し削って広げやすくします */
+    padding: 5px;
     box-sizing: border-box;
     touch-action: manipulation;
 }
@@ -29,20 +29,26 @@ body {
         border-radius: 16px;
         overflow: hidden;
     }
+    /* 🖥️ PC時はブロック（40px × 6個）の高さに綺麗に揃うよう指定 */
+    #ui-panel {
+        height: 250px !important; 
+    }
 }
 
-/* 📱 ② スマホ環境（画面幅 960px 未満）
-   🌟 ブレーキの上限（max）を 93 から 97 に引き上げました。
-   　 これにより、縦持ちの時は画面下部（回転前は右側）へエリアがぐっと広がります！ */
+/* 📱 ② スマホ環境（画面幅 960px 未満） */
 @media (max-width: 959px) {
     #game-body-box {
-        width: 97vmax !important;                 /* 🌟 95 から 97 に拡大 */
+        width: 97vmax !important;                 
         height: calc(97vmax * 9 / 16) !important; 
-        max-height: 97vmin !important;           /* 🌟 93 から 97 に引き下げ（拡張） */
+        max-height: 97vmin !important;           
         max-width: calc(97vmin * 16 / 9) !important;
         position: relative;
         border-radius: 16px;
         overflow: hidden;
+    }
+    /* 📱 スマホ時はブロック（28px × 6個 ＝ 168px）の上限の高さへぴったり可変同期させます */
+    #ui-panel {
+        height: 72cqh !important; /* 🌟 58cqh から 72cqh に広げ、ブロックの見た目の高さ上限に合わせました */
     }
 }
 
@@ -70,10 +76,9 @@ body {
     box-sizing: border-box;
 }
 
-/* 操作パネル（美しい18%幅固定） */
+/* 操作パネル（元の美しい18%幅を維持。上下の端がブロックのカタマリの上限・下限と綺麗に並びます） */
 #ui-panel {
     width: 18cqw; 
-    height: 52cqh; 
     background: #222;
     padding: 1.0cqw 1.0cqw; 
     box-sizing: border-box;
