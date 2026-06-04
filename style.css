@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【えげブロ：限界突破20%特大クローズアップ版】 確定CSS
+   ✨ 【表示エリア下部拡張・vmax絶対値維持】 最終微調整CSS
    ======================================================== */
 
 body {
@@ -15,7 +15,7 @@ body {
     height: 100svh;
     user-select: none;
     overflow: hidden;
-    padding: 10px;
+    padding: 5px; /* 🌟上下左右の余白を少し削って広げやすくします */
     box-sizing: border-box;
     touch-action: manipulation;
 }
@@ -32,13 +32,14 @@ body {
 }
 
 /* 📱 ② スマホ環境（画面幅 960px 未満）
-   🌟 画面の長い辺(vmax)と短い辺(vmin)の絶対値で16:9をガチッと固定 */
+   🌟 ブレーキの上限（max）を 93 から 97 に引き上げました。
+   　 これにより、縦持ちの時は画面下部（回転前は右側）へエリアがぐっと広がります！ */
 @media (max-width: 959px) {
     #game-body-box {
-        width: 95vmax !important;                 
-        height: calc(95vmax * 9 / 16) !important; 
-        max-height: 93vmin !important;           
-        max-width: calc(93vmin * 16 / 9) !important;
+        width: 97vmax !important;                 /* 🌟 95 から 97 に拡大 */
+        height: calc(97vmax * 9 / 16) !important; 
+        max-height: 97vmin !important;           /* 🌟 93 から 97 に引き下げ（拡張） */
+        max-width: calc(97vmin * 16 / 9) !important;
         position: relative;
         border-radius: 16px;
         overflow: hidden;
@@ -69,10 +70,10 @@ body {
     box-sizing: border-box;
 }
 
-/* 操作パネル（見やすく押しやすい特大サイズをキープ！） */
+/* 操作パネル（美しい18%幅固定） */
 #ui-panel {
-    width: 21cqw; 
-    height: 55cqh; 
+    width: 18cqw; 
+    height: 52cqh; 
     background: #222;
     padding: 1.0cqw 1.0cqw; 
     box-sizing: border-box;
@@ -129,7 +130,6 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
     z-index: 1; 
 }
 
-/* 🛠️ ビューポート（黄金角度60度を維持しつつ、画面いっぱいの20%拡大へ！） */
 #viewport { 
     width: 100% !important; 
     height: 100% !important; 
@@ -137,7 +137,7 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
     display: flex; 
     align-items: center; 
     justify-content: center; 
-    transform: scale(1.2) !important; /* 🌟 狙い目の1.2倍（20%アップ） */
+    transform: scale(1.0) !important; 
 }
 #stage { position: relative; width: 0; height: 0; transform-style: preserve-3d; transition: transform 0.5s ease-out; }
 
