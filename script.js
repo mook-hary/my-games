@@ -24,7 +24,8 @@ let rotZ = -45;
 
 function getDynamicSizes() {
     const isPC = window.innerWidth >= 960;
-    const dynamicCubeSize = isPC ? 40 : 28; 
+    /* 🌟 スマホ環境時の1個のサイズを 28px から 35px へ大幅引き上げ調整 */
+    const dynamicCubeSize = isPC ? 40 : 35; 
     const offset = (SIZE - 1) * dynamicCubeSize / 2;
     const halfSize = dynamicCubeSize / 2;
     return { dynamicCubeSize, offset, halfSize };
@@ -121,10 +122,10 @@ function createFacesForCube(b, halfSize, dynamicCubeSize) {
         face.innerText = b.txt;
         
         const isPC = window.innerWidth >= 960;
-        face.style.fontSize = isPC ? "22px" : "16px";
+        face.style.fontSize = isPC ? "22px" : "18px"; /* 🌟 文字サイズもスマホに合わせて少し拡大 */
         
         if (b.txt.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]/) || b.txt.length > 2 || b.txt.charCodeAt(0) > 255) {
-            face.style.fontSize = isPC ? "16px" : "12px"; 
+            face.style.fontSize = isPC ? "16px" : "14px"; 
         }
         b.element.appendChild(face);
     });
