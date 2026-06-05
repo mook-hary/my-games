@@ -1,4 +1,4 @@
-const SIZE = 6; 
+let SIZE = 6; // 🌟 難易度によって 5 か 6 に可変させます（初期値はNormalの6）
 const tileTypes = [
     { txt: "①", color: "#e63946" }, { txt: "②", color: "#3a86ff" }, { txt: "③", color: "#8338ec" },
     { txt: "④", color: "#ff006e" }, { txt: "⑤", color: "#fb5607" }, { txt: "⑥", color: "#ffbe0b" },
@@ -15,20 +15,53 @@ let blocks = [];
 let selected = null;
 
 let currentScore = 0;
+let highScore = 0; 
 let timeLeft = 120;
 let timerId = null;
 let isGameOver = false;
+let isPaused = false; 
 
 let rotX = 60;   
 let rotZ = -45;  
 
+// 🌟 難易度（SIZE）に合わせて、Cubeの最適サイズと中心点を自動計算する
 function getDynamicSizes() {
     const isPC = window.innerWidth >= 960;
-    /* 🌟 スマホ環境時の1個のサイズを 28px から 35px へ大幅引き上げ調整 */
-    const dynamicCubeSize = isPC ? 40 : 35; 
+    let dynamicCubeSize = 35; // デフォルトスマホNormal
+
+    if (SIZE === 5) {
+        // Easy (5x5x5) の時は、隙間がスカスカにならないように1個を大きくする
+        dynamicCubeSize = isPC ? 48 : 40;
+    } else {
+        // Normal (6x6x6) は実績のある元のサイズ
+        dynamicCubeSize = isPC ? 40 : 35;
+    }
+
     const offset = (SIZE - 1) * dynamicCubeSize / 2;
     const halfSize = dynamicCubeSize / 2;
     return { dynamicCubeSize, offset, halfSize };
+}
+
+function loadHighScore() {
+    // 🌟 難易度ごとに別々のハイスコアを保存できるようにキーを分けます
+    const savedScore = localStorage.getItem(`egebro_highscore_sz${SIZE}`);
+    if (savedScore !== null) {
+        highScore = parseInt(savedScore, 10);
+    } else {
+        highScore = 0;
+    }
+    document.getElementById("best-score").innerText = highScore;
+}
+
+function updateScoreDisplay(scoreValue) {
+    currentScore = scoreValue;
+    document.getElementById("score").innerText = currentScore;
+    
+    if (currentScore > highScore) {
+        highScore = currentScore;
+        document.getElementById("best-score").innerText = highScore;
+        localStorage.setItem(`egebro_highscore_sz${SIZE}`, highScore); 
+    }
 }
 
 function initGame() {
@@ -38,11 +71,16 @@ function initGame() {
     blocks = [];
     selected = null;
     isGameOver = false;
+    isPaused = false; 
     
-    currentScore = 0;
+    const pauseOverlay = document.getElementById("pause-overlay");
+    if(pauseOverlay) { pauseOverlay.style.display = "none"; pauseOverlay.style.opacity = "0"; }
+
+    updateScoreDisplay(0); 
+    loadHighScore(); // 選択された難易度のハイスコアを読み込む
+    
     rotX = 60;
     rotZ = -45;
-    document.getElementById("score").innerText = currentScore;
     
     document.getElementById("status").innerText = "1つ目のブロックを選んでください";
     document.getElementById("status").style.color = "#ffeb3b";
@@ -52,11 +90,16 @@ function initGame() {
     clearInterval(timerId);
     timerId = setInterval(countdown, 1000);
 
+    // プールに必要なブロックを詰める (Easyなら125個、Normalなら216個必要)
     let pool = [];
-    for (let i = 0; i < 8; i++) {
+    const totalRequired = SIZE * SIZE * SIZE;
+    
+    // ループを多めに回して種類を確保し、最後に必要な個数だけ切り出す
+    for (let i = 0; i < 10; i++) {
         tileTypes.forEach(t => pool.push({ ...t }));
     }
     pool.sort(() => Math.random() - 0.5);
+    pool = pool.slice(0, totalRequired);
 
     let index = 0;
     const { dynamicCubeSize, offset, halfSize } = getDynamicSizes();
@@ -122,7 +165,8 @@ function createFacesForCube(b, halfSize, dynamicCubeSize) {
         face.innerText = b.txt;
         
         const isPC = window.innerWidth >= 960;
-        face.style.fontSize = isPC ? "22px" : "18px"; /* 🌟 文字サイズもスマホに合わせて少し拡大 */
+        // Easy時はマスがデカいので文字も少し大きくする
+        face.style.fontSize = isPC ? (SIZE === 5 ? "26px" : "22px") : (SIZE === 5 ? "22px" : "18px");
         
         if (b.txt.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]/) || b.txt.length > 2 || b.txt.charCodeAt(0) > 255) {
             face.style.fontSize = isPC ? "16px" : "14px"; 
@@ -140,12 +184,12 @@ function updateCubePosition(cube, x, y, z, offset, dynamicCubeSize) {
 
 function setupEvents() {
     document.getElementById("rot-z-btn").addEventListener("click", () => {
-        if (isGameOver) return;
+        if (isGameOver || isPaused) return; 
         triggerResizeAndRefresh();
     });
 
     document.getElementById("rot-y-btn").addEventListener("click", () => {
-        if (isGameOver) return;
+        if (isGameOver || isPaused) return; 
         const { dynamicCubeSize, offset, halfSize } = getDynamicSizes();
         blocks.forEach(b => {
             const oldY = b.y;
@@ -156,7 +200,42 @@ function setupEvents() {
         });
     });
 
+    document.getElementById("pause-btn").addEventListener("click", togglePause);
+    document.getElementById("resume-btn").addEventListener("click", togglePause);
     document.getElementById("reset-btn").addEventListener("click", initGame);
+
+    // 🌟 タイトル画面での難易度切り替えボタンイベント
+    document.getElementById("diff-easy-btn").addEventListener("click", () => {
+        SIZE = 5;
+        document.getElementById("diff-easy-btn").classList.add("active");
+        document.getElementById("diff-normal-btn").classList.remove("active");
+        loadHighScore(); // 画面裏のハイスコア表示をEasy用に切り替え
+    });
+    document.getElementById("diff-normal-btn").addEventListener("click", () => {
+        SIZE = 6;
+        document.getElementById("diff-normal-btn").classList.add("active");
+        document.getElementById("diff-easy-btn").classList.remove("active");
+        loadHighScore(); // 画面裏のハイスコア表示をNormal用に切り替え
+    });
+}
+
+function togglePause() {
+    if (isGameOver) return;
+    const pauseOverlay = document.getElementById("pause-overlay");
+    if (!pauseOverlay) return;
+
+    if (!isPaused) {
+        isPaused = true;
+        clearInterval(timerId); 
+        pauseOverlay.style.display = "flex";
+        setTimeout(() => pauseOverlay.style.opacity = "1", 10);
+    } else {
+        isPaused = false;
+        pauseOverlay.style.opacity = "0";
+        setTimeout(() => pauseOverlay.style.display = "none", 400);
+        clearInterval(timerId);
+        timerId = setInterval(countdown, 1000);
+    }
 }
 
 function triggerResizeAndRefresh() {
@@ -187,7 +266,7 @@ function updateStageRotation() {
 }
 
 function countdown() {
-    if (isGameOver) return;
+    if (isGameOver || isPaused) return; 
     timeLeft--;
     updateTimerUI();
     if (timeLeft <= 0) {
@@ -222,12 +301,13 @@ function isExposed(b) {
     let openSides = 0;
     if (!findBlock(b.x - 1, b.y, b.z)) openSides++; if (!findBlock(b.x + 1, b.y, b.z)) openSides++;
     if (!findBlock(b.x, b.y - 1, b.z)) openSides++; if (!findBlock(b.x, b.y + 1, b.z)) openSides++;
-    if (!findBlock(b.x, b.y, b.z - 1)) openSides++; if (!findBlock(b.x, b.y, b.z + 1)) openSides++; 
+    if (!findBlock(b.x, b.y - 1, b.z)) openSides++; if (!findBlock(b.x, b.y, b.z + 1)) openSides++; 
     return (openSides > 0); 
 }
 
 function handleClick(b) {
-    if (isGameOver || !b.active) return;
+    if (isGameOver || isPaused || !b.active) return;
+    
     const status = document.getElementById("status");
     if (!isSelectable(b)) {
         status.innerText = "周囲に挟まれています（空きが1面以下なので選べません）";
@@ -249,8 +329,8 @@ function handleClick(b) {
             selected.active = false; b.active = false;
             selected.element.style.display = "none"; b.element.style.display = "none";
             selected = null;
-            currentScore += 700;
-            document.getElementById("score").innerText = currentScore;
+            
+            updateScoreDisplay(currentScore + 700);
             status.innerText = "消去成功！(+700pt)";
             status.style.color = "#4caf50";
             
@@ -276,9 +356,12 @@ function updateCount() {
     document.getElementById("count").innerText = count;
     if (count === 0) {
         clearInterval(timerId); isGameOver = true;
-        const timeBonus = timeLeft * 2000; const clearBonus = 75600;
-        currentScore += (clearBonus + timeBonus);
-        document.getElementById("score").innerText = currentScore;
+        const timeBonus = timeLeft * 2000;
+        
+        // 🌟 クリアボーナスも難易度（総数）に応じて自動計算させます
+        const clearBonus = SIZE === 5 ? 43750 : 75600;
+        
+        updateScoreDisplay(currentScore + clearBonus + timeBonus);
         document.getElementById("status").innerText = "🎉 全クリア達成!!";
         document.getElementById("status").style.color = "#4caf50";
     }
@@ -337,4 +420,6 @@ function forceResizeAll() {
     updateStageRotation();
 }
 
+// 起動時に初期スコアをロード
+loadHighScore();
 setupEvents();
