@@ -2,13 +2,9 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>えげブロ</title>
-    <link rel="stylesheet" href="style.css?v=709">
+    <link rel="stylesheet" href="style.css?v=102">
 </head>
 <body>
 
@@ -19,15 +15,35 @@
             <div id="start-overlay">
                 <div class="start-card">
                     <h1>えげブロ</h1>
-                    <p>同じ数字のブロックを線で結んで消そう！<br>2面以上が開いているブロックが選択できます。</p>
+                    <p>同じ数字のブロックをペアで選んで消そう！<br>2面以上が開いているブロックが選択できます。</p>
+                    
+                    <div class="difficulty-container">
+                        <span class="diff-label">難易度:</span>
+                        <div class="diff-switch">
+                            <button id="diff-easy-btn" class="diff-btn">Easy (5x5)</button>
+                            <button id="diff-normal-btn" class="diff-btn active">Normal (6x6)</button>
+                        </div>
+                    </div>
+
                     <button id="actual-start-btn">ゲームスタート</button>
+                </div>
+            </div>
+
+            <div id="pause-overlay">
+                <div class="pause-card">
+                    <h2>PAUSE</h2>
+                    <p>ゲームは一時停止中です</p>
+                    <button id="resume-btn">ゲームを再開</button>
                 </div>
             </div>
 
             <div id="game-container">
                 <div id="ui-panel">
-                    <h2>SCORE</h2>
-                    <div id="score-display"><span id="score">0</span> pt</div>
+                    <div class="score-area">
+                        <h2>SCORE</h2>
+                        <div id="score-display"><span id="score">0</span> pt</div>
+                        <div id="best-display">BEST: <span id="best-score">0</span></div>
+                    </div>
                     
                     <div id="status-box">
                         <div id="status">1つ目のブロックを選んでください</div>
@@ -41,11 +57,14 @@
                     </div>
                     
                     <div id="control-panel">
-                        <button id="rot-z-btn" class="rot-btn">左右回転<br>(水平)</button>
-                        <button id="rot-y-btn" class="rot-btn">上下回転<br>(垂直)</button>
+                        <button id="rot-z-btn" class="rot-btn">左右回転</button>
+                        <button id="rot-y-btn" class="rot-btn">上下回転</button>
                     </div>
                     
-                    <button id="reset-btn">リセット</button>
+                    <div id="action-panel">
+                        <button id="pause-btn">一時停止</button>
+                        <button id="reset-btn">リセット</button>
+                    </div>
                 </div>
 
                 <div id="stage-area">
@@ -55,6 +74,6 @@
                 </div>
             </div>
 
-        </div> </div> <script src="script.js?v=706"></script>
+        </div> </div> <script src="script.js?v=102"></script>
 </body>
 </html>
