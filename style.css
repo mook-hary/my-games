@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【操作パネル高さスマホ最適化・独立オブジェクト構造】 確定CSS
+   ✨ 【難易度選択追加・独立オブジェクト構造】 CSS
    ======================================================== */
 
 body {
@@ -29,7 +29,6 @@ body {
         border-radius: 16px;
         overflow: hidden;
     }
-    /* 🖥️ PC時はブロック（40px × 6個 ＝ 240px）の上限の高さへピクセル固定 */
     #ui-panel {
         height: 240px !important; 
     }
@@ -46,8 +45,6 @@ body {
         border-radius: 16px;
         overflow: hidden;
     }
-    /* 📱 スマホ時は新ブロックサイズ（35px × 6個 ＝ 210px）の上限の高さへガチッと固定。
-       🌟 これにより、Cubeが大きくなっても絶対にパネルと重ならず、上下のラインが美しく揃います！ */
     #ui-panel {
         height: 210px !important; 
     }
@@ -77,11 +74,11 @@ body {
     box-sizing: border-box;
 }
 
-/* 操作パネル（元の美しい18%幅を維持） */
+/* 🧱 操作パネル（独立設計） */
 #ui-panel {
     width: 18cqw; 
     background: #222;
-    padding: 1.0cqw 1.0cqw; 
+    padding: 0.8cqw 1.0cqw; 
     box-sizing: border-box;
     border-radius: 12px;
     border: 1px solid #333;
@@ -99,16 +96,18 @@ body {
     letter-spacing: -0.02em;
 }
 
-#ui-panel h2 { margin: 0; font-size: 2.2cqw; color: #4CAF50; }
-#status-box { background: #151515; padding: 0.6cqw; border-radius: 6px; border: 1px solid #2a2a2a; }
-#status { font-weight: bold; color: #ffeb3b; min-height: 4.5cqw; font-size: 1.3cqw; display: flex; align-items: center; justify-content: center; line-height: 1.2; letter-spacing: -0.04em; }
-#score-display { font-size: 1.8cqw; font-weight: bold; color: #4CAF50; }
-#timer-text { font-size: 1.5cqw; font-weight: bold; color: #ff4444; margin-bottom: 0.2cqw; }
-#timer-container { width: 100%; background-color: #333; border-radius: 10px; overflow: hidden; border: 1px solid #555; }
-#timer-bar { width: 100%; height: 1.0cqw; background-color: #e63946; transition: width 0.2s linear; }
+#ui-panel h2 { margin: 0; font-size: 2.0cqw; color: #4CAF50; line-height: 1.1; }
+#score-display { font-size: 1.7cqw; font-weight: bold; color: #4CAF50; }
+#best-display { font-size: 1.1cqw; color: #ffb703; font-weight: bold; margin-top: 0.1cqw; }
 
-#ui-panel > div:not([id]) {
-    font-size: 1.4cqw; 
+#status-box { background: #151515; padding: 0.5cqw; border-radius: 6px; border: 1px solid #2a2a2a; }
+#status { font-weight: bold; color: #ffeb3b; min-height: 3.8cqw; font-size: 1.2cqw; display: flex; align-items: center; justify-content: center; line-height: 1.2; letter-spacing: -0.04em; }
+#timer-text { font-size: 1.4cqw; font-weight: bold; color: #ff4444; margin-bottom: 0.1cqw; }
+#timer-container { width: 100%; background-color: #333; border-radius: 10px; overflow: hidden; border: 1px solid #555; }
+#timer-bar { width: 100%; height: 0.8cqw; background-color: #e63946; transition: width 0.2s linear; }
+
+#ui-panel > div:not([id]) :not(.score-area) {
+    font-size: 1.3cqw; 
     font-weight: bold;
     white-space: nowrap; 
     letter-spacing: -0.04em; 
@@ -116,13 +115,17 @@ body {
     align-items: center;
     justify-content: center;
     gap: 0.4cqw;
-    margin: 0.5cqw 0;
+    margin: 0.2cqw 0;
 }
-#count { color: #00b4d8; font-size: 1.8cqw; }
+#count { color: #00b4d8; font-size: 1.6cqw; }
 
-#control-panel { display: flex; gap: 0.5cqw; justify-content: center; }
-.rot-btn { background: #0077b6 !important; font-size: 1.2cqw !important; padding: 1cqw 0.5cqw !important; flex: 1; }
-#reset-btn { padding: 1cqw 15px; font-size: 1.4cqw; background: #4CAF50; }
+/* ボタンレイアウト */
+#control-panel { display: flex; gap: 0.4cqw; justify-content: center; width: 100%; }
+.rot-btn { background: #0077b6 !important; font-size: 1.1cqw !important; padding: 0.8cqw 0.2cqw !important; flex: 1; white-space: nowrap; }
+
+#action-panel { display: flex; gap: 0.4cqw; justify-content: center; width: 100%; }
+#pause-btn { background: #ff9f1c !important; font-size: 1.2cqw !important; padding: 0.8cqw 0.2cqw !important; flex: 1; }
+#reset-btn { background: #e63946 !important; font-size: 1.2cqw !important; padding: 0.8cqw 0.2cqw !important; flex: 1; }
 button { color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; box-sizing: border-box; }
 
 /* 右側3Dエリア */
@@ -160,14 +163,58 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 .face.right { filter: brightness(0.7); }
 .face.left { filter: brightness(0.7); }
 
-/* タイトル画面オーバーレイ */
-#start-overlay {
+/* オーバーレイ共通 */
+#start-overlay, #pause-overlay {
     position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important;
-    background: radial-gradient(circle, #2a2a2a 0%, #111111 100%);
     z-index: 10000; display: flex; align-items: center; justify-content: center;
-    transition: opacity 0.5s ease;
+    transition: opacity 0.4s ease;
 }
-.start-card { text-align: center; background: rgba(40, 40, 40, 0.9); padding: 30px; border-radius: 20px; border: 2px solid #4CAF50; box-shadow: 0 20px 50px rgba(0,0,0,0.8); max-width: 400px; width: 80%; box-sizing: border-box; }
+#start-overlay { background: radial-gradient(circle, #2a2a2a 0%, #111111 100%); }
+#pause-overlay { background: rgba(0, 0, 0, 0.75); display: none; opacity: 0; }
+
+.start-card, .pause-card { text-align: center; background: rgba(40, 40, 40, 0.95); padding: 25px; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); max-width: 400px; width: 80%; box-sizing: border-box; }
+.start-card { border: 2px solid #4CAF50; }
+.pause-card { border: 2px solid #ff9f1c; }
+
 .start-card h1 { margin: 0 0 10px 0; font-size: 32px; color: #4CAF50; text-shadow: 0 0 10px rgba(76,175,80,0.5); }
-.start-card p { color: #aaa; margin: 0 0 30px 0; font-size: 14px; line-height: 1.6; }
-#actual-start-btn { background: #4CAF50 !important; color: white !important; font-size: 20px !important; padding: 15px 30px !important; border-radius: 50px !important; box-shadow: 0 0 15px #4CAF50 !important; animation: pulse 1.5s infinite; cursor: pointer; width: auto !important; display: inline-block; }
+.pause-card h2 { margin: 0 0 10px 0; font-size: 36px; color: #ff9f1c; text-shadow: 0 0 15px rgba(255,159,28,0.5); letter-spacing: 0.1em; }
+.start-card p, .pause-card p { color: #aaa; margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; }
+
+/* 🌟 難易度選択スイッチ用スタイル */
+.difficulty-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+.diff-label {
+    font-weight: bold;
+    color: #ccc;
+    font-size: 14px;
+}
+.diff-switch {
+    display: flex;
+    background: #222;
+    padding: 3px;
+    border-radius: 30px;
+    border: 1px solid #444;
+}
+.diff-btn {
+    background: transparent !important;
+    color: #888 !important;
+    font-size: 13px !important;
+    padding: 6px 15px !important;
+    border-radius: 20px !important;
+    width: auto !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.diff-btn.active {
+    background: #4CAF50 !important;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(76,175,80,0.4);
+}
+
+#actual-start-btn { background: #4CAF50 !important; color: white !important; font-size: 20px !important; padding: 12px 25px !important; border-radius: 50px !important; box-shadow: 0 0 15px #4CAF50 !important; animation: pulse 1.5s infinite; cursor: pointer; width: auto !important; display: inline-block; margin-top: 5px; }
+#resume-btn { background: #ff9f1c !important; color: white !important; font-size: 18px !important; padding: 12px 25px !important; border-radius: 50px !important; box-shadow: 0 0 15px rgba(255,159,28,0.4) !important; cursor: pointer; width: auto !important; display: inline-block; }
