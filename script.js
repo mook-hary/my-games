@@ -352,7 +352,7 @@ function setupEvents() {
         loadHighScore(); 
     });
 
-    // 🚀 スタートボタンの処理（転がり演出を強制リセット版）
+    // 🚀 スタートボタンの処理（スマホの画面回転をしっかり待つスマート版）
     document.getElementById("actual-start-btn").addEventListener("click", async () => {
         initAudioSystem();
         playWebAudio("start"); 
@@ -361,6 +361,7 @@ function setupEvents() {
         const docEl = document.documentElement;
         const isMobileSize = window.innerWidth < 960;
 
+        // 🌟 スマホ環境なら、まず「フルスクリーン」と「横向きロック」の大工事を完全に終わらせる
         if (isMobileSize) {
             try {
                 if (docEl.requestFullscreen) await docEl.requestFullscreen();
@@ -368,14 +369,16 @@ function setupEvents() {
             } catch (err) { console.log("フルスクリーン拒否"); }
             
             try {
-                if (screen.orientation && screen.orientation.lock) await screen.orientation.lock("landscape");
+                // 🌟 await をつけることで、スマホの向きが「横」にロックされるのを文字通り直列で待ちます
+                if (screen.orientation && screen.orientation.lock) {
+                    await screen.orientation.lock("landscape");
+                }
             } catch (err) { console.log("向きロック拒否"); }
         }
 
-        // 🌟【ここを追加！】ブロックを生成する前に、ステージの角度を「完全に0度（まっすぐ）」に一瞬で戻す
+        // 🌟 【ここがポイント！】スマホの向きが完全に横に固定された『後』で、ステージを0度にする
         const stage = document.getElementById("stage");
         if (stage) {
-            // transitionを一瞬だけ消して、ウイニングラン（アニメーション）なしで即座に0度にする
             stage.style.transition = "none";
             rotX = 0;
             rotZ = 0;
@@ -386,16 +389,13 @@ function setupEvents() {
         document.body.classList.add("game-started");
         overlay.style.opacity = "0";
 
-        // タイトル画面が消える（0.5秒）の待機時間を利用して、綺麗な時間差（順番）を作る
+        // 画面が完全に落ち着いた状態から、0.5秒の猶予を持ってアニメーションを流す
         setTimeout(() => {
             overlay.style.display = "none";
-            
-            // 🌟【ここを追加！】元の「0.5秒かけてギュルンと回る設定」をCSSに戻してあげる
             if (stage) {
                 stage.style.transition = "transform 0.5s ease-out";
             }
-
-            initGame(); // 👈 この中で rotX=60, rotZ=-45 になり、0度から60度へ向かって「転がり」が始まります！
+            initGame(); // 0度から60度への「転がり」が、スマホが安定した綺麗な画面で発生します！
         }, 500);
     });
 }
