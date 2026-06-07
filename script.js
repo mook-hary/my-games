@@ -289,7 +289,7 @@ function setupEvents() {
         togglePause(); 
     });
 
-    // 🌟 ポーズ画面内の「タイトルへ」ボタンの処理
+   // 🌟 ポーズ画面内の「タイトルへ」ボタンの処理（スマート修正版）
     document.getElementById("to-title-btn").addEventListener("click", () => {
         initAudioSystem();
         playWebAudio("select"); // ポチッと音を鳴らす
@@ -304,12 +304,18 @@ function setupEvents() {
                 currentActiveBGM = null;
             }
         } catch(e){}
-    
+        
+        // 🌟【ここを修正！】ゲーム内の重いリセットではなく、ステージと配列を「完全な空っぽ」にする
+        const stage = document.getElementById("stage");
+        if (stage) stage.innerHTML = ""; // 3Dの見た目を全消去
+        blocks = [];                     // データをリセット
+        selected = null;                 // 選択をクリア
+        
         // ポーズ画面を閉じる
         const pauseOverlay = document.getElementById("pause-overlay");
         if(pauseOverlay) { pauseOverlay.style.display = "none"; pauseOverlay.style.opacity = "0"; }
     
-        // タイトル画面を表示する
+        // タイトル画面を表示する（元の完璧なオープニング演出に戻ります）
         const overlay = document.getElementById("start-overlay");
         document.body.classList.remove("game-started");
         overlay.style.display = "flex";
@@ -346,7 +352,7 @@ function setupEvents() {
         loadHighScore(); 
     });
 
-    // スタートボタン
+    // 🚀 スタートボタンの処理（転がり演出を強制リセット版）
     document.getElementById("actual-start-btn").addEventListener("click", async () => {
         initAudioSystem();
         playWebAudio("start"); 
@@ -366,12 +372,30 @@ function setupEvents() {
             } catch (err) { console.log("向きロック拒否"); }
         }
 
+        // 🌟【ここを追加！】ブロックを生成する前に、ステージの角度を「完全に0度（まっすぐ）」に一瞬で戻す
+        const stage = document.getElementById("stage");
+        if (stage) {
+            // transitionを一瞬だけ消して、ウイニングラン（アニメーション）なしで即座に0度にする
+            stage.style.transition = "none";
+            rotX = 0;
+            rotZ = 0;
+            stage.style.transform = `rotateX(0deg) rotateZ(0deg)`;
+        }
+
         const overlay = document.getElementById("start-overlay");
         document.body.classList.add("game-started");
         overlay.style.opacity = "0";
+
+        // タイトル画面が消える（0.5秒）の待機時間を利用して、綺麗な時間差（順番）を作る
         setTimeout(() => {
             overlay.style.display = "none";
-            initGame();
+            
+            // 🌟【ここを追加！】元の「0.5秒かけてギュルンと回る設定」をCSSに戻してあげる
+            if (stage) {
+                stage.style.transition = "transform 0.5s ease-out";
+            }
+
+            initGame(); // 👈 この中で rotX=60, rotZ=-45 になり、0度から60度へ向かって「転がり」が始まります！
         }, 500);
     });
 }
