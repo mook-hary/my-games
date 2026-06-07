@@ -1,4 +1,4 @@
-let SIZE = 6; // 🌟 難易度によって 5 か 6 に可変させます（初期値はNormalの6）
+let SIZE = 6; 
 const tileTypes = [
     { txt: "①", color: "#e63946" }, { txt: "②", color: "#3a86ff" }, { txt: "③", color: "#8338ec" },
     { txt: "④", color: "#ff006e" }, { txt: "⑤", color: "#fb5607" }, { txt: "⑥", color: "#ffbe0b" },
@@ -24,26 +24,102 @@ let isPaused = false;
 let rotX = 60;   
 let rotZ = -45;  
 
-// 🌟 難易度（SIZE）に合わせて、Cubeの最適サイズと中心点を自動計算する
+// 🌟 【Web Audio API】効果音用の音声回路
+let audioCtx = null;
+
+const soundBank = {
+    select: null,
+    clear: null,
+    error: null,
+    timeup: null,
+    start: null
+};
+
+// 🎵 【BGMシステム】
+const bgmList = ["sounds/bgm_1.mp3", "sounds/bgm_2.mp3", "sounds/bgm_3.mp3"];
+let currentActiveBGM = null; 
+
+function playRandomBGM() {
+    try {
+        if (currentActiveBGM) {
+            currentActiveBGM.pause();
+            currentActiveBGM = null;
+        }
+
+        let randomTrack = bgmList[Math.floor(Math.random() * bgmList.length)];
+        currentActiveBGM = new Audio(randomTrack);
+        currentActiveBGM.loop = true;
+        currentActiveBGM.volume = 0.15; // BGM音量12%
+
+        currentActiveBGM.play().catch(e => console.log("BGM再生ブロック回避:", e));
+    } catch(e) {
+        console.log("BGMシャッフルエラー:", e);
+    }
+}
+
+// 効果音再生関数
+function playWebAudio(bufferName) {
+    if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    const bufferObj = soundBank[bufferName];
+    if (!audioCtx || !bufferObj) return;
+    try {
+        let bufferSource = audioCtx.createBufferSource();
+        bufferSource.buffer = bufferObj;
+        bufferSource.connect(audioCtx.destination); 
+        bufferSource.start(0);
+    } catch (e) {
+        console.log("Web Audio再生エラー:", e);
+    }
+}
+
+// 効果音ダウンロード＆デコード関数
+async function loadSoundToBuffer(fileName) {
+    if (!audioCtx) return null;
+    let soundUrl = "sounds/" + fileName;
+    try {
+        let response = await fetch(soundUrl);
+        let arrayBuffer = await response.arrayBuffer();
+        return await audioCtx.decodeAudioData(arrayBuffer);
+    } catch (err) {
+        console.log(fileName + " のロード失敗:", err);
+        return null;
+    }
+}
+
+// 音声回路初期化
+function initAudioSystem() {
+    if (audioCtx) return; 
+    try {
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+
+        // 🚀 すべて .mp3 に統一して最速ロード
+        loadSoundToBuffer("select_1.mp3").then(buf => { if(buf) soundBank.select = buf; });
+        loadSoundToBuffer("clear_1.mp3").then(buf => { if(buf) soundBank.clear = buf; });
+        loadSoundToBuffer("error_1.mp3").then(buf => { if(buf) soundBank.error = buf; });
+        loadSoundToBuffer("timeup_1.mp3").then(buf => { if(buf) soundBank.timeup = buf; });
+        loadSoundToBuffer("start_1.mp3").then(buf => { if(buf) soundBank.start = buf; });
+    } catch(e) {
+        console.log("Web Audio初期化失敗:", e);
+    }
+}
+
 function getDynamicSizes() {
     const isPC = window.innerWidth >= 960;
-    let dynamicCubeSize = 35; // デフォルトスマホNormal
-
+    let dynamicCubeSize = 35;
     if (SIZE === 5) {
-        // Easy (5x5x5) の時は、隙間がスカスカにならないように1個を大きくする
         dynamicCubeSize = isPC ? 48 : 40;
     } else {
-        // Normal (6x6x6) は実績のある元のサイズ
         dynamicCubeSize = isPC ? 40 : 35;
     }
-
     const offset = (SIZE - 1) * dynamicCubeSize / 2;
     const halfSize = dynamicCubeSize / 2;
     return { dynamicCubeSize, offset, halfSize };
 }
 
 function loadHighScore() {
-    // 🌟 難易度ごとに別々のハイスコアを保存できるようにキーを分けます
     const savedScore = localStorage.getItem(`egebro_highscore_sz${SIZE}`);
     if (savedScore !== null) {
         highScore = parseInt(savedScore, 10);
@@ -77,24 +153,22 @@ function initGame() {
     if(pauseOverlay) { pauseOverlay.style.display = "none"; pauseOverlay.style.opacity = "0"; }
 
     updateScoreDisplay(0); 
-    loadHighScore(); // 選択された難易度のハイスコアを読み込む
+    loadHighScore(); 
     
     rotX = 60;
     rotZ = -45;
     
     document.getElementById("status").innerText = "1つ目のブロックを選んでください";
-    document.getElementById("status").style.color = "#ffeb3b";
+    document.getElementById("status").style.color = "#38bdf8";
 
     timeLeft = 120;
     updateTimerUI();
     clearInterval(timerId);
     timerId = setInterval(countdown, 1000);
 
-    // プールに必要なブロックを詰める (Easyなら125個、Normalなら216個必要)
     let pool = [];
     const totalRequired = SIZE * SIZE * SIZE;
     
-    // ループを多めに回して種類を確保し、最後に必要な個数だけ切り出す
     for (let i = 0; i < 10; i++) {
         tileTypes.forEach(t => pool.push({ ...t }));
     }
@@ -164,12 +238,11 @@ function createFacesForCube(b, halfSize, dynamicCubeSize) {
         face.style.backgroundColor = b.color;
         face.innerText = b.txt;
         
-        const isPC = window.innerWidth >= 960;
-        // Easy時はマスがデカいので文字も少し大きくする
-        face.style.fontSize = isPC ? (SIZE === 5 ? "26px" : "22px") : (SIZE === 5 ? "22px" : "18px");
+        const windowIsPC = window.innerWidth >= 960;
+        face.style.fontSize = windowIsPC ? (SIZE === 5 ? "26px" : "22px") : (SIZE === 5 ? "22px" : "18px");
         
         if (b.txt.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]/) || b.txt.length > 2 || b.txt.charCodeAt(0) > 255) {
-            face.style.fontSize = isPC ? "16px" : "14px"; 
+            face.style.fontSize = windowIsPC ? "16px" : "14px"; 
         }
         b.element.appendChild(face);
     });
@@ -183,13 +256,19 @@ function updateCubePosition(cube, x, y, z, offset, dynamicCubeSize) {
 }
 
 function setupEvents() {
+    // 左右回転ボタン
     document.getElementById("rot-z-btn").addEventListener("click", () => {
+        initAudioSystem(); 
         if (isGameOver || isPaused) return; 
+        playWebAudio("select"); 
         triggerResizeAndRefresh();
     });
 
+    // 上下回転ボタン
     document.getElementById("rot-y-btn").addEventListener("click", () => {
+        initAudioSystem();
         if (isGameOver || isPaused) return; 
+        playWebAudio("select"); 
         const { dynamicCubeSize, offset, halfSize } = getDynamicSizes();
         blocks.forEach(b => {
             const oldY = b.y;
@@ -200,22 +279,71 @@ function setupEvents() {
         });
     });
 
-    document.getElementById("pause-btn").addEventListener("click", togglePause);
-    document.getElementById("resume-btn").addEventListener("click", togglePause);
-    document.getElementById("reset-btn").addEventListener("click", initGame);
+    // ポーズボタン
+    document.getElementById("pause-btn").addEventListener("click", () => { initAudioSystem(); playWebAudio("select"); togglePause(); });
+    
+    // ポーズ画面の再開ボタン
+    document.getElementById("resume-btn").addEventListener("click", () => { 
+        initAudioSystem(); 
+        playWebAudio("select"); 
+        togglePause(); 
+    });
+    
+    // リセットボタン
+    document.getElementById("reset-btn").addEventListener("click", () => { 
+        initAudioSystem(); 
+        playWebAudio("select"); 
+        playRandomBGM(); 
+        initGame(); 
+    });
 
-    // 🌟 タイトル画面での難易度切り替えボタンイベント
+    // タイトル画面の難易度 Easy ボタン
     document.getElementById("diff-easy-btn").addEventListener("click", () => {
+        initAudioSystem();
+        playWebAudio("select"); 
         SIZE = 5;
         document.getElementById("diff-easy-btn").classList.add("active");
         document.getElementById("diff-normal-btn").classList.remove("active");
-        loadHighScore(); // 画面裏のハイスコア表示をEasy用に切り替え
+        loadHighScore(); 
     });
+    
+    // タイトル画面の難易度 Normal ボタン
     document.getElementById("diff-normal-btn").addEventListener("click", () => {
+        initAudioSystem();
+        playWebAudio("select"); 
         SIZE = 6;
         document.getElementById("diff-normal-btn").classList.add("active");
         document.getElementById("diff-easy-btn").classList.remove("active");
-        loadHighScore(); // 画面裏のハイスコア表示をNormal用に切り替え
+        loadHighScore(); 
+    });
+
+    // スタートボタン
+    document.getElementById("actual-start-btn").addEventListener("click", async () => {
+        initAudioSystem();
+        playWebAudio("start"); 
+        playRandomBGM(); 
+
+        const docEl = document.documentElement;
+        const isMobileSize = window.innerWidth < 960;
+
+        if (isMobileSize) {
+            try {
+                if (docEl.requestFullscreen) await docEl.requestFullscreen();
+                else if (docEl.webkitRequestFullscreen) await docEl.webkitRequestFullscreen();
+            } catch (err) { console.log("フルスクリーン拒否"); }
+            
+            try {
+                if (screen.orientation && screen.orientation.lock) await screen.orientation.lock("landscape");
+            } catch (err) { console.log("向きロック拒否"); }
+        }
+
+        const overlay = document.getElementById("start-overlay");
+        document.body.classList.add("game-started");
+        overlay.style.opacity = "0";
+        setTimeout(() => {
+            overlay.style.display = "none";
+            initGame();
+        }, 500);
     });
 }
 
@@ -229,12 +357,14 @@ function togglePause() {
         clearInterval(timerId); 
         pauseOverlay.style.display = "flex";
         setTimeout(() => pauseOverlay.style.opacity = "1", 10);
+        try { if(currentActiveBGM) currentActiveBGM.pause(); } catch(e){} 
     } else {
         isPaused = false;
         pauseOverlay.style.opacity = "0";
         setTimeout(() => pauseOverlay.style.display = "none", 400);
         clearInterval(timerId);
         timerId = setInterval(countdown, 1000);
+        try { if(currentActiveBGM) currentActiveBGM.play(); } catch(e){} 
     }
 }
 
@@ -265,6 +395,7 @@ function updateStageRotation() {
     if(stage) stage.style.transform = `rotateX(${rotX}deg) rotateZ(${rotZ}deg)`;
 }
 
+// ⏱️ タイムアップ処理（BGM停止 ➡️ SE再生の順番に完全制御）
 function countdown() {
     if (isGameOver || isPaused) return; 
     timeLeft--;
@@ -274,6 +405,17 @@ function countdown() {
         isGameOver = true;
         document.getElementById("status").innerText = "⏱️ タイムアップ！ゲームオーバー。";
         document.getElementById("status").style.color = "#ff4444";
+        
+        // 🌟 1. 何よりも最優先でBGMを完全に停止＆消去して「静寂」を作る
+        try { 
+            if(currentActiveBGM) {
+                currentActiveBGM.pause(); 
+                currentActiveBGM = null;
+            }
+        } catch(e){} 
+        
+        // 🌟 2. BGMが消えた完璧な無音空間で、タイムアップ音を炸裂させる！
+        playWebAudio("timeup");
     }
 }
 
@@ -308,12 +450,21 @@ function isExposed(b) {
 function handleClick(b) {
     if (isGameOver || isPaused || !b.active) return;
     
+    if (isSelectable(b)) {
+        if (selected !== b) {
+            playWebAudio("select"); 
+        }
+    } else {
+        playWebAudio("error"); 
+    }
+
     const status = document.getElementById("status");
     if (!isSelectable(b)) {
         status.innerText = "周囲に挟まれています（空きが1面以下なので選べません）";
         status.style.color = "#ff5722";
         return;
     }
+    
     if (selected === null) {
         selected = b;
         b.element.classList.add("selected");
@@ -333,6 +484,8 @@ function handleClick(b) {
             updateScoreDisplay(currentScore + 700);
             status.innerText = "消去成功！(+700pt)";
             status.style.color = "#4caf50";
+            
+            playWebAudio("clear");
             
             const { halfSize, dynamicCubeSize } = getDynamicSizes();
             blocks.forEach(o => {
@@ -357,69 +510,26 @@ function updateCount() {
     if (count === 0) {
         clearInterval(timerId); isGameOver = true;
         const timeBonus = timeLeft * 2000;
-        
-        // 🌟 クリアボーナスも難易度（総数）に応じて自動計算させます
         const clearBonus = SIZE === 5 ? 43750 : 75600;
         
         updateScoreDisplay(currentScore + clearBonus + timeBonus);
         document.getElementById("status").innerText = "🎉 全クリア達成!!";
         document.getElementById("status").style.color = "#4caf50";
+        try { if(currentActiveBGM) currentActiveBGM.pause(); } catch(e){} 
+        playWebAudio("clear");
     }
 }
 
-document.getElementById("actual-start-btn").addEventListener("click", async () => {
-    const docEl = document.documentElement;
-    const isMobileSize = window.innerWidth < 960;
-
-    if (isMobileSize) {
-        try {
-            if (docEl.requestFullscreen) await docEl.requestFullscreen();
-            else if (docEl.webkitRequestFullscreen) await docEl.webkitRequestFullscreen();
-        } catch (err) { console.log("フルスクリーン拒否"); }
-        
-        try {
-            if (screen.orientation && screen.orientation.lock) await screen.orientation.lock("landscape");
-        } catch (err) { console.log("向きロック拒否"); }
-    }
-
-    const overlay = document.getElementById("start-overlay");
-    document.body.classList.add("game-started");
-    overlay.style.opacity = "0";
-    setTimeout(() => {
-        overlay.style.display = "none";
-        initGame();
-    }, 500);
-});
-
-const fullscreenEvents = ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'];
-fullscreenEvents.forEach(eventType => {
-    document.addEventListener(eventType, () => {
-        forceResizeAll();
-    });
-});
-
-window.addEventListener("resize", () => {
-    forceResizeAll();
-});
-
-function forceResizeAll() {
-    const { dynamicCubeSize, offset, halfSize } = getDynamicSizes();
-    blocks.forEach(b => {
-        if (b.active) {
-            b.element.style.width = dynamicCubeSize + "px";
-            b.element.style.height = dynamicCubeSize + "px";
-            updateCubePosition(b.element, b.x, b.y, b.z, offset, dynamicCubeSize);
-            
-            b.element.querySelectorAll('.face').forEach(el => {
-                el.style.width = dynamicCubeSize + "px";
-                el.style.height = dynamicCubeSize + "px";
-            });
-            refreshFaceSizes(b, halfSize);
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+        try { if(currentActiveBGM) currentActiveBGM.pause(); } catch(e){}
+    } else {
+        if (document.body.classList.contains("game-started") && !isPaused && !isGameOver) {
+            try { if(currentActiveBGM) currentActiveBGM.play().catch(e => console.log(e)); } catch(e){}
         }
-    });
-    updateStageRotation();
-}
+    }
+});
 
-// 起動時に初期スコアをロード
 loadHighScore();
+initAudioSystem(); 
 setupEvents();
