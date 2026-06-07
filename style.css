@@ -1,5 +1,5 @@
 /* ========================================================
-   ✨ 【難易度選択追加・独立オブジェクト構造】 CSS
+   ✨ 【サウンド機能搭載・独立オブジェクト構造】 CSS
    ======================================================== */
 
 body {
@@ -160,7 +160,7 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 .face.bottom { filter: brightness(0.4); }
 .face.front { filter: brightness(0.85); }
 .face.back { filter: brightness(0.55); }
-.face.right { filter: brightness(0.7); }
+.face.right filter: brightness(0.7); }
 .face.left { filter: brightness(0.7); }
 
 /* オーバーレイ共通 */
@@ -180,41 +180,11 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 .pause-card h2 { margin: 0 0 10px 0; font-size: 36px; color: #ff9f1c; text-shadow: 0 0 15px rgba(255,159,28,0.5); letter-spacing: 0.1em; }
 .start-card p, .pause-card p { color: #aaa; margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; }
 
-/* 🌟 難易度選択スイッチ用スタイル */
-.difficulty-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 25px;
-}
-.diff-label {
-    font-weight: bold;
-    color: #ccc;
-    font-size: 14px;
-}
-.diff-switch {
-    display: flex;
-    background: #222;
-    padding: 3px;
-    border-radius: 30px;
-    border: 1px solid #444;
-}
-.diff-btn {
-    background: transparent !important;
-    color: #888 !important;
-    font-size: 13px !important;
-    padding: 6px 15px !important;
-    border-radius: 20px !important;
-    width: auto !important;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-.diff-btn.active {
-    background: #4CAF50 !important;
-    color: white !important;
-    box-shadow: 0 2px 8px rgba(76,175,80,0.4);
-}
+.difficulty-container { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 25px; }
+.diff-label { font-weight: bold; color: #ccc; font-size: 14px; }
+.diff-switch { display: flex; background: #222; padding: 3px; border-radius: 30px; border: 1px solid #444; }
+.diff-btn { background: transparent !important; color: #888 !important; font-size: 13px !important; padding: 6px 15px !important; border-radius: 20px !important; width: auto !important; cursor: pointer; transition: all 0.2s ease; }
+.diff-btn.active { background: #4CAF50 !important; color: white !important; box-shadow: 0 2px 8px rgba(76,175,80,0.4); }
 
 #actual-start-btn { background: #4CAF50 !important; color: white !important; font-size: 20px !important; padding: 12px 25px !important; border-radius: 50px !important; box-shadow: 0 0 15px #4CAF50 !important; animation: pulse 1.5s infinite; cursor: pointer; width: auto !important; display: inline-block; margin-top: 5px; }
 #resume-btn { background: #ff9f1c !important; color: white !important; font-size: 18px !important; padding: 12px 25px !important; border-radius: 50px !important; box-shadow: 0 0 15px rgba(255,159,28,0.4) !important; cursor: pointer; width: auto !important; display: inline-block; }
