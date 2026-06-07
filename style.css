@@ -121,12 +121,44 @@ body {
 
 /* ボタンレイアウト */
 #control-panel { display: flex; gap: 0.4cqw; justify-content: center; width: 100%; }
-.rot-btn { background: #0077b6 !important; font-size: 1.1cqw !important; padding: 0.8cqw 0.2cqw !important; flex: 1; white-space: nowrap; }
+
+/* 🔄 回転ボタン：余計な指定をすべて削り、左右の余白（padding）の微調整だけに集約 */
+.rot-btn { 
+    background: #0077b6; 
+    font-size: 1.1cqw; 
+    padding: 0.8cqw 0.4cqw; 
+    flex: 1; 
+    white-space: nowrap; 
+}
 
 #action-panel { display: flex; gap: 0.4cqw; justify-content: center; width: 100%; }
-#pause-btn { background: #ff9f1c !important; font-size: 1.2cqw !important; padding: 0.8cqw 0.2cqw !important; flex: 1; }
-#reset-btn { background: #e63946 !important; font-size: 1.2cqw !important; padding: 0.8cqw 0.2cqw !important; flex: 1; }
-button { color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; box-sizing: border-box; }
+
+/* ⏸️ ポーズボタン：色と配置の最低限の指定のみ */
+#pause-btn { 
+    background: #ff9f1c; 
+    font-size: 1.2cqw; 
+    padding: 0.8cqw 0.2cqw; 
+    flex: 1; 
+}
+
+/* 🔄 リセットボタン：色と配置の最低限の指定のみ */
+#reset-btn { 
+    background: #e63946; 
+    font-size: 1.2cqw; 
+    padding: 0.8cqw 0.2cqw; 
+    flex: 1; 
+}
+
+/* 🌟 【最強の共通ルール】ゲーム内のすべてのボタンのベース */
+button { 
+    color: white; 
+    border: none; 
+    border-radius: 50px; /* 💊ここで全員まとめて一発カプセル化！ */
+    cursor: pointer; 
+    font-weight: bold; 
+    width: 100%; 
+    box-sizing: border-box; 
+}
 
 /* 右側3Dエリア */
 #stage-area {
@@ -187,4 +219,29 @@ button { color: white; border: none; border-radius: 4px; cursor: pointer; font-w
 .diff-btn.active { background: #4CAF50 !important; color: white !important; box-shadow: 0 2px 8px rgba(76,175,80,0.4); }
 
 #actual-start-btn { background: #4CAF50 !important; color: white !important; font-size: 20px !important; padding: 12px 25px !important; border-radius: 50px !important; box-shadow: 0 0 15px #4CAF50 !important; animation: pulse 1.5s infinite; cursor: pointer; width: auto !important; display: inline-block; margin-top: 5px; }
-#resume-btn { background: #ff9f1c !important; color: white !important; font-size: 18px !important; padding: 12px 25px !important; border-radius: 50px !important; box-shadow: 0 0 15px rgba(255,159,28,0.4) !important; cursor: pointer; width: auto !important; display: inline-block; }
+
+/* ========================================================
+   🛠️ ポーズ画面内ボタン：カプセル型のままサイズを統一する
+   ======================================================== */
+
+/* 1. CONTINUEとTITLEの両方を、同じ幅のカプセル型に強制統一 */
+#resume-btn, #to-title-btn {
+    width: 44% !important;          /* 🌟文字数に関係なく、横幅を44%に固定！ */
+    margin: 5px 2% !important;      /* ボタン同士の間に綺麗な隙間を作る */
+    display: inline-block !important;
+    
+    border-radius: 50px !important; /* 💊カプセル型（丸薬型）を100%キープ！ */
+    padding: 12px 0 !important;     /* 上下の押しやすさを確保しつつ、横の自動伸縮をストップ */
+}
+
+/* 2. CONTINUEボタン（左側）の個別カラー（オレンジ） */
+#resume-btn {
+    background: #ff9f1c !important;
+    box-shadow: 0 0 15px rgba(255,159,28,0.4) !important;
+}
+
+/* 3. TITLEボタン（右側）の個別カラー（警告の赤） */
+#to-title-btn { 
+    background: #ef4444 !important; 
+    box-shadow: 0 0 15px rgba(239,68,68,0.4) !important; /* 発光エフェクトも赤色に */
+}
