@@ -288,6 +288,35 @@ function setupEvents() {
         playWebAudio("select"); 
         togglePause(); 
     });
+
+    // 🌟 ポーズ画面内の「タイトルへ」ボタンの処理
+    document.getElementById("to-title-btn").addEventListener("click", () => {
+        initAudioSystem();
+        playWebAudio("select"); // ポチッと音を鳴らす
+        
+        clearInterval(timerId);
+        isGameOver = true;
+        isPaused = false;
+        
+        try {
+            if (currentActiveBGM) {
+                currentActiveBGM.pause();
+                currentActiveBGM = null;
+            }
+        } catch(e){}
+    
+        // ポーズ画面を閉じる
+        const pauseOverlay = document.getElementById("pause-overlay");
+        if(pauseOverlay) { pauseOverlay.style.display = "none"; pauseOverlay.style.opacity = "0"; }
+    
+        // タイトル画面を表示する
+        const overlay = document.getElementById("start-overlay");
+        document.body.classList.remove("game-started");
+        overlay.style.display = "flex";
+        setTimeout(() => {
+            overlay.style.opacity = "1";
+        }, 10);
+    });
     
     // リセットボタン
     document.getElementById("reset-btn").addEventListener("click", () => { 
@@ -403,7 +432,7 @@ function countdown() {
     if (timeLeft <= 0) {
         clearInterval(timerId);
         isGameOver = true;
-        document.getElementById("status").innerText = "⏱️ タイムアップ！ゲームオーバー。";
+        document.getElementById("status").innerText = "⏱️ タイムアップ！";
         document.getElementById("status").style.color = "#ff4444";
         
         // 🌟 1. 何よりも最優先でBGMを完全に停止＆消去して「静寂」を作る
@@ -420,7 +449,7 @@ function countdown() {
 }
 
 function updateTimerUI() {
-    document.getElementById("timer-text").innerText = `残り時間: ${timeLeft} 秒`;
+    document.getElementById("timer-text").innerText = `残り時間 ${timeLeft} 秒`;
     const percentage = (timeLeft / 120) * 100;
     const bar = document.getElementById("timer-bar");
     if(bar) bar.style.width = `${percentage}%`;
