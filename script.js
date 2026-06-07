@@ -49,7 +49,7 @@ function playRandomBGM() {
         let randomTrack = bgmList[Math.floor(Math.random() * bgmList.length)];
         currentActiveBGM = new Audio(randomTrack);
         currentActiveBGM.loop = true;
-        currentActiveBGM.volume = 0.15; // BGM音量12%
+        currentActiveBGM.volume = 0.20; // BGM音量12%
 
         currentActiveBGM.play().catch(e => console.log("BGM再生ブロック回避:", e));
     } catch(e) {
