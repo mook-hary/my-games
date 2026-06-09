@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>CUBE PUZZLE</title>
-    <link rel="stylesheet" href="style.css?v=105">
+    <title>CUBE dev</title>
+    <link rel="stylesheet" href="style.css?v=111">
 </head>
 <body>
 
@@ -14,7 +14,7 @@
             
             <div id="start-overlay">
                 <div class="start-card">
-                    <h1>CUBE PUZZLE</h1>
+                    <h1>CUBE dev</h1>
                     <p>同じ柄のブロックをペアで選んで消そう！<br>2面以上が開いているブロックが選択できます。</p>
                     
                     <div class="difficulty-container">
@@ -38,7 +38,31 @@
                 </div>
             </div>
 
+            <div id="timeup-overlay">
+    <div class="timeup-card">
+        <h2>TIME UP</h2>
+        <p>おつかれさまでした</p>
+
+        <div class="result-score">
+            SCORE<br>
+            <span id="timeup-score">0</span> pt
+        </div>
+
+        <div class="timeup-buttons">
+            <button id="timeup-retry-btn">CONTINUE</button>
+            <button id="timeup-title-btn">TITLE</button>
+        </div>
+    </div>
+</div>
+            
+            
             <div id="game-container">
+                
+                <div id="utility-buttons">
+                    <button id="sound-toggle-btn" class="utility-btn" aria-label="サウンド切り替え">🔊</button>
+                    <button id="share-btn" class="utility-btn" aria-label="共有">📤</button>
+                </div>
+                
                 <div id="ui-panel">
                     <div class="score-area">
                         <h2>SCORE</h2>
@@ -50,22 +74,20 @@
                         <div id="status">1つ目のブロックを選んでください</div>
                     </div>
                     
-                    <div>残りブロック <span id="count">0</span></div>
+                    <div>残り<span id="count">0</span></div>
                     
                     <div id="timer-text">残り時間 120 秒</div>
                     <div id="timer-container">
                         <div id="timer-bar"></div>
                     </div>
                     
-                    <div id="control-panel">
-                        <button id="rot-z-btn" class="rot-btn">⇨</button>
-                        <button id="rot-y-btn" class="rot-btn">⇩</button>
-                    </div>
-                    
-                    <div id="action-panel">
-                        <button id="pause-btn">PAUSE</button>
-                        <button id="reset-btn">RESET</button>
-                    </div>
+                    <div id="button-grid">
+    <button id="pause-btn">PAUSE</button>
+    <button id="rot-z-btn" class="rot-btn">⇨</button>
+
+    <button id="reset-btn">RESET</button>
+    <button id="rot-y-btn" class="rot-btn">⇩</button>
+</div>
                 </div>
 
                 <div id="stage-area">
@@ -73,8 +95,9 @@
                         <div id="stage"></div>
                     </div>
                 </div>
+                <div id="screen-fade"></div>
             </div>
 
-        </div> </div> <script src="script.js?v=104"></script>
+        </div> </div> <script src="script.js?v=113"></script>
 </body>
 </html>
