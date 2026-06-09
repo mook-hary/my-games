@@ -21,8 +21,10 @@ let timerId = null;
 let isGameOver = false;
 let isPaused = false; 
 
+// 🌟 初期のゲーム起動時は定位置でスタンバイ
 let rotX = 60;   
 let rotZ = -45;  
+let skipStageRotationOnce = false;
 
 // 🌟 【Web Audio API】効果音用の音声回路
 let audioCtx = null;
@@ -32,14 +34,19 @@ const soundBank = {
     clear: null,
     error: null,
     timeup: null,
-    start: null
+    start: null,
+    countdown: null,
 };
 
 // 🎵 【BGMシステム】
 const bgmList = ["sounds/bgm_1.mp3", "sounds/bgm_2.mp3", "sounds/bgm_3.mp3"];
 let currentActiveBGM = null; 
+let isSoundEnabled =
+    localStorage.getItem("cube_sound_enabled") !== "false";
 
 function playRandomBGM() {
+    if (!isSoundEnabled) return;
+    
     try {
         if (currentActiveBGM) {
             currentActiveBGM.pause();
@@ -49,7 +56,7 @@ function playRandomBGM() {
         let randomTrack = bgmList[Math.floor(Math.random() * bgmList.length)];
         currentActiveBGM = new Audio(randomTrack);
         currentActiveBGM.loop = true;
-        currentActiveBGM.volume = 0.20; // BGM音量12%
+        currentActiveBGM.volume = 0.20; 
 
         currentActiveBGM.play().catch(e => console.log("BGM再生ブロック回避:", e));
     } catch(e) {
@@ -57,13 +64,16 @@ function playRandomBGM() {
     }
 }
 
-// 効果音再生関数
 function playWebAudio(bufferName) {
+    if (!isSoundEnabled) return;
+
     if (audioCtx && audioCtx.state === 'suspended') {
         audioCtx.resume();
     }
+
     const bufferObj = soundBank[bufferName];
     if (!audioCtx || !bufferObj) return;
+
     try {
         let bufferSource = audioCtx.createBufferSource();
         bufferSource.buffer = bufferObj;
@@ -74,7 +84,66 @@ function playWebAudio(bufferName) {
     }
 }
 
-// 効果音ダウンロード＆デコード関数
+function playCountdownBeep() {
+    if (!isSoundEnabled) return;
+
+    initAudioSystem();
+    if (!audioCtx) return;
+
+    if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+    }
+
+    const now = audioCtx.currentTime + 0.01;
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = "square";
+    osc.frequency.setValueAtTime(1200, now);
+
+    gain.gain.setValueAtTime(0.35, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.15);
+}
+
+function playCountdownFastBeep() {
+    if (!isSoundEnabled) return;
+
+    initAudioSystem();
+    if (!audioCtx) return;
+
+    if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+    }
+
+    const now = audioCtx.currentTime + 0.01;
+
+    for (let i = 0; i < 2; i++) {
+        const t = now + i * 0.16;
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = "square";
+        osc.frequency.setValueAtTime(1600, t);
+
+        gain.gain.setValueAtTime(0.30, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(t);
+        osc.stop(t + 0.1);
+    }
+}
+
 async function loadSoundToBuffer(fileName) {
     if (!audioCtx) return null;
     let soundUrl = "sounds/" + fileName;
@@ -88,19 +157,18 @@ async function loadSoundToBuffer(fileName) {
     }
 }
 
-// 音声回路初期化
 function initAudioSystem() {
     if (audioCtx) return; 
     try {
         window.AudioContext = window.AudioContext || window.webkitAudioContext;
         audioCtx = new AudioContext();
-
-        // 🚀 すべて .mp3 に統一して最速ロード
         loadSoundToBuffer("select_1.mp3").then(buf => { if(buf) soundBank.select = buf; });
         loadSoundToBuffer("clear_1.mp3").then(buf => { if(buf) soundBank.clear = buf; });
         loadSoundToBuffer("error_1.mp3").then(buf => { if(buf) soundBank.error = buf; });
         loadSoundToBuffer("timeup_1.mp3").then(buf => { if(buf) soundBank.timeup = buf; });
         loadSoundToBuffer("start_1.mp3").then(buf => { if(buf) soundBank.start = buf; });
+        loadSoundToBuffer("countdown_1.mp3").then(buf => { if(buf) soundBank.countdown = buf; 
+});
     } catch(e) {
         console.log("Web Audio初期化失敗:", e);
     }
@@ -143,7 +211,9 @@ function updateScoreDisplay(scoreValue) {
 function initGame() {
     const stage = document.getElementById("stage");
     if(!stage) return;
-    stage.innerHTML = "";
+    while (stage.firstChild) {
+    stage.removeChild(stage.firstChild);
+}
     blocks = [];
     selected = null;
     isGameOver = false;
@@ -155,8 +225,8 @@ function initGame() {
     updateScoreDisplay(0); 
     loadHighScore(); 
     
-    rotX = 60;
-    rotZ = -45;
+    // 🚨【大修正】リセットボタン連動バグを防ぐため、ここで角度（rotX, rotZ）を強制上書きするのを完全に撤廃！
+    // 現在のカメラの向きをそのまま維持して中身だけをリフレッシュします。
     
     document.getElementById("status").innerText = "1つ目のブロックを選んでください";
     document.getElementById("status").style.color = "#38bdf8";
@@ -166,18 +236,33 @@ function initGame() {
     clearInterval(timerId);
     timerId = setInterval(countdown, 1000);
 
-    let pool = [];
     const totalRequired = SIZE * SIZE * SIZE;
+const pool = createTilePool(totalRequired);
     
-    for (let i = 0; i < 10; i++) {
-        tileTypes.forEach(t => pool.push({ ...t }));
+    function createTilePool(totalRequired) {
+    const pool = [];
+
+    for (let i = 0; i < totalRequired; i++) {
+        const t = tileTypes[i % tileTypes.length];
+        pool.push({ ...t });
     }
-    pool.sort(() => Math.random() - 0.5);
-    pool = pool.slice(0, totalRequired);
+
+    // Fisher-Yates shuffle
+    for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = pool[i];
+        pool[i] = pool[j];
+        pool[j] = temp;
+    }
+
+    return pool;
+}
 
     let index = 0;
     const { dynamicCubeSize, offset, halfSize } = getDynamicSizes();
 
+    const fragment = document.createDocumentFragment();
+    
     for (let x = 0; x < SIZE; x++) {
         for (let y = 0; y < SIZE; y++) {
             for (let z = 0; z < SIZE; z++) {
@@ -202,17 +287,24 @@ function initGame() {
 
                 if (hasLeft && hasRight && hasFront && hasBack && hasBottom && hasTop) {
                     cube.style.display = "none"; 
-                    stage.appendChild(cube);
+                    fragment.appendChild(cube);
                 } else {
                     createFacesForCube(blockData, halfSize, dynamicCubeSize);
-                    stage.appendChild(cube);
+                    fragment.appendChild(cube);
                 }
                 blocks.push(blockData);
             }
-        }
+        }     
     }
-    updateCount();
+
+    stage.appendChild(fragment);
+updateCount();
+
+if (!skipStageRotationOnce) {
     updateStageRotation();
+}
+
+skipStageRotationOnce = false;
 }
 
 function createFacesForCube(b, halfSize, dynamicCubeSize) {
@@ -250,12 +342,359 @@ function createFacesForCube(b, halfSize, dynamicCubeSize) {
 }
 
 function updateCubePosition(cube, x, y, z, offset, dynamicCubeSize) {
-    cube.style.left = ((x * dynamicCubeSize) - offset) + "px";
-    cube.style.top = ((y * dynamicCubeSize) - offset) + "px";
-    cube.style.transform = `translateZ(${(z * dynamicCubeSize) - offset}px)`;
+    const px = (x * dynamicCubeSize) - offset;
+    const py = (y * dynamicCubeSize) - offset;
+    const pz = (z * dynamicCubeSize) - offset;
+
+    cube.style.transform =
+        `translate3d(${px}px, ${py}px, ${pz}px)`;
+}
+
+/*gptにより追加*/
+function playStageIntroAnimation(stage) {
+    if (!stage) return;
+
+    const fromTransform = "rotateX(0deg) rotateZ(0deg)";
+    const toTransform = "rotateX(60deg) rotateZ(-45deg)";
+
+    stage.style.transition = "none";
+    stage.style.transform = fromTransform;
+
+    // Safari / iPhone Chrome 対策：レイアウト確定
+    stage.offsetWidth;
+
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if (isIOS && stage.animate) {
+        const anim = stage.animate(
+            [
+                { transform: fromTransform },
+                { transform: toTransform }
+            ],
+            {
+                duration: 500,
+                easing: "ease-out",
+                fill: "forwards"
+            }
+        );
+
+        anim.onfinish = () => {
+            rotX = 60;
+            rotZ = -45;
+            stage.style.transition = "transform 0.5s ease-out";
+            stage.style.transform = toTransform;
+        };
+    } else {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                rotX = 60;
+                rotZ = -45;
+                stage.style.transition = "transform 0.5s ease-out";
+                stage.style.transform = toTransform;
+            });
+        });
+    }
+}
+
+function updateSoundButtonUI() {
+    const btn = document.getElementById("sound-toggle-btn");
+    if (!btn) return;
+
+    btn.innerText = isSoundEnabled ? "🔊" : "🔇";
+    btn.setAttribute(
+        "aria-label",
+        isSoundEnabled ? "サウンドON" : "サウンドOFF"
+    );
+}
+
+function stopAllSounds() {
+    try {
+        if (currentActiveBGM) {
+            currentActiveBGM.pause();
+            // nullにしない。ミュート解除時に続きから再生するため
+        }
+    } catch (e) {}
+
+    // WebAudioは止めたいが、AudioContextはsuspendしない
+    // iPhoneで復帰が重くなることがあるため
+}
+
+function showTimeUpOverlay() {
+    const overlay = document.getElementById("timeup-overlay");
+    const scoreEl = document.getElementById("timeup-score");
+    const stage = document.getElementById("stage");
+
+    if (scoreEl) {
+        scoreEl.innerText = currentScore;
+    }
+
+    
+
+    if (overlay) {
+        overlay.style.display = "flex";
+        requestAnimationFrame(() => {
+            overlay.style.opacity = "1";
+        });
+    }
+}
+
+function fadeToBlack(callback) {
+    const fade = document.getElementById("screen-fade");
+
+    if (!fade) {
+        if (callback) callback();
+        return;
+    }
+
+    fade.style.opacity = "1";
+
+    setTimeout(() => {
+        if (callback) callback();
+    }, 350);
+}
+
+
+
+function fadeFromBlack() {
+    const fade = document.getElementById("screen-fade");
+
+    if (!fade) return;
+
+    requestAnimationFrame(() => {
+        fade.style.opacity = "0";
+    });
+}
+
+function returnToTitle() {
+    playWebAudio("select");
+
+    const overlay = document.getElementById("timeup-overlay");
+    const pauseOverlay = document.getElementById("pause-overlay");
+    const startOverlay = document.getElementById("start-overlay");
+    const stage = document.getElementById("stage");
+
+    setTimeout(() => {
+        try {
+            if (currentActiveBGM) {
+                currentActiveBGM.pause();
+                currentActiveBGM.currentTime = 0;
+                currentActiveBGM = null;
+            }
+        } catch(e) {}
+
+        fadeToBlack(() => {
+            clearInterval(timerId);
+            isGameOver = true;
+            isPaused = false;
+
+            if (overlay) {
+                overlay.style.opacity = "0";
+                overlay.style.display = "none";
+            }
+
+            if (pauseOverlay) {
+                pauseOverlay.style.opacity = "0";
+                pauseOverlay.style.display = "none";
+            }
+
+            blocks = [];
+            selected = null;
+
+            rotX = 60;
+            rotZ = -45;
+
+            if (stage) {
+                stage.innerHTML = "";
+                stage.style.transition = "none";
+                stage.style.opacity = "1";
+                stage.style.transform = `rotateX(${rotX}deg) rotateZ(${rotZ}deg)`;
+            }
+
+            document.body.classList.remove("game-started");
+
+            if (startOverlay) {
+                startOverlay.style.display = "flex";
+                startOverlay.style.opacity = "1";
+            }
+
+            fadeFromBlack();
+        });
+    }, 200);
 }
 
 function setupEvents() {
+   const soundBtn = document.getElementById("sound-toggle-btn");
+    
+if (soundBtn) {
+    soundBtn.addEventListener("click", async () => {
+
+        isSoundEnabled = !isSoundEnabled;
+
+        localStorage.setItem(
+            "cube_sound_enabled",
+            isSoundEnabled
+        );
+
+        if (!isSoundEnabled) {
+
+            stopAllSounds();
+
+        } else {
+
+            initAudioSystem();
+
+            try {
+                if (audioCtx && audioCtx.state === "suspended") {
+                    await audioCtx.resume();
+                }
+
+                if (
+                    document.body.classList.contains("game-started") &&
+                    !isPaused &&
+                    !isGameOver
+                ) {
+                    if (currentActiveBGM) {
+                        await currentActiveBGM.play();
+                    } else {
+                        playRandomBGM();
+                    }
+                }
+
+            } catch (e) {
+                console.log("BGM再開失敗:", e);
+            }
+        }
+
+        updateSoundButtonUI();
+    });
+}
+
+const shareBtn = document.getElementById("share-btn");
+
+if (shareBtn) {
+    shareBtn.addEventListener("click", async () => {
+        playWebAudio("select");
+
+        const shareText =
+            `CUBE devで ${currentScore} pt 獲得！\n` +
+            `BEST: ${highScore} pt\n` +
+            `#CUBEdev`;
+
+        const shareData = {
+            title: "CUBE dev",
+            text: shareText,
+            url: location.href
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+            } catch (e) {
+                console.log("共有キャンセル:", e);
+            }
+        } else {
+            const xUrl =
+                "https://twitter.com/intent/tweet?text=" +
+                encodeURIComponent(shareText) +
+                "&url=" +
+                encodeURIComponent(location.href);
+
+            window.open(xUrl, "_blank");
+        }
+    });
+}
+
+    const timeupRetryBtn = document.getElementById("timeup-retry-btn");
+
+if (timeupRetryBtn) {
+    timeupRetryBtn.addEventListener("click", () => {
+        playWebAudio("select");
+
+        fadeToBlack(() => {
+            const overlay = document.getElementById("timeup-overlay");
+
+            if (overlay) {
+                overlay.style.opacity = "0";
+                overlay.style.display = "none";
+            }
+
+            rotX = 0;
+            rotZ = 0;
+
+            initGame();
+
+            const stage = document.getElementById("stage");
+
+            if (stage) {
+                stage.style.transition = "none";
+                stage.style.transform = "rotateX(0deg) rotateZ(0deg)";
+                stage.offsetWidth;
+            }
+
+            fadeFromBlack();
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    if (stage) {
+                        rotX = 60;
+                        rotZ = -45;
+                        stage.style.transition = "transform 0.5s ease-out";
+                        stage.style.transform = `rotateX(${rotX}deg) rotateZ(${rotZ}deg)`;
+                    }
+                });
+            });
+        });
+    });
+}
+
+/*const timeupTitleBtn = document.getElementById("timeup-title-btn");
+
+if (timeupTitleBtn) {
+    timeupTitleBtn.addEventListener("click", () => {
+        playWebAudio("select");
+
+        fadeToBlack(() => {
+            const overlay = document.getElementById("timeup-overlay");
+            const stage = document.getElementById("stage");
+            const startOverlay = document.getElementById("start-overlay");
+
+            clearInterval(timerId);
+            isGameOver = true;
+            isPaused = false;
+
+            if (overlay) {
+                overlay.style.opacity = "0";
+                overlay.style.display = "none";
+            }
+
+            if (stage) {
+                stage.innerHTML = "";
+                stage.style.transition = "none";
+                stage.style.transform = "rotateX(0deg) rotateZ(0deg)";
+            }
+
+            blocks = [];
+            selected = null;
+
+            document.body.classList.remove("game-started");
+
+            if (startOverlay) {
+                startOverlay.style.display = "flex";
+                startOverlay.style.opacity = "1";
+            }
+
+            requestAnimationFrame(() => {
+                fadeFromBlack();
+            });
+        });
+    });
+}*/
+
+const timeupTitleBtn = document.getElementById("timeup-title-btn");
+
+if (timeupTitleBtn) {
+    timeupTitleBtn.addEventListener("click", returnToTitle);
+}    
     // 左右回転ボタン
     document.getElementById("rot-z-btn").addEventListener("click", () => {
         initAudioSystem(); 
@@ -266,17 +705,37 @@ function setupEvents() {
 
     // 上下回転ボタン
     document.getElementById("rot-y-btn").addEventListener("click", () => {
+
         initAudioSystem();
-        if (isGameOver || isPaused) return; 
-        playWebAudio("select"); 
-        const { dynamicCubeSize, offset, halfSize } = getDynamicSizes();
+    
+        if (isGameOver || isPaused) return;
+    
+        playWebAudio("select");
+    
+        const { dynamicCubeSize, offset } = getDynamicSizes();
+    
+        const visibleBlocks = blocks.filter(b =>
+            b.active &&
+            b.element.style.display !== "none"
+        );
+    
         blocks.forEach(b => {
             const oldY = b.y;
             b.y = b.z;
             b.z = (SIZE - 1) - oldY;
-            updateCubePosition(b.element, b.x, b.y, b.z, offset, dynamicCubeSize);
-            refreshFaceSizes(b, halfSize);
         });
+    
+        visibleBlocks.forEach(b => {
+            updateCubePosition(
+                b.element,
+                b.x,
+                b.y,
+                b.z,
+                offset,
+                dynamicCubeSize
+            );
+        });
+    
     });
 
     // ポーズボタン
@@ -289,48 +748,20 @@ function setupEvents() {
         togglePause(); 
     });
 
-   // 🌟 ポーズ画面内の「タイトルへ」ボタンの処理（スマート修正版）
-    document.getElementById("to-title-btn").addEventListener("click", () => {
-        initAudioSystem();
-        playWebAudio("select"); // ポチッと音を鳴らす
-        
-        clearInterval(timerId);
-        isGameOver = true;
-        isPaused = false;
-        
-        try {
-            if (currentActiveBGM) {
-                currentActiveBGM.pause();
-                currentActiveBGM = null;
-            }
-        } catch(e){}
-        
-        // 🌟【ここを修正！】ゲーム内の重いリセットではなく、ステージと配列を「完全な空っぽ」にする
-        const stage = document.getElementById("stage");
-        if (stage) stage.innerHTML = ""; // 3Dの見た目を全消去
-        blocks = [];                     // データをリセット
-        selected = null;                 // 選択をクリア
-        
-        // ポーズ画面を閉じる
-        const pauseOverlay = document.getElementById("pause-overlay");
-        if(pauseOverlay) { pauseOverlay.style.display = "none"; pauseOverlay.style.opacity = "0"; }
-    
-        // タイトル画面を表示する（元の完璧なオープニング演出に戻ります）
-        const overlay = document.getElementById("start-overlay");
-        document.body.classList.remove("game-started");
-        overlay.style.display = "flex";
-        setTimeout(() => {
-            overlay.style.opacity = "1";
-        }, 10);
-    });
+    // ポーズ画面内の「タイトルへ」ボタンの処理
+    document.getElementById("to-title-btn").addEventListener("click", returnToTitle);
     
     // リセットボタン
     document.getElementById("reset-btn").addEventListener("click", () => { 
-        initAudioSystem(); 
-        playWebAudio("select"); 
-        playRandomBGM(); 
-        initGame(); 
+    initAudioSystem(); 
+    playWebAudio("select"); 
+
+    initGame();
+
+    requestAnimationFrame(() => {
+        playRandomBGM();
     });
+});
 
     // タイトル画面の難易度 Easy ボタン
     document.getElementById("diff-easy-btn").addEventListener("click", () => {
@@ -352,52 +783,86 @@ function setupEvents() {
         loadHighScore(); 
     });
 
-    // 🚀 スタートボタンの処理（スマホの画面回転をしっかり待つスマート版）
+    // 🚀 スタートボタンの処理（PCの最高の回転を維持、iPhoneのねじれと衝突バグを完全分離ハック）
     document.getElementById("actual-start-btn").addEventListener("click", async () => {
-        initAudioSystem();
-        playWebAudio("start"); 
-        playRandomBGM(); 
+    initAudioSystem();
+    playWebAudio("start"); 
+    playRandomBGM(); 
 
+    const stage = document.getElementById("stage");
+    const overlay = document.getElementById("start-overlay");
+    
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isMobileSize = window.innerWidth < 960;
+
+    document.body.classList.add("game-started");
+    overlay.style.opacity = "0";
+
+    if (!isIOS && isMobileSize) {
         const docEl = document.documentElement;
-        const isMobileSize = window.innerWidth < 960;
 
-        // 🌟 スマホ環境なら、まず「フルスクリーン」と「横向きロック」の大工事を完全に終わらせる
-        if (isMobileSize) {
-            try {
-                if (docEl.requestFullscreen) await docEl.requestFullscreen();
-                else if (docEl.webkitRequestFullscreen) await docEl.webkitRequestFullscreen();
-            } catch (err) { console.log("フルスクリーン拒否"); }
-            
-            try {
-                // 🌟 await をつけることで、スマホの向きが「横」にロックされるのを文字通り直列で待ちます
-                if (screen.orientation && screen.orientation.lock) {
-                    await screen.orientation.lock("landscape");
-                }
-            } catch (err) { console.log("向きロック拒否"); }
+        try {
+            if (docEl.requestFullscreen) await docEl.requestFullscreen();
+            else if (docEl.webkitRequestFullscreen) await docEl.webkitRequestFullscreen();
+        } catch (err) {
+            console.log("フルスクリーン拒否");
         }
 
-        // 🌟 【ここがポイント！】スマホの向きが完全に横に固定された『後』で、ステージを0度にする
-        const stage = document.getElementById("stage");
-        if (stage) {
-            stage.style.transition = "none";
-            rotX = 0;
-            rotZ = 0;
-            stage.style.transform = `rotateX(0deg) rotateZ(0deg)`;
-        }
-
-        const overlay = document.getElementById("start-overlay");
-        document.body.classList.add("game-started");
-        overlay.style.opacity = "0";
-
-        // 画面が完全に落ち着いた状態から、0.5秒の猶予を持ってアニメーションを流す
-        setTimeout(() => {
-            overlay.style.display = "none";
-            if (stage) {
-                stage.style.transition = "transform 0.5s ease-out";
+        try {
+            if (screen.orientation && screen.orientation.lock) {
+                await screen.orientation.lock("landscape");
             }
-            initGame(); // 0度から60度への「転がり」が、スマホが安定した綺麗な画面で発生します！
+        } catch (err) {
+            console.log("向きロック拒否");
+        }
+    }
+
+    // 重要：initGame() の前に角度を0へ
+    rotX = 0;
+    rotZ = 0;
+
+    if (stage) {
+        stage.style.transition = "none";
+        stage.style.transform = "rotateX(0deg) rotateZ(0deg)";
+    }
+
+    setTimeout(() => {
+        overlay.style.display = "none";
+    
+        rotX = 0;
+        rotZ = 0;
+
+        skipStageRotationOnce = true;
+        initGame();
+       
+        const newStage = document.getElementById("stage");
+    
+        if (newStage) {
+    
+            newStage.style.transition = "none";
+            newStage.style.transform = "rotateX(0deg) rotateZ(0deg)";
+    
+            // Safariに0度状態を確定させる
+            newStage.offsetWidth;
+    
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+    
+                    rotX = 60;
+                    rotZ = -45;
+    
+                    newStage.style.transition =
+                        "transform 0.5s ease-out";
+    
+                    newStage.style.transform =
+                        `rotateX(${rotX}deg) rotateZ(${rotZ}deg)`;
+    
+                });
+            });
+        }
+    
         }, 500);
-    });
+});
 }
 
 function togglePause() {
@@ -421,14 +886,35 @@ function togglePause() {
     }
 }
 
+/*gpt提案、左右回転の改善*/
 function triggerResizeAndRefresh() {
-    const { dynamicCubeSize, offset, halfSize } = getDynamicSizes();
+
+    const { dynamicCubeSize, offset } = getDynamicSizes();
+
+    const visibleBlocks = blocks.filter(b =>
+        b.active &&
+        b.element.style.display !== "none"
+    );
+
+    // まず論理座標だけ更新
     blocks.forEach(b => {
         const oldX = b.x;
         b.x = b.y;
         b.y = (SIZE - 1) - oldX;
-        updateCubePosition(b.element, b.x, b.y, b.z, offset, dynamicCubeSize);
-        refreshFaceSizes(b, halfSize);
+    });
+
+    // DOM更新は次フレームに回す
+    requestAnimationFrame(() => {
+        visibleBlocks.forEach(b => {
+            updateCubePosition(
+                b.element,
+                b.x,
+                b.y,
+                b.z,
+                offset,
+                dynamicCubeSize
+            );
+        });
     });
 }
 
@@ -448,27 +934,32 @@ function updateStageRotation() {
     if(stage) stage.style.transform = `rotateX(${rotX}deg) rotateZ(${rotZ}deg)`;
 }
 
-// ⏱️ タイムアップ処理（BGM停止 ➡️ SE再生の順番に完全制御）
 function countdown() {
-    if (isGameOver || isPaused) return; 
+    if (isGameOver || isPaused) return;
+
     timeLeft--;
     updateTimerUI();
+
+    // 🔔 カウントダウン音
+    if (timeLeft <= 5 && timeLeft >= 3) {
+        playCountdownBeep();
+    }
+
+    if (timeLeft <= 2 && timeLeft >= 1) {
+        playCountdownFastBeep();
+    }
+
     if (timeLeft <= 0) {
         clearInterval(timerId);
         isGameOver = true;
+
         document.getElementById("status").innerText = "⏱️ タイムアップ！";
         document.getElementById("status").style.color = "#ff4444";
-        
-        // 🌟 1. 何よりも最優先でBGMを完全に停止＆消去して「静寂」を作る
-        try { 
-            if(currentActiveBGM) {
-                currentActiveBGM.pause(); 
-                currentActiveBGM = null;
-            }
-        } catch(e){} 
-        
-        // 🌟 2. BGMが消えた完璧な無音空間で、タイムアップ音を炸裂させる！
+
+        // BGMは止めない
         playWebAudio("timeup");
+
+        showTimeUpOverlay();
     }
 }
 
@@ -496,7 +987,7 @@ function isExposed(b) {
     let openSides = 0;
     if (!findBlock(b.x - 1, b.y, b.z)) openSides++; if (!findBlock(b.x + 1, b.y, b.z)) openSides++;
     if (!findBlock(b.x, b.y - 1, b.z)) openSides++; if (!findBlock(b.x, b.y + 1, b.z)) openSides++;
-    if (!findBlock(b.x, b.y - 1, b.z)) openSides++; if (!findBlock(b.x, b.y, b.z + 1)) openSides++; 
+    if (!findBlock(b.x, b.y, b.z - 1)) openSides++; if (!findBlock(b.x, b.y, b.z + 1)) openSides++; 
     return (openSides > 0); 
 }
 
@@ -540,9 +1031,10 @@ function handleClick(b) {
             
             playWebAudio("clear");
             
-            const { halfSize, dynamicCubeSize } = getDynamicSizes();
+            const { halfSize, dynamicCubeSize, offset } = getDynamicSizes();
             blocks.forEach(o => {
                 if (o.active && o.element.style.display === "none" && isExposed(o)) {
+                    updateCubePosition(o.element, o.x, o.y, o.z, offset, dynamicCubeSize);
                     createFacesForCube(o, halfSize, dynamicCubeSize); 
                     o.element.style.display = "block"; 
                 }
@@ -586,3 +1078,4 @@ document.addEventListener("visibilitychange", () => {
 loadHighScore();
 initAudioSystem(); 
 setupEvents();
+updateSoundButtonUI();
