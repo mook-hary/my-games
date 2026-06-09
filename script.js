@@ -41,9 +41,7 @@ const soundBank = {
 // 🎵 【BGMシステム】
 const bgmList = ["sounds/bgm_1.mp3", "sounds/bgm_2.mp3", "sounds/bgm_3.mp3"];
 let currentActiveBGM = null; 
-let isSoundEnabled =
-    localStorage.getItem("cube_sound_enabled") !== "false";
-
+let isSoundEnabled = true;
 function playRandomBGM() {
     if (!isSoundEnabled) return;
     
@@ -62,6 +60,11 @@ function playRandomBGM() {
     } catch(e) {
         console.log("BGMシャッフルエラー:", e);
     }
+}
+
+function debugLog(text) {
+    const el = document.getElementById("debug-text");
+    if (el) el.innerText = text;
 }
 
 function playWebAudio(bufferName) {
@@ -157,18 +160,40 @@ async function loadSoundToBuffer(fileName) {
     }
 }
 
+let isAudioLoading = false;
+
 function initAudioSystem() {
-    if (audioCtx) return; 
+    if (isAudioLoading) return;
+
     try {
         window.AudioContext = window.AudioContext || window.webkitAudioContext;
-        audioCtx = new AudioContext();
-        loadSoundToBuffer("select_1.mp3").then(buf => { if(buf) soundBank.select = buf; });
-        loadSoundToBuffer("clear_1.mp3").then(buf => { if(buf) soundBank.clear = buf; });
-        loadSoundToBuffer("error_1.mp3").then(buf => { if(buf) soundBank.error = buf; });
-        loadSoundToBuffer("timeup_1.mp3").then(buf => { if(buf) soundBank.timeup = buf; });
-        loadSoundToBuffer("start_1.mp3").then(buf => { if(buf) soundBank.start = buf; });
-        loadSoundToBuffer("countdown_1.mp3").then(buf => { if(buf) soundBank.countdown = buf; 
-});
+
+        if (!audioCtx) {
+            audioCtx = new AudioContext();
+        }
+
+        isAudioLoading = true;
+
+        loadSoundToBuffer("select_1.mp3").then(buf => {
+            if (buf) soundBank.select = buf;
+        });
+
+        loadSoundToBuffer("clear_1.mp3").then(buf => {
+            if (buf) soundBank.clear = buf;
+        });
+
+        loadSoundToBuffer("error_1.mp3").then(buf => {
+            if (buf) soundBank.error = buf;
+        });
+
+        loadSoundToBuffer("timeup_1.mp3").then(buf => {
+            if (buf) soundBank.timeup = buf;
+        });
+
+        loadSoundToBuffer("start_1.mp3").then(buf => {
+            if (buf) soundBank.start = buf;
+        });
+
     } catch(e) {
         console.log("Web Audio初期化失敗:", e);
     }
@@ -298,47 +323,47 @@ const pool = createTilePool(totalRequired);
     }
 
     stage.appendChild(fragment);
-updateCount();
-
-if (!skipStageRotationOnce) {
-    updateStageRotation();
-}
-
-skipStageRotationOnce = false;
-}
-
-function createFacesForCube(b, halfSize, dynamicCubeSize) {
-    if (b.hasFaces) return; 
+    updateCount();
     
-    const faces = [
-        { name: 'top', style: `transform: translateZ(${halfSize}px);` },
-        { name: 'bottom', style: `transform: rotateX(180deg) translateZ(${halfSize}px);` },
-        { name: 'front', style: `transform: rotateX(-90deg) translateZ(${halfSize}px);` },
-        { name: 'back', style: `transform: rotateX(90deg) translateZ(${halfSize}px);` },
-        { name: 'right', style: `transform: rotateY(90deg) translateZ(${halfSize}px);` },
-        { name: 'left', style: `transform: rotateY(-90deg) translateZ(${halfSize}px);` }
-    ];
-
-    faces.forEach(f => {
-        const face = document.createElement("div");
-        face.className = `face ${f.name}`;
-        face.style.cssText = f.style;
+    if (!skipStageRotationOnce) {
+        updateStageRotation();
+    }
+    
+    skipStageRotationOnce = false;
+    }
+    
+    function createFacesForCube(b, halfSize, dynamicCubeSize) {
+        if (b.hasFaces) return; 
         
-        face.style.width = dynamicCubeSize + "px";
-        face.style.height = dynamicCubeSize + "px";
-        
-        face.style.backgroundColor = b.color;
-        face.innerText = b.txt;
-        
-        const windowIsPC = window.innerWidth >= 960;
-        face.style.fontSize = windowIsPC ? (SIZE === 5 ? "26px" : "22px") : (SIZE === 5 ? "22px" : "18px");
-        
-        if (b.txt.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]/) || b.txt.length > 2 || b.txt.charCodeAt(0) > 255) {
-            face.style.fontSize = windowIsPC ? "16px" : "14px"; 
-        }
-        b.element.appendChild(face);
-    });
-    b.hasFaces = true;
+        const faces = [
+            { name: 'top', style: `transform: translateZ(${halfSize}px);` },
+            { name: 'bottom', style: `transform: rotateX(180deg) translateZ(${halfSize}px);` },
+            { name: 'front', style: `transform: rotateX(-90deg) translateZ(${halfSize}px);` },
+            { name: 'back', style: `transform: rotateX(90deg) translateZ(${halfSize}px);` },
+            { name: 'right', style: `transform: rotateY(90deg) translateZ(${halfSize}px);` },
+            { name: 'left', style: `transform: rotateY(-90deg) translateZ(${halfSize}px);` }
+        ];
+    
+        faces.forEach(f => {
+            const face = document.createElement("div");
+            face.className = `face ${f.name}`;
+            face.style.cssText = f.style;
+            
+            face.style.width = dynamicCubeSize + "px";
+            face.style.height = dynamicCubeSize + "px";
+            
+            face.style.backgroundColor = b.color;
+            face.innerText = b.txt;
+            
+            const windowIsPC = window.innerWidth >= 960;
+            face.style.fontSize = windowIsPC ? (SIZE === 5 ? "26px" : "22px") : (SIZE === 5 ? "22px" : "18px");
+            
+            if (b.txt.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]/) || b.txt.length > 2 || b.txt.charCodeAt(0) > 255) {
+                face.style.fontSize = windowIsPC ? "16px" : "14px"; 
+            }
+            b.element.appendChild(face);
+        });
+        b.hasFaces = true;
 }
 
 function updateCubePosition(cube, x, y, z, offset, dynamicCubeSize) {
@@ -438,6 +463,24 @@ function showTimeUpOverlay() {
     }
 }
 
+function showClearOverlay(finalScore, timeBonus, clearBonus) {
+    const overlay = document.getElementById("clear-overlay");
+    const scoreEl = document.getElementById("clear-score");
+    const timeBonusEl = document.getElementById("clear-time-bonus");
+    const clearBonusEl = document.getElementById("clear-clear-bonus");
+
+    if (scoreEl) scoreEl.innerText = finalScore;
+    if (timeBonusEl) timeBonusEl.innerText = timeBonus;
+    if (clearBonusEl) clearBonusEl.innerText = clearBonus;
+
+    if (overlay) {
+        overlay.style.display = "flex";
+        requestAnimationFrame(() => {
+            overlay.style.opacity = "1";
+        });
+    }
+}
+
 function fadeToBlack(callback) {
     const fade = document.getElementById("screen-fade");
 
@@ -469,6 +512,7 @@ function returnToTitle() {
     playWebAudio("select");
 
     const overlay = document.getElementById("timeup-overlay");
+    const clearOverlay = document.getElementById("clear-overlay");
     const pauseOverlay = document.getElementById("pause-overlay");
     const startOverlay = document.getElementById("start-overlay");
     const stage = document.getElementById("stage");
@@ -490,6 +534,11 @@ function returnToTitle() {
             if (overlay) {
                 overlay.style.opacity = "0";
                 overlay.style.display = "none";
+            }
+
+            if (clearOverlay) {
+                clearOverlay.style.opacity = "0";
+                clearOverlay.style.display = "none";
             }
 
             if (pauseOverlay) {
@@ -523,129 +572,189 @@ function returnToTitle() {
 }
 
 function setupEvents() {
-   const soundBtn = document.getElementById("sound-toggle-btn");
+    const clearTestBtn = document.getElementById("clear-test-btn");
+
+    if (clearTestBtn) {
+        clearTestBtn.addEventListener("click", () => {
+            const timeBonus = timeLeft * 2000;
+            const clearBonus = SIZE === 5 ? 43750 : 75600;
+            const finalScore = currentScore + clearBonus + timeBonus;
     
-if (soundBtn) {
-    soundBtn.addEventListener("click", async () => {
+            showClearOverlay(finalScore, timeBonus, clearBonus);
+        });
+    }
+    
+    const clearRetryBtn = document.getElementById("clear-retry-btn");
 
-        isSoundEnabled = !isSoundEnabled;
-
-        localStorage.setItem(
-            "cube_sound_enabled",
-            isSoundEnabled
-        );
-
-        if (!isSoundEnabled) {
-
-            stopAllSounds();
-
-        } else {
-
-            initAudioSystem();
-
-            try {
-                if (audioCtx && audioCtx.state === "suspended") {
-                    await audioCtx.resume();
+    if (clearRetryBtn) {
+        clearRetryBtn.addEventListener("click", () => {
+            playWebAudio("select");
+    
+            fadeToBlack(() => {
+                const overlay = document.getElementById("clear-overlay");
+    
+                if (overlay) {
+                    overlay.style.opacity = "0";
+                    overlay.style.display = "none";
                 }
-
-                if (
-                    document.body.classList.contains("game-started") &&
-                    !isPaused &&
-                    !isGameOver
-                ) {
-                    if (currentActiveBGM) {
-                        await currentActiveBGM.play();
-                    } else {
-                        playRandomBGM();
-                    }
+    
+                rotX = 0;
+                rotZ = 0;
+    
+                initGame();
+    
+                const stage = document.getElementById("stage");
+    
+                if (stage) {
+                    stage.style.transition = "none";
+                    stage.style.transform = "rotateX(0deg) rotateZ(0deg)";
+                    stage.offsetWidth;
                 }
-
-            } catch (e) {
-                console.log("BGM再開失敗:", e);
-            }
-        }
-
-        updateSoundButtonUI();
-    });
-}
-
-const shareBtn = document.getElementById("share-btn");
-
-if (shareBtn) {
-    shareBtn.addEventListener("click", async () => {
-        playWebAudio("select");
-
-        const shareText =
-            `CUBE devで ${currentScore} pt 獲得！\n` +
-            `BEST: ${highScore} pt\n` +
-            `#CUBEdev`;
-
-        const shareData = {
-            title: "CUBE dev",
-            text: shareText,
-            url: location.href
-        };
-
-        if (navigator.share) {
-            try {
-                await navigator.share(shareData);
-            } catch (e) {
-                console.log("共有キャンセル:", e);
-            }
-        } else {
-            const xUrl =
-                "https://twitter.com/intent/tweet?text=" +
-                encodeURIComponent(shareText) +
-                "&url=" +
-                encodeURIComponent(location.href);
-
-            window.open(xUrl, "_blank");
-        }
-    });
-}
-
-    const timeupRetryBtn = document.getElementById("timeup-retry-btn");
-
-if (timeupRetryBtn) {
-    timeupRetryBtn.addEventListener("click", () => {
-        playWebAudio("select");
-
-        fadeToBlack(() => {
-            const overlay = document.getElementById("timeup-overlay");
-
-            if (overlay) {
-                overlay.style.opacity = "0";
-                overlay.style.display = "none";
-            }
-
-            rotX = 0;
-            rotZ = 0;
-
-            initGame();
-
-            const stage = document.getElementById("stage");
-
-            if (stage) {
-                stage.style.transition = "none";
-                stage.style.transform = "rotateX(0deg) rotateZ(0deg)";
-                stage.offsetWidth;
-            }
-
-            fadeFromBlack();
-
-            requestAnimationFrame(() => {
+    
+                fadeFromBlack();
+    
                 requestAnimationFrame(() => {
-                    if (stage) {
-                        rotX = 60;
-                        rotZ = -45;
-                        stage.style.transition = "transform 0.5s ease-out";
-                        stage.style.transform = `rotateX(${rotX}deg) rotateZ(${rotZ}deg)`;
-                    }
+                    requestAnimationFrame(() => {
+                        if (stage) {
+                            rotX = 60;
+                            rotZ = -45;
+                            stage.style.transition = "transform 0.5s ease-out";
+                            stage.style.transform = `rotateX(${rotX}deg) rotateZ(${rotZ}deg)`;
+                        }
+                    });
                 });
             });
         });
-    });
-}
+    }
+    
+    const clearTitleBtn = document.getElementById("clear-title-btn");
+    
+    if (clearTitleBtn) {
+        clearTitleBtn.addEventListener("click", returnToTitle);
+    }
+    const soundBtn = document.getElementById("sound-toggle-btn");
+    
+    if (soundBtn) {
+        soundBtn.addEventListener("click", async () => {
+    
+            isSoundEnabled = !isSoundEnabled;
+    
+            localStorage.setItem(
+                "cube_sound_enabled",
+                isSoundEnabled
+            );
+    
+            if (!isSoundEnabled) {
+    
+                stopAllSounds();
+    
+            } else {
+    
+                initAudioSystem();
+    
+                try {
+                    if (audioCtx && audioCtx.state === "suspended") {
+                        await audioCtx.resume();
+                    }
+    
+                    if (
+                        document.body.classList.contains("game-started") &&
+                        !isPaused &&
+                        !isGameOver
+                    ) {
+                        if (currentActiveBGM) {
+                            await currentActiveBGM.play();
+                        } else {
+                            playRandomBGM();
+                        }
+                    }
+    
+                } catch (e) {
+                    console.log("BGM再開失敗:", e);
+                }
+            }
+    
+            updateSoundButtonUI();
+        });
+    }
+
+    const shareBtn = document.getElementById("share-btn");
+    
+    if (shareBtn) {
+        shareBtn.addEventListener("click", async () => {
+            playWebAudio("select");
+    
+            const shareText =
+                `CUBE devで ${currentScore} pt 獲得！\n` +
+                `BEST: ${highScore} pt\n` +
+                `#CUBEdev`;
+    
+            const shareData = {
+                title: "CUBE dev",
+                text: shareText,
+                url: location.href
+            };
+    
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                } catch (e) {
+                    console.log("共有キャンセル:", e);
+                }
+            } else {
+                const xUrl =
+                    "https://twitter.com/intent/tweet?text=" +
+                    encodeURIComponent(shareText) +
+                    "&url=" +
+                    encodeURIComponent(location.href);
+    
+                window.open(xUrl, "_blank");
+            }
+        });
+    }
+
+    const timeupRetryBtn = document.getElementById("timeup-retry-btn");
+
+    if (timeupRetryBtn) {
+        timeupRetryBtn.addEventListener("click", () => {
+            playWebAudio("select");
+    
+            fadeToBlack(() => {
+                const overlay = document.getElementById("timeup-overlay");
+    
+                if (overlay) {
+                    overlay.style.opacity = "0";
+                    overlay.style.display = "none";
+                }
+    
+                rotX = 0;
+                rotZ = 0;
+    
+                initGame();
+    
+                const stage = document.getElementById("stage");
+    
+                if (stage) {
+                    stage.style.transition = "none";
+                    stage.style.transform = "rotateX(0deg) rotateZ(0deg)";
+                    stage.offsetWidth;
+                }
+    
+                fadeFromBlack();
+    
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        if (stage) {
+                            rotX = 60;
+                            rotZ = -45;
+                            stage.style.transition = "transform 0.5s ease-out";
+                            stage.style.transform = `rotateX(${rotX}deg) rotateZ(${rotZ}deg)`;
+                        }
+                    });
+                });
+            });
+        });
+    }
 
 /*const timeupTitleBtn = document.getElementById("timeup-title-btn");
 
@@ -690,11 +799,11 @@ if (timeupTitleBtn) {
     });
 }*/
 
-const timeupTitleBtn = document.getElementById("timeup-title-btn");
-
-if (timeupTitleBtn) {
-    timeupTitleBtn.addEventListener("click", returnToTitle);
-}    
+    const timeupTitleBtn = document.getElementById("timeup-title-btn");
+    
+    if (timeupTitleBtn) {
+        timeupTitleBtn.addEventListener("click", returnToTitle);
+    }    
     // 左右回転ボタン
     document.getElementById("rot-z-btn").addEventListener("click", () => {
         initAudioSystem(); 
@@ -710,14 +819,14 @@ if (timeupTitleBtn) {
     
         if (isGameOver || isPaused) return;
     
-        playWebAudio("select");
-    
-        const { dynamicCubeSize, offset } = getDynamicSizes();
-    
-        const visibleBlocks = blocks.filter(b =>
-            b.active &&
-            b.element.style.display !== "none"
-        );
+            playWebAudio("select");
+        
+            const { dynamicCubeSize, offset } = getDynamicSizes();
+        
+            const visibleBlocks = blocks.filter(b =>
+                b.active &&
+                b.element.style.display !== "none"
+            );
     
         blocks.forEach(b => {
             const oldY = b.y;
@@ -735,11 +844,14 @@ if (timeupTitleBtn) {
                 dynamicCubeSize
             );
         });
-    
+
     });
 
     // ポーズボタン
-    document.getElementById("pause-btn").addEventListener("click", () => { initAudioSystem(); playWebAudio("select"); togglePause(); });
+    document.getElementById("pause-btn").addEventListener("click", () => { 
+        initAudioSystem();
+        playWebAudio("select");
+        togglePause(); });
     
     // ポーズ画面の再開ボタン
     document.getElementById("resume-btn").addEventListener("click", () => { 
@@ -753,19 +865,25 @@ if (timeupTitleBtn) {
     
     // リセットボタン
     document.getElementById("reset-btn").addEventListener("click", () => { 
-    initAudioSystem(); 
-    playWebAudio("select"); 
-
-    initGame();
-
-    requestAnimationFrame(() => {
-        playRandomBGM();
+        initAudioSystem(); 
+        playWebAudio("select"); 
+    
+        initGame();
+    
+        requestAnimationFrame(() => {
+            playRandomBGM();
+        });
     });
-});
 
     // タイトル画面の難易度 Easy ボタン
     document.getElementById("diff-easy-btn").addEventListener("click", () => {
         initAudioSystem();
+        
+        debugLog(
+        "select=" + !!soundBank.select +
+        " / audio=" + (audioCtx ? audioCtx.state : "none")
+    );
+        
         playWebAudio("select"); 
         SIZE = 5;
         document.getElementById("diff-easy-btn").classList.add("active");
@@ -776,6 +894,12 @@ if (timeupTitleBtn) {
     // タイトル画面の難易度 Normal ボタン
     document.getElementById("diff-normal-btn").addEventListener("click", () => {
         initAudioSystem();
+
+        debugLog(
+        "select=" + !!soundBank.select +
+        " / audio=" + (audioCtx ? audioCtx.state : "none")
+    );
+        
         playWebAudio("select"); 
         SIZE = 6;
         document.getElementById("diff-normal-btn").classList.add("active");
@@ -785,84 +909,84 @@ if (timeupTitleBtn) {
 
     // 🚀 スタートボタンの処理（PCの最高の回転を維持、iPhoneのねじれと衝突バグを完全分離ハック）
     document.getElementById("actual-start-btn").addEventListener("click", async () => {
-    initAudioSystem();
-    playWebAudio("start"); 
-    playRandomBGM(); 
-
-    const stage = document.getElementById("stage");
-    const overlay = document.getElementById("start-overlay");
+        initAudioSystem();
+        playWebAudio("start"); 
+        playRandomBGM(); 
     
-    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-    const isMobileSize = window.innerWidth < 960;
-
-    document.body.classList.add("game-started");
-    overlay.style.opacity = "0";
-
-    if (!isIOS && isMobileSize) {
-        const docEl = document.documentElement;
-
-        try {
-            if (docEl.requestFullscreen) await docEl.requestFullscreen();
-            else if (docEl.webkitRequestFullscreen) await docEl.webkitRequestFullscreen();
-        } catch (err) {
-            console.log("フルスクリーン拒否");
-        }
-
-        try {
-            if (screen.orientation && screen.orientation.lock) {
-                await screen.orientation.lock("landscape");
+        const stage = document.getElementById("stage");
+        const overlay = document.getElementById("start-overlay");
+        
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const isMobileSize = window.innerWidth < 960;
+    
+        document.body.classList.add("game-started");
+        overlay.style.opacity = "0";
+    
+        if (!isIOS && isMobileSize) {
+            const docEl = document.documentElement;
+    
+            try {
+                if (docEl.requestFullscreen) await docEl.requestFullscreen();
+                else if (docEl.webkitRequestFullscreen) await docEl.webkitRequestFullscreen();
+            } catch (err) {
+                console.log("フルスクリーン拒否");
             }
-        } catch (err) {
-            console.log("向きロック拒否");
-        }
-    }
-
-    // 重要：initGame() の前に角度を0へ
-    rotX = 0;
-    rotZ = 0;
-
-    if (stage) {
-        stage.style.transition = "none";
-        stage.style.transform = "rotateX(0deg) rotateZ(0deg)";
-    }
-
-    setTimeout(() => {
-        overlay.style.display = "none";
     
+            try {
+                if (screen.orientation && screen.orientation.lock) {
+                    await screen.orientation.lock("landscape");
+                }
+            } catch (err) {
+                console.log("向きロック拒否");
+            }
+        }
+
+        // 重要：initGame() の前に角度を0へ
         rotX = 0;
         rotZ = 0;
-
-        skipStageRotationOnce = true;
-        initGame();
-       
-        const newStage = document.getElementById("stage");
     
-        if (newStage) {
-    
-            newStage.style.transition = "none";
-            newStage.style.transform = "rotateX(0deg) rotateZ(0deg)";
-    
-            // Safariに0度状態を確定させる
-            newStage.offsetWidth;
-    
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-    
-                    rotX = 60;
-                    rotZ = -45;
-    
-                    newStage.style.transition =
-                        "transform 0.5s ease-out";
-    
-                    newStage.style.transform =
-                        `rotateX(${rotX}deg) rotateZ(${rotZ}deg)`;
-    
-                });
-            });
+        if (stage) {
+            stage.style.transition = "none";
+            stage.style.transform = "rotateX(0deg) rotateZ(0deg)";
         }
+
+        setTimeout(() => {
+            overlay.style.display = "none";
+        
+            rotX = 0;
+            rotZ = 0;
     
-        }, 500);
-});
+            skipStageRotationOnce = true;
+            initGame();
+           
+            const newStage = document.getElementById("stage");
+        
+            if (newStage) {
+        
+                newStage.style.transition = "none";
+                newStage.style.transform = "rotateX(0deg) rotateZ(0deg)";
+        
+                    // Safariに0度状態を確定させる
+                    newStage.offsetWidth;
+            
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+            
+                            rotX = 60;
+                            rotZ = -45;
+            
+                            newStage.style.transition =
+                                "transform 0.5s ease-out";
+            
+                            newStage.style.transform =
+                                `rotateX(${rotX}deg) rotateZ(${rotZ}deg)`;
+            
+                        });
+                    });
+                }
+        
+            }, 500);
+        });
 }
 
 function togglePause() {
@@ -1053,15 +1177,21 @@ function updateCount() {
     let count = blocks.filter(b => b.active).length;
     document.getElementById("count").innerText = count;
     if (count === 0) {
-        clearInterval(timerId); isGameOver = true;
+        clearInterval(timerId);
+        isGameOver = true;
+    
         const timeBonus = timeLeft * 2000;
         const clearBonus = SIZE === 5 ? 43750 : 75600;
-        
-        updateScoreDisplay(currentScore + clearBonus + timeBonus);
+        const finalScore = currentScore + clearBonus + timeBonus;
+    
+        updateScoreDisplay(finalScore);
+    
         document.getElementById("status").innerText = "🎉 全クリア達成!!";
         document.getElementById("status").style.color = "#4caf50";
-        try { if(currentActiveBGM) currentActiveBGM.pause(); } catch(e){} 
+    
         playWebAudio("clear");
+    
+        showClearOverlay(finalScore, timeBonus, clearBonus);
     }
 }
 
@@ -1075,7 +1205,11 @@ document.addEventListener("visibilitychange", () => {
     }
 });
 
+initAudioSystem();
+
 loadHighScore();
-initAudioSystem(); 
-setupEvents();
 updateSoundButtonUI();
+
+setTimeout(() => {
+    setupEvents();
+}, 300);
