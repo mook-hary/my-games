@@ -642,3 +642,85 @@ button {
 #button-grid button {
     width: 100% !important;
 }
+
+#debug-text {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    z-index: 999999;
+    color: #00ff99;
+    background: rgba(0,0,0,0.7);
+    font-size: 11px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    pointer-events: none;
+}
+
+#clear-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 9000;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.72);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+}
+
+.clear-card {
+    text-align: center;
+    background: rgba(28, 36, 30, 0.96);
+    padding: 24px;
+    border-radius: 20px;
+    border: 2px solid #4CAF50;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+    width: 320px;
+    max-width: 80%;
+}
+
+.clear-card h2 {
+    margin: 0 0 8px;
+    color: #4CAF50;
+    font-size: 38px;
+    letter-spacing: 0.08em;
+}
+
+.clear-card p {
+    margin: 0 0 16px;
+    color: #aaa;
+}
+
+.clear-bonus {
+    color: #ffb703;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1.6;
+    margin-bottom: 18px;
+}
+
+.clear-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+#clear-retry-btn,
+#clear-title-btn {
+    width: 44% !important;
+    margin: 5px 2% !important;
+    display: inline-block !important;
+    border-radius: 50px !important;
+    padding: 12px 0 !important;
+    font-size: 18px !important;
+    font-weight: bold !important;
+}
+
+#clear-retry-btn {
+    background: #4CAF50 !important;
+}
+
+#clear-title-btn {
+    background: #ef4444 !important;
+}
