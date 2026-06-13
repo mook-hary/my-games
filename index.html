@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>CUBE PUZZLE</title>
-    <link rel="stylesheet" href="style.css?v=111">
+    <title>CUBE dev</title>
+    <link rel="stylesheet" href="style.css?v=20260613-05">
 </head>
 <body>
 
@@ -14,14 +14,17 @@
             
             <div id="start-overlay">
                 <div class="start-card">
-                    <h1>CUBE PUZZLE</h1>
+                    <h1>CUBE dev</h1>
                     <p>同じ柄のブロックをペアで選んで消そう！<br>2面以上が開いているブロックが選択できます。</p>
                     
+                    <button id="diff-tutorial-btn" class="tutorial-btn">
+                        Tutorial
+                    </button>
                     <div class="difficulty-container">
                         <span class="diff-label">LEVEL</span>
                         <div class="diff-switch">
-                            <button id="diff-easy-btn" class="diff-btn">Easy</button>
                             <button id="diff-normal-btn" class="diff-btn active">Normal</button>
+                            <button id="diff-hard-btn" class="diff-btn">Hard</button>
                         </div>
                     </div>
 
@@ -33,8 +36,10 @@
                 <div class="pause-card">
                     <h2>PAUSE</h2>
                     <p>ゲームは一時停止中です</p>
-                    <button id="resume-btn">CONTINUE</button>
-                    <button id="to-title-btn">🏠 TITLE</button>
+                    <div class="pause-buttons">
+                        <button id="resume-btn">CONTINUE</button>
+                        <button id="to-title-btn">🏠 TITLE</button>
+                    </div>
                 </div>
             </div>
 
@@ -44,14 +49,19 @@
                     <p>おつかれさまでした</p>
             
                     <div class="result-score">
-                        SCORE<br>
-                        <span id="timeup-score">0</span> pt
+                        <span class="score-label">SCORE</span>
+                        <span class="score-value" id="timeup-score">0</span>
+                        <span class="score-unit">pt</span>
                     </div>
             
                     <div class="timeup-buttons">
                         <button id="timeup-retry-btn">CONTINUE</button>
-                        <button id="timeup-title-btn">TITLE</button>
+                        <button id="timeup-title-btn">🏠 TITLE</button>
+                        <button id="timeup-share-btn" class="result-share-btn">SHARE</button>
                     </div>
+                    
+                    
+                    
                 </div>
             </div>
 
@@ -61,27 +71,36 @@
                     <p>全ブロック消去達成！</p>
             
                     <div class="result-score">
-                        SCORE<br>
-                        <span id="clear-score">0</span> pt
+                        <span class="score-label">SCORE</span>
+                        <span class="score-value" id="clear-score">0</span>
+                        <span class="score-unit">pt</span>
                     </div>
             
-                    <div class="clear-bonus">
-                        TIME BONUS: <span id="clear-time-bonus">0</span><br>
-                        CLEAR BONUS: <span id="clear-clear-bonus">0</span>
+                    <div id="clear-bonus-area" class="clear-bonus">                                           
+                        TIME BONUS:
+                        <span id="clear-time-bonus">0</span><br>
+                    
+                        CLEAR BONUS:
+                        <span id="clear-clear-bonus">0</span>
                     </div>
+                    
+                    <div id="clear-rank" class="clear-rank">★★★</div>
+                    <div id="clear-new-record"></div>
             
                     <div class="clear-buttons">
                         <button id="clear-retry-btn">CONTINUE</button>
-                        <button id="clear-title-btn">TITLE</button>
-                    </div>
+                        <button id="clear-title-btn">🏠 TITLE</button>
+                        <button id="clear-share-btn" class="result-share-btn">SHARE</button>
+                    </div>                  
+                    
                 </div>
             </div>
             
             <div id="game-container">
-                <!--<div id="debug-text"></div>-->
+                
                 <div id="utility-buttons">
                     <button id="sound-toggle-btn" class="utility-btn" aria-label="サウンド切り替え">🔊</button>
-                    <!--<button id="clear-test-btn" class="utility-btn" aria-label="クリアテスト">✅</button>-->
+                    
                 </div>
                 
                 <div id="ui-panel">
@@ -119,6 +138,6 @@
                 <div id="screen-fade"></div>
             </div>
 
-        </div> </div> <script src="script.js?v=118"></script>
+        </div> </div> <script src="script.js?v=20260613-17"></script>
 </body>
 </html>
