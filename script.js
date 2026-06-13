@@ -977,6 +977,8 @@ function restoreTitleScreen(stage, startOverlay) {
 function resetTutorialModeForTitle() {
     isTutorialMode = false;
 
+    SIZE = selectedDifficulty;
+
     prepareTimerForSelectedMode();
 
     loadHighScore();
@@ -1235,10 +1237,10 @@ function setupRotationButtons() {
 }
 
 function setupClearButtons() {
-    //addClickListener(
-      //  "clear-test-btn",
-        //handleClearTest
-    //);
+    addClickListener(
+        "clear-test-btn",
+        handleClearTest
+    );
 
     addClickListener(
         "clear-retry-btn",
@@ -1251,7 +1253,7 @@ function setupClearButtons() {
     );
 }
 
-/*function handleClearTest() {
+function handleClearTest() {
     const {
         finalScore,
         timeBonus,
@@ -1265,7 +1267,7 @@ function setupClearButtons() {
             clearBonus
         );
     });
-}*/
+}
 
 function calculateClearResult() {
 
@@ -1431,11 +1433,9 @@ function selectDifficulty(size) {
 
     SIZE = size;
 
-    isTutorialMode = (size === 4);
+    isTutorialMode = false;
 
-    if (size !== 4) {
-        selectedDifficulty = size;
-    }
+    selectedDifficulty = size;
 
     prepareTimerForSelectedMode();
 
