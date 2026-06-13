@@ -20,6 +20,9 @@ let timeLeft = 120;
 let timerId = null;
 let isGameOver = false;
 let isPaused = false; 
+let isTutorialMode = false;
+let tutorialFirstMatchDone = false;
+let selectedDifficulty = 6;
 
 // 🌟 初期のゲーム起動時は定位置でスタンバイ
 let rotX = 60;   
@@ -69,23 +72,36 @@ function debugLog(text) {
 }
 
 function playWebAudio(bufferName) {
-    if (!isSoundEnabled) return;
-
-    if (audioCtx && audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
-
-    const bufferObj = soundBank[bufferName];
-    if (!audioCtx || !bufferObj) return;
+    if (!canPlayWebAudio(bufferName)) return;
 
     try {
-        let bufferSource = audioCtx.createBufferSource();
-        bufferSource.buffer = bufferObj;
-        bufferSource.connect(audioCtx.destination); 
-        bufferSource.start(0);
+        playSoundBuffer(bufferName);
+
     } catch (e) {
         console.log("Web Audio再生エラー:", e);
     }
+}
+
+function canPlayWebAudio(bufferName) {
+    if (!isSoundEnabled) return false;
+
+    if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume();
+    }
+
+    return audioCtx && soundBank[bufferName];
+}
+
+function playSoundBuffer(bufferName) {
+    const bufferSource =
+        audioCtx.createBufferSource();
+
+    bufferSource.buffer =
+        soundBank[bufferName];
+
+    bufferSource.connect(audioCtx.destination);
+
+    bufferSource.start(0);
 }
 
 function playCountdownBeep() {
@@ -98,6 +114,10 @@ function playCountdownBeep() {
         audioCtx.resume();
     }
 
+    playCountdownTone();
+}
+
+function playCountdownTone() {
     const now = audioCtx.currentTime + 0.01;
 
     const osc = audioCtx.createOscillator();
@@ -107,7 +127,10 @@ function playCountdownBeep() {
     osc.frequency.setValueAtTime(1200, now);
 
     gain.gain.setValueAtTime(0.35, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+    gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        now + 0.15
+    );
 
     osc.connect(gain);
     gain.connect(audioCtx.destination);
@@ -126,6 +149,10 @@ function playCountdownFastBeep() {
         audioCtx.resume();
     }
 
+    playFastCountdownTone();
+}
+
+function playFastCountdownTone() {
     const now = audioCtx.currentTime + 0.01;
 
     for (let i = 0; i < 2; i++) {
@@ -138,7 +165,10 @@ function playCountdownFastBeep() {
         osc.frequency.setValueAtTime(1600, t);
 
         gain.gain.setValueAtTime(0.30, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+        gain.gain.exponentialRampToValueAtTime(
+            0.001,
+            t + 0.1
+        );
 
         osc.connect(gain);
         gain.connect(audioCtx.destination);
@@ -167,50 +197,80 @@ function initAudioSystem() {
     if (isAudioLoading) return;
 
     try {
-        window.AudioContext = window.AudioContext || window.webkitAudioContext;
-
-        if (!audioCtx) {
-            audioCtx = new AudioContext();
-        }
+        setupAudioContext();
 
         isAudioLoading = true;
 
-        loadSoundToBuffer("select_1.mp3").then(buf => {
-            if (buf) soundBank.select = buf;
-        });
-
-        loadSoundToBuffer("clear_1.mp3").then(buf => {
-            if (buf) soundBank.clear = buf;
-        });
-
-        loadSoundToBuffer("error_1.mp3").then(buf => {
-            if (buf) soundBank.error = buf;
-        });
-
-        loadSoundToBuffer("timeup_1.mp3").then(buf => {
-            if (buf) soundBank.timeup = buf;
-        });
-
-        loadSoundToBuffer("start_1.mp3").then(buf => {
-            if (buf) soundBank.start = buf;
-        });
+        loadInitialSoundBuffers();
 
     } catch(e) {
         console.log("Web Audio初期化失敗:", e);
     }
 }
 
-function getDynamicSizes() {
-    const isPC = window.innerWidth >= 960;
-    let dynamicCubeSize = 35;
-    if (SIZE === 5) {
-        dynamicCubeSize = isPC ? 48 : 40;
-    } else {
-        dynamicCubeSize = isPC ? 40 : 35;
+function setupAudioContext() {
+    window.AudioContext =
+        window.AudioContext || window.webkitAudioContext;
+
+    if (!audioCtx) {
+        audioCtx = new AudioContext();
     }
-    const offset = (SIZE - 1) * dynamicCubeSize / 2;
-    const halfSize = dynamicCubeSize / 2;
-    return { dynamicCubeSize, offset, halfSize };
+}
+
+function loadInitialSoundBuffers() {
+    loadSoundToBuffer("select_1.mp3").then(buf => {
+        if (buf) soundBank.select = buf;
+    });
+
+    loadSoundToBuffer("clear_1.mp3").then(buf => {
+        if (buf) soundBank.clear = buf;
+    });
+
+    loadSoundToBuffer("error_1.mp3").then(buf => {
+        if (buf) soundBank.error = buf;
+    });
+
+    loadSoundToBuffer("timeup_1.mp3").then(buf => {
+        if (buf) soundBank.timeup = buf;
+    });
+
+    loadSoundToBuffer("start_1.mp3").then(buf => {
+        if (buf) soundBank.start = buf;
+    });
+}
+
+function getDynamicSizes() {
+    const dynamicCubeSize = getCubeSizeByDevice();
+
+    const offset =
+        (SIZE - 1) * dynamicCubeSize / 2;
+
+    const halfSize =
+        dynamicCubeSize / 2;
+
+    return {
+        dynamicCubeSize,
+        offset,
+        halfSize
+    };
+}
+
+function getCubeSizeByDevice() {
+    const isPC = window.innerWidth >= 960;
+
+    if (SIZE === 4) {
+        return isPC ? 56 : 46;
+    }
+
+    if (SIZE === 6) {
+        return isPC ? 40 : 35;
+    }
+
+    if (SIZE === 8) {
+        return isPC ? 30 : 26;
+    }
+
+    return isPC ? 40 : 35;
 }
 
 function loadHighScore() {
@@ -224,147 +284,384 @@ function loadHighScore() {
 }
 
 function updateScoreDisplay(scoreValue) {
-    currentScore = scoreValue;
-    document.getElementById("score").innerText = currentScore;
-    
-    if (currentScore > highScore) {
-        highScore = currentScore;
-        document.getElementById("best-score").innerText = highScore;
-        localStorage.setItem(`egebro_highscore_sz${SIZE}`, highScore); 
+
+    if (isTutorialMode) {
+        return;
     }
+
+    currentScore = scoreValue;
+
+    document.getElementById("score").innerText =
+        currentScore;
+
+    updateHighScoreIfNeeded();
 }
 
-function initGame() {
-    const stage = document.getElementById("stage");
-    if(!stage) return;
-    while (stage.firstChild) {
-    stage.removeChild(stage.firstChild);
+function updateHighScoreIfNeeded() {
+    if (currentScore <= highScore) return;
+
+    highScore = currentScore;
+
+    document.getElementById("best-score").innerText =
+        highScore;
+
+    localStorage.setItem(
+        `egebro_highscore_sz${SIZE}`,
+        highScore
+    );
 }
-    blocks = [];
-    selected = null;
-    isGameOver = false;
-    isPaused = false; 
-    
-    const pauseOverlay = document.getElementById("pause-overlay");
-    if(pauseOverlay) { pauseOverlay.style.display = "none"; pauseOverlay.style.opacity = "0"; }
 
-    updateScoreDisplay(0); 
-    loadHighScore(); 
-    
-    // 🚨【大修正】リセットボタン連動バグを防ぐため、ここで角度（rotX, rotZ）を強制上書きするのを完全に撤廃！
-    // 現在のカメラの向きをそのまま維持して中身だけをリフレッシュします。
-    
-    document.getElementById("status").innerText = "1つ目のブロックを選んでください";
-    document.getElementById("status").style.color = "#38bdf8";
-
-    timeLeft = 120;
-    updateTimerUI();
-    clearInterval(timerId);
-    timerId = setInterval(countdown, 1000);
-
-    const totalRequired = SIZE * SIZE * SIZE;
-const pool = createTilePool(totalRequired);
-    
-    function createTilePool(totalRequired) {
+function createTilePool(totalRequired) {
     const pool = [];
 
-    for (let i = 0; i < totalRequired; i++) {
-        const t = tileTypes[i % tileTypes.length];
-        pool.push({ ...t });
+    const pairCount = totalRequired / 2;
+
+    for (let i = 0; i < pairCount; i++) {
+        const tile =
+            tileTypes[i % tileTypes.length];
+
+        pool.push({ ...tile });
+        pool.push({ ...tile });
     }
 
-    // Fisher-Yates shuffle
-    for (let i = pool.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        const temp = pool[i];
-        pool[i] = pool[j];
-        pool[j] = temp;
-    }
+    shuffleTilePool(pool);
 
     return pool;
 }
 
-    let index = 0;
-    const { dynamicCubeSize, offset, halfSize } = getDynamicSizes();
+function shuffleTilePool(pool) {
+    for (let i = pool.length - 1; i > 0; i--) {
+        const j =
+            Math.floor(Math.random() * (i + 1));
 
-    const fragment = document.createDocumentFragment();
-    
+        const temp = pool[i];
+        pool[i] = pool[j];
+        pool[j] = temp;
+    }
+}
+
+function resetGameState() {
+    blocks = [];
+    selected = null;
+    isGameOver = false;
+    isPaused = false;
+    tutorialFirstMatchDone = false;
+}
+
+function clearStage(stage) {
+    while (stage.firstChild) {
+        stage.removeChild(stage.firstChild);
+    }
+}
+
+function hidePauseOverlay() {
+    const pauseOverlay = document.getElementById("pause-overlay");
+
+    if (pauseOverlay) {
+        pauseOverlay.style.display = "none";
+        pauseOverlay.style.opacity = "0";
+    }
+}
+
+function resetGameUI() {
+    if (isTutorialMode) {
+        setElementText("score", "-");
+        setElementText("best-score", "-");
+    } else {
+        updateScoreDisplay(0);
+        loadHighScore();
+    }
+
+    if (isTutorialMode) {
+        document.getElementById("status").innerText =
+            "チュートリアル：同じ数字を2つ選んで消してみましょう";
+    } else {
+        document.getElementById("status").innerText =
+            "1つ目のブロックを選んでください";
+    }
+
+    document.getElementById("status").style.color =
+        "#38bdf8";
+}
+
+function startGameTimer() {
+    clearInterval(timerId);
+
+    if (isTutorialMode) {
+        timeLeft = 999;
+        updateTimerUI();
+        return;
+    }
+
+    timeLeft = 120;
+    updateTimerUI();
+
+    timerId = setInterval(countdown, 1000);
+}
+
+function createCubeElement(dynamicCubeSize) {
+    const cube = document.createElement("div");
+    cube.className = "cube";
+
+    cube.style.width = dynamicCubeSize + "px";
+    cube.style.height = dynamicCubeSize + "px";
+
+    return cube;
+}
+
+function createBlockData(tile, cube, x, y, z) {
+    return {
+        txt: tile.txt,
+        color: tile.color,
+        element: cube,
+        active: true,
+        hasFaces: false,
+        x,
+        y,
+        z
+    };
+}
+
+function isInnerCube(x, y, z) {
+    const hasLeft = x > 0;
+    const hasRight = x < SIZE - 1;
+    const hasFront = y > 0;
+    const hasBack = y < SIZE - 1;
+    const hasBottom = z > 0;
+    const hasTop = z < SIZE - 1;
+
+    return (
+        hasLeft &&
+        hasRight &&
+        hasFront &&
+        hasBack &&
+        hasBottom &&
+        hasTop
+    );
+}
+
+function setupCubeClick(cube, blockData) {
+    cube.addEventListener("click", (e) => {
+        e.stopPropagation();
+        handleClick(blockData);
+    });
+}
+
+function setupCubeVisibilityAndFaces(
+    blockData,
+    x,
+    y,
+    z,
+    halfSize,
+    dynamicCubeSize
+) {
+    const cube = blockData.element;
+
+    if (isInnerCube(x, y, z)) {
+        cube.style.display = "none";
+        return;
+    }
+
+    createFacesForCube(
+        blockData,
+        halfSize,
+        dynamicCubeSize
+    );
+}
+
+function createSingleBlock(
+    tile,
+    x,
+    y,
+    z,
+    dynamicCubeSize,
+    offset,
+    halfSize
+) {
+    const cube = createCubeElement(dynamicCubeSize);
+
+    updateCubePosition(cube, x, y, z, offset, dynamicCubeSize);
+
+    const blockData = createBlockData(tile, cube, x, y, z);
+
+    setupCubeClick(cube, blockData);
+
+    setupCubeVisibilityAndFaces(
+        blockData,
+        x,
+        y,
+        z,
+        halfSize,
+        dynamicCubeSize
+    );
+
+    return blockData;
+}
+
+function registerBlock(blockData, fragment) {
+    fragment.appendChild(blockData.element);
+    blocks.push(blockData);
+}
+
+function createBlocks(pool, fragment, dynamicCubeSize, offset, halfSize) {
+    let index = 0;
+
     for (let x = 0; x < SIZE; x++) {
         for (let y = 0; y < SIZE; y++) {
             for (let z = 0; z < SIZE; z++) {
                 const tile = pool[index++];
-                const cube = document.createElement("div");
-                cube.className = "cube";
-                
-                cube.style.width = dynamicCubeSize + "px";
-                cube.style.height = dynamicCubeSize + "px";
-                
-                updateCubePosition(cube, x, y, z, offset, dynamicCubeSize);
-                const blockData = { txt: tile.txt, color: tile.color, element: cube, active: true, hasFaces: false, x, y, z };
-                
-                cube.addEventListener("click", (e) => {
-                    e.stopPropagation(); 
-                    handleClick(blockData);
-                });
 
-                let hasLeft = x > 0, hasRight = x < SIZE - 1;
-                let hasFront = y > 0, hasBack = y < SIZE - 1;
-                let hasBottom = z > 0, hasTop = z < SIZE - 1;
+                const blockData = createSingleBlock(
+                    tile,
+                    x,
+                    y,
+                    z,
+                    dynamicCubeSize,
+                    offset,
+                    halfSize
+                );
 
-                if (hasLeft && hasRight && hasFront && hasBack && hasBottom && hasTop) {
-                    cube.style.display = "none"; 
-                    fragment.appendChild(cube);
-                } else {
-                    createFacesForCube(blockData, halfSize, dynamicCubeSize);
-                    fragment.appendChild(cube);
-                }
-                blocks.push(blockData);
+                registerBlock(blockData, fragment);
             }
-        }     
+        }
     }
+}
 
-    stage.appendChild(fragment);
-    updateCount();
-    
+function applyInitialStageRotation() {
     if (!skipStageRotationOnce) {
         updateStageRotation();
     }
-    
+
     skipStageRotationOnce = false;
+}
+
+function setupNewGameStage() {
+    const stage = document.getElementById("stage");
+    if (!stage) return null;
+
+    clearStage(stage);
+    resetGameState();
+    hidePauseOverlay();
+    resetGameUI();
+    startGameTimer();
+
+    return stage;
+}
+
+function createInitialBlocksFragment() {
+    const totalRequired = SIZE * SIZE * SIZE;
+    const pool = createTilePool(totalRequired);
+
+    const {
+        dynamicCubeSize,
+        offset,
+        halfSize
+    } = getDynamicSizes();
+
+    const fragment = document.createDocumentFragment();
+
+    createBlocks(
+        pool,
+        fragment,
+        dynamicCubeSize,
+        offset,
+        halfSize
+    );
+
+    return fragment;
+}
+
+function finalizeGameSetup(stage, fragment) {
+    stage.appendChild(fragment);
+
+    updateCount();
+    applyInitialStageRotation();
+}
+
+function initGame() {
+    const stage = setupNewGameStage();
+    if (!stage) return;
+
+    const fragment = createInitialBlocksFragment();
+
+    finalizeGameSetup(stage, fragment);
+}
+    
+function createFacesForCube(b, halfSize, dynamicCubeSize) {
+    if (b.hasFaces) return;
+
+    const faces = createFaceDefinitions(halfSize);
+
+    faces.forEach(faceData => {
+        const face = createCubeFaceElement(
+            faceData,
+            b,
+            dynamicCubeSize
+        );
+
+        b.element.appendChild(face);
+    });
+
+    b.hasFaces = true;
+}
+
+function createFaceDefinitions(halfSize) {
+    return [
+        {
+            name: "top",
+            style: `transform: translateZ(${halfSize}px);`
+        },
+        {
+            name: "bottom",
+            style: `transform: rotateX(180deg) translateZ(${halfSize}px);`
+        },
+        {
+            name: "front",
+            style: `transform: rotateX(-90deg) translateZ(${halfSize}px);`
+        },
+        {
+            name: "back",
+            style: `transform: rotateX(90deg) translateZ(${halfSize}px);`
+        },
+        {
+            name: "right",
+            style: `transform: rotateY(90deg) translateZ(${halfSize}px);`
+        },
+        {
+            name: "left",
+            style: `transform: rotateY(-90deg) translateZ(${halfSize}px);`
+        }
+    ];
+}
+
+function createCubeFaceElement(faceData, blockData, dynamicCubeSize) {
+    const face = document.createElement("div");
+
+    face.className = `face ${faceData.name}`;
+    face.style.cssText = faceData.style;
+
+    face.style.width = dynamicCubeSize + "px";
+    face.style.height = dynamicCubeSize + "px";
+
+    face.style.backgroundColor = blockData.color;
+    face.innerText = blockData.txt;
+
+    const windowIsPC = window.innerWidth >= 960;
+
+    face.style.fontSize =
+        windowIsPC
+            ? (SIZE === 5 ? "26px" : "22px")
+            : (SIZE === 5 ? "22px" : "18px");
+
+    if (
+        blockData.txt.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]/) ||
+        blockData.txt.length > 2 ||
+        blockData.txt.charCodeAt(0) > 255
+    ) {
+        face.style.fontSize = windowIsPC ? "16px" : "14px";
     }
-    
-    function createFacesForCube(b, halfSize, dynamicCubeSize) {
-        if (b.hasFaces) return; 
-        
-        const faces = [
-            { name: 'top', style: `transform: translateZ(${halfSize}px);` },
-            { name: 'bottom', style: `transform: rotateX(180deg) translateZ(${halfSize}px);` },
-            { name: 'front', style: `transform: rotateX(-90deg) translateZ(${halfSize}px);` },
-            { name: 'back', style: `transform: rotateX(90deg) translateZ(${halfSize}px);` },
-            { name: 'right', style: `transform: rotateY(90deg) translateZ(${halfSize}px);` },
-            { name: 'left', style: `transform: rotateY(-90deg) translateZ(${halfSize}px);` }
-        ];
-    
-        faces.forEach(f => {
-            const face = document.createElement("div");
-            face.className = `face ${f.name}`;
-            face.style.cssText = f.style;
-            
-            face.style.width = dynamicCubeSize + "px";
-            face.style.height = dynamicCubeSize + "px";
-            
-            face.style.backgroundColor = b.color;
-            face.innerText = b.txt;
-            
-            const windowIsPC = window.innerWidth >= 960;
-            face.style.fontSize = windowIsPC ? (SIZE === 5 ? "26px" : "22px") : (SIZE === 5 ? "22px" : "18px");
-            
-            if (b.txt.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]/) || b.txt.length > 2 || b.txt.charCodeAt(0) > 255) {
-                face.style.fontSize = windowIsPC ? "16px" : "14px"; 
-            }
-            b.element.appendChild(face);
-        });
-        b.hasFaces = true;
+
+    return face;
 }
 
 function updateCubePosition(cube, x, y, z, offset, dynamicCubeSize) {
@@ -383,43 +680,77 @@ function playStageIntroAnimation(stage) {
     const fromTransform = "rotateX(0deg) rotateZ(0deg)";
     const toTransform = "rotateX(60deg) rotateZ(-45deg)";
 
+    prepareStageIntroAnimation(
+        stage,
+        fromTransform
+    );
+
+    if (shouldUseStageAnimate(stage)) {
+        playStageIntroWithAnimate(
+            stage,
+            fromTransform,
+            toTransform
+        );
+    } else {
+        playStageIntroWithStyle(
+            stage,
+            toTransform
+        );
+    }
+}
+
+function prepareStageIntroAnimation(stage, fromTransform) {
     stage.style.transition = "none";
     stage.style.transform = fromTransform;
 
-    // Safari / iPhone Chrome 対策：レイアウト確定
     stage.offsetWidth;
+}
 
-    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+function shouldUseStageAnimate(stage) {
+    const isIOS =
+        /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-    if (isIOS && stage.animate) {
-        const anim = stage.animate(
-            [
-                { transform: fromTransform },
-                { transform: toTransform }
-            ],
-            {
-                duration: 500,
-                easing: "ease-out",
-                fill: "forwards"
-            }
-        );
+    return isIOS && stage.animate;
+}
 
-        anim.onfinish = () => {
-            rotX = 60;
-            rotZ = -45;
-            stage.style.transition = "transform 0.5s ease-out";
-            stage.style.transform = toTransform;
-        };
-    } else {
+function playStageIntroWithAnimate(
+    stage,
+    fromTransform,
+    toTransform
+) {
+    const anim = stage.animate(
+        [
+            { transform: fromTransform },
+            { transform: toTransform }
+        ],
+        {
+            duration: 500,
+            easing: "ease-out",
+            fill: "forwards"
+        }
+    );
+
+    anim.onfinish = () => {
+        setStageDefaultAngle(stage, toTransform);
+    };
+}
+
+function playStageIntroWithStyle(stage, toTransform) {
+    requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                rotX = 60;
-                rotZ = -45;
-                stage.style.transition = "transform 0.5s ease-out";
-                stage.style.transform = toTransform;
-            });
+            setStageDefaultAngle(stage, toTransform);
         });
-    }
+    });
+}
+
+function setStageDefaultAngle(stage, toTransform) {
+    rotX = 60;
+    rotZ = -45;
+
+    stage.style.transition =
+        "transform 0.5s ease-out";
+
+    stage.style.transform = toTransform;
 }
 
 function updateSoundButtonUI() {
@@ -445,41 +776,98 @@ function stopAllSounds() {
     // iPhoneで復帰が重くなることがあるため
 }
 
-function showTimeUpOverlay() {
-    const overlay = document.getElementById("timeup-overlay");
-    const scoreEl = document.getElementById("timeup-score");
-    const stage = document.getElementById("stage");
+function showClearOverlay(finalScore, timeBonus, clearBonus) {
+    setClearOverlayValues(
+        finalScore,
+        timeBonus,
+        clearBonus
+    );
 
-    if (scoreEl) {
-        scoreEl.innerText = currentScore;
+    showOverlayWithFade("clear-overlay");
+}
+
+function setClearOverlayValues(
+    finalScore,
+    timeBonus,
+    clearBonus
+) {
+    setElementText(
+        "clear-score",
+        finalScore
+    );
+
+    setElementText(
+        "clear-time-bonus",
+        timeBonus
+    );
+
+    setElementText(
+        "clear-clear-bonus",
+        clearBonus
+    );
+
+    const rankEl =
+        document.getElementById("clear-rank");
+
+    const bonusArea =
+        document.getElementById(
+            "clear-bonus-area"
+        );
+
+    if (isTutorialMode) {
+
+        if (bonusArea) {
+            bonusArea.style.display = "none";
+        }
+
+        if (rankEl) {
+            rankEl.style.display = "block";
+            rankEl.innerText =
+                "次はNORMALに挑戦！";
+        }
+
+    } else {
+
+        if (bonusArea) {
+            bonusArea.style.display = "block";
+        }
+
+        if (rankEl) {
+            rankEl.style.display = "none";
+        }
     }
 
-    
+    setElementText(
+        "clear-new-record",
+        ""
+    );
+}
 
-    if (overlay) {
-        overlay.style.display = "flex";
-        requestAnimationFrame(() => {
-            overlay.style.opacity = "1";
-        });
+function showTimeUpOverlay() {
+    setElementText("timeup-score", currentScore);
+
+    showOverlayWithFade("timeup-overlay");
+}
+
+function setElementText(id, text) {
+    const element = document.getElementById(id);
+
+    if (element) {
+        element.innerText = text;
     }
 }
 
-function showClearOverlay(finalScore, timeBonus, clearBonus) {
-    const overlay = document.getElementById("clear-overlay");
-    const scoreEl = document.getElementById("clear-score");
-    const timeBonusEl = document.getElementById("clear-time-bonus");
-    const clearBonusEl = document.getElementById("clear-clear-bonus");
+function showOverlayWithFade(id) {
+    const overlay = document.getElementById(id);
 
-    if (scoreEl) scoreEl.innerText = finalScore;
-    if (timeBonusEl) timeBonusEl.innerText = timeBonus;
-    if (clearBonusEl) clearBonusEl.innerText = clearBonus;
+    if (!overlay) return;
 
-    if (overlay) {
-        overlay.style.display = "flex";
-        requestAnimationFrame(() => {
-            overlay.style.opacity = "1";
-        });
-    }
+    overlay.style.display = "flex";
+
+    requestAnimationFrame(() => {
+        overlay.style.opacity = "1";
+        fadeFromBlack();
+    });
 }
 
 function fadeToBlack(callback) {
@@ -509,514 +897,880 @@ function fadeFromBlack() {
     });
 }
 
+function stopCurrentBGM() {
+    try {
+        if (currentActiveBGM) {
+            currentActiveBGM.pause();
+            currentActiveBGM.currentTime = 0;
+            currentActiveBGM = null;
+        }
+    } catch(e) {}
+}
+
+function hideGameOverlays() {
+    const overlays = [
+        "timeup-overlay",
+        "clear-overlay",
+        "pause-overlay"
+    ];
+
+    overlays.forEach(id => {
+        const overlay = document.getElementById(id);
+
+        if (overlay) {
+            overlay.style.opacity = "0";
+            overlay.style.display = "none";
+        }
+    });
+}
+
+function resetStageToTitle(stage) {
+    rotX = 60;
+    rotZ = -45;
+
+    if (stage) {
+        stage.innerHTML = "";
+        stage.style.transition = "none";
+        stage.style.opacity = "1";
+        stage.style.transform = `rotateX(${rotX}deg) rotateZ(${rotZ}deg)`;
+    }
+}
+
+function showStartOverlay(startOverlay) {
+    if (startOverlay) {
+        startOverlay.style.display = "flex";
+        startOverlay.style.opacity = "1";
+    }
+}
+
+function resetGameSelectionState() {
+    blocks = [];
+    selected = null;
+}
+
+function resetGameFlags() {
+    clearInterval(timerId);
+    isGameOver = true;
+    isPaused = false;
+}
+
+function resetGameStartedState() {
+    document.body.classList.remove("game-started");
+}
+
+function restoreTitleScreen(stage, startOverlay) {
+    resetGameFlags();
+
+    hideGameOverlays();
+
+    resetGameSelectionState();
+
+    resetStageToTitle(stage);
+
+    resetGameStartedState();
+
+    resetTutorialModeForTitle();
+
+    showStartOverlay(startOverlay);
+}
+
+function resetTutorialModeForTitle() {
+    isTutorialMode = false;
+
+    prepareTimerForSelectedMode();
+
+    loadHighScore();
+}
+
 function returnToTitle() {
     playWebAudio("select");
 
-    const overlay = document.getElementById("timeup-overlay");
-    const clearOverlay = document.getElementById("clear-overlay");
-    const pauseOverlay = document.getElementById("pause-overlay");
-    const startOverlay = document.getElementById("start-overlay");
-    const stage = document.getElementById("stage");
+    const startOverlay =
+        document.getElementById("start-overlay");
+
+    const stage =
+        document.getElementById("stage");
 
     setTimeout(() => {
-        try {
-            if (currentActiveBGM) {
-                currentActiveBGM.pause();
-                currentActiveBGM.currentTime = 0;
-                currentActiveBGM = null;
-            }
-        } catch(e) {}
+        stopCurrentBGM();
 
         fadeToBlack(() => {
-            clearInterval(timerId);
-            isGameOver = true;
-            isPaused = false;
-
-            if (overlay) {
-                overlay.style.opacity = "0";
-                overlay.style.display = "none";
-            }
-
-            if (clearOverlay) {
-                clearOverlay.style.opacity = "0";
-                clearOverlay.style.display = "none";
-            }
-
-            if (pauseOverlay) {
-                pauseOverlay.style.opacity = "0";
-                pauseOverlay.style.display = "none";
-            }
-
-            blocks = [];
-            selected = null;
-
-            rotX = 60;
-            rotZ = -45;
-
-            if (stage) {
-                stage.innerHTML = "";
-                stage.style.transition = "none";
-                stage.style.opacity = "1";
-                stage.style.transform = `rotateX(${rotX}deg) rotateZ(${rotZ}deg)`;
-            }
-
-            document.body.classList.remove("game-started");
-
-            if (startOverlay) {
-                startOverlay.style.display = "flex";
-                startOverlay.style.opacity = "1";
-            }
+            restoreTitleScreen(
+                stage,
+                startOverlay
+            );
 
             fadeFromBlack();
         });
     }, 200);
 }
 
-function setupEvents() {
-    const clearTestBtn = document.getElementById("clear-test-btn");
+async function shareResult(resultType) {
+    playWebAudio("select");
 
-    if (clearTestBtn) {
-        clearTestBtn.addEventListener("click", () => {
-            const timeBonus = timeLeft * 2000;
-            const clearBonus = SIZE === 5 ? 43750 : 75600;
-            const finalScore = currentScore + clearBonus + timeBonus;
-    
-            showClearOverlay(finalScore, timeBonus, clearBonus);
-        });
-    }
-    
-    const clearRetryBtn = document.getElementById("clear-retry-btn");
+    const shareData =
+        createShareData(resultType);
 
-    if (clearRetryBtn) {
-        clearRetryBtn.addEventListener("click", () => {
-            playWebAudio("select");
-    
-            fadeToBlack(() => {
-                const overlay = document.getElementById("clear-overlay");
-    
-                if (overlay) {
-                    overlay.style.opacity = "0";
-                    overlay.style.display = "none";
-                }
-    
-                rotX = 0;
-                rotZ = 0;
-    
-                initGame();
-    
-                const stage = document.getElementById("stage");
-    
-                if (stage) {
-                    stage.style.transition = "none";
-                    stage.style.transform = "rotateX(0deg) rotateZ(0deg)";
-                    stage.offsetWidth;
-                }
-    
-                fadeFromBlack();
-    
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        if (stage) {
-                            rotX = 60;
-                            rotZ = -45;
-                            stage.style.transition = "transform 0.5s ease-out";
-                            stage.style.transform = `rotateX(${rotX}deg) rotateZ(${rotZ}deg)`;
-                        }
-                    });
-                });
-            });
-        });
+    if (navigator.share) {
+        await shareWithWebShareApi(
+            shareData
+        );
+    } else {
+        shareToX(shareData.text);
     }
-    
-    const clearTitleBtn = document.getElementById("clear-title-btn");
-    
-    if (clearTitleBtn) {
-        clearTitleBtn.addEventListener("click", returnToTitle);
+}
+
+function createShareData(resultType) {
+    const label =
+        resultType === "clear"
+            ? "CLEAR!"
+            : "TIME UP";
+
+    const shareText =
+        `CUBE dev ${label}\n` +
+        `SCORE: ${currentScore} pt\n` +
+        `BEST: ${highScore} pt\n` +
+        `#CUBEdev`;
+
+    return {
+        title: "CUBE dev",
+        text: shareText,
+        url: location.href
+    };
+}
+
+async function shareWithWebShareApi(shareData) {
+    try {
+        await navigator.share(shareData);
+
+    } catch (e) {
+        console.log("共有キャンセル:", e);
     }
-    const soundBtn = document.getElementById("sound-toggle-btn");
-    
-    if (soundBtn) {
-        soundBtn.addEventListener("click", async () => {
-    
-            isSoundEnabled = !isSoundEnabled;
-    
-            localStorage.setItem(
-                "cube_sound_enabled",
-                isSoundEnabled
-            );
-    
-            if (!isSoundEnabled) {
-    
-                stopAllSounds();
-    
-            } else {
-    
-                initAudioSystem();
-    
-                try {
-                    if (audioCtx && audioCtx.state === "suspended") {
-                        await audioCtx.resume();
-                    }
-    
-                    if (
-                        document.body.classList.contains("game-started") &&
-                        !isPaused &&
-                        !isGameOver
-                    ) {
-                        if (currentActiveBGM) {
-                            await currentActiveBGM.play();
-                        } else {
-                            playRandomBGM();
-                        }
-                    }
-    
-                } catch (e) {
-                    console.log("BGM再開失敗:", e);
-                }
-            }
-    
-            updateSoundButtonUI();
-        });
+}
+
+function shareToX(shareText) {
+    const xUrl =
+        "https://twitter.com/intent/tweet?text=" +
+        encodeURIComponent(shareText) +
+        "&url=" +
+        encodeURIComponent(location.href);
+
+    window.open(xUrl, "_blank");
+}
+
+function setupShareButton(id, resultType) {
+    addClickListener(id, () => {
+        shareResult(resultType);
+    });
+}
+
+function setupShareButtons() {
+    setupShareButton(
+        "timeup-share-btn",
+        "timeup"
+    );
+
+    setupShareButton(
+        "clear-share-btn",
+        "clear"
+    );
+}
+
+function setupSoundButtons() {
+    const soundBtn =
+        document.getElementById("sound-toggle-btn");
+
+    if (!soundBtn) return;
+
+    soundBtn.addEventListener(
+        "click",
+        handleSoundButtonClick
+    );
+}
+
+async function handleSoundButtonClick() {
+    toggleSoundEnabled();
+
+    if (!isSoundEnabled) {
+        stopAllSounds();
+        updateSoundButtonUI();
+        return;
     }
 
-    const timeupRetryBtn = document.getElementById("timeup-retry-btn");
+    await resumeSoundSystem();
 
-    if (timeupRetryBtn) {
-        timeupRetryBtn.addEventListener("click", () => {
-            playWebAudio("select");
-    
-            fadeToBlack(() => {
-                const overlay = document.getElementById("timeup-overlay");
-    
-                if (overlay) {
-                    overlay.style.opacity = "0";
-                    overlay.style.display = "none";
-                }
-    
-                rotX = 0;
-                rotZ = 0;
-    
-                initGame();
-    
-                const stage = document.getElementById("stage");
-    
-                if (stage) {
-                    stage.style.transition = "none";
-                    stage.style.transform = "rotateX(0deg) rotateZ(0deg)";
-                    stage.offsetWidth;
-                }
-    
-                fadeFromBlack();
-    
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        if (stage) {
-                            rotX = 60;
-                            rotZ = -45;
-                            stage.style.transition = "transform 0.5s ease-out";
-                            stage.style.transform = `rotateX(${rotX}deg) rotateZ(${rotZ}deg)`;
-                        }
-                    });
-                });
-            });
-        });
+    updateSoundButtonUI();
+}
+
+function toggleSoundEnabled() {
+    isSoundEnabled = !isSoundEnabled;
+
+    localStorage.setItem(
+        "cube_sound_enabled",
+        isSoundEnabled
+    );
+}
+
+async function resumeSoundSystem() {
+    initAudioSystem();
+
+    try {
+        await resumeAudioContextIfNeeded();
+        await resumeBGMIfGameIsRunning();
+
+    } catch (e) {
+        console.log("BGM再開失敗:", e);
     }
+}
 
-/*const timeupTitleBtn = document.getElementById("timeup-title-btn");
+async function resumeAudioContextIfNeeded() {
+    if (
+        audioCtx &&
+        audioCtx.state === "suspended"
+    ) {
+        await audioCtx.resume();
+    }
+}
 
-if (timeupTitleBtn) {
-    timeupTitleBtn.addEventListener("click", () => {
-        playWebAudio("select");
+async function resumeBGMIfGameIsRunning() {
+    if (!isGameRunning()) return;
 
-        fadeToBlack(() => {
-            const overlay = document.getElementById("timeup-overlay");
-            const stage = document.getElementById("stage");
-            const startOverlay = document.getElementById("start-overlay");
+    if (currentActiveBGM) {
+        await currentActiveBGM.play();
+    } else {
+        playRandomBGM();
+    }
+}
 
-            clearInterval(timerId);
-            isGameOver = true;
-            isPaused = false;
+function isGameRunning() {
+    return (
+        document.body.classList.contains("game-started") &&
+        !isPaused &&
+        !isGameOver
+    );
+}
 
-            if (overlay) {
-                overlay.style.opacity = "0";
-                overlay.style.display = "none";
-            }
+function setupTimeupButtons() {
+    addClickListener(
+        "timeup-retry-btn",
+        handleTimeupRetry
+    );
 
-            if (stage) {
-                stage.innerHTML = "";
-                stage.style.transition = "none";
-                stage.style.transform = "rotateX(0deg) rotateZ(0deg)";
-            }
+    addClickListener(
+        "timeup-title-btn",
+        returnToTitle
+    );
+}
 
-            blocks = [];
-            selected = null;
+function restartGame() {
+    resetStageRotationState();
 
-            document.body.classList.remove("game-started");
+    initGame();
 
-            if (startOverlay) {
-                startOverlay.style.display = "flex";
-                startOverlay.style.opacity = "1";
-            }
+    const stage = document.getElementById("stage");
 
-            requestAnimationFrame(() => {
-                fadeFromBlack();
-            });
-        });
+    prepareStageIntroPosition(stage);
+
+    fadeFromBlack();
+
+    animateStageToDefaultAngle(stage);
+}
+
+function handleTimeupRetry() {
+    playWebAudio("select");
+
+    fadeToBlack(() => {
+        hideTimeupOverlay();
+        restartGame();
+    });
+}
+
+function hideOverlay(id) {
+    const overlay =
+        document.getElementById(id);
+
+    if (!overlay) return;
+
+    overlay.style.opacity = "0";
+    overlay.style.display = "none";
+}
+
+function hideTimeupOverlay() {
+    hideOverlay("timeup-overlay");
+}
+
+function resetStageRotationState() {
+    rotX = 0;
+    rotZ = 0;
+}
+
+function prepareStageIntroPosition(stage) {
+    if (!stage) return;
+
+    stage.style.transition = "none";
+    stage.style.transform =
+        "rotateX(0deg) rotateZ(0deg)";
+
+    stage.offsetWidth;
+}
+
+function addClickListener(id, handler) {
+    const element = document.getElementById(id);
+
+    if (element) {
+        element.addEventListener("click", handler);
+    }
+}
+
+function setupRotationButtons() {
+    addClickListener(
+        "rot-z-btn",
+        handleRotateZButtonClick
+    );
+
+    addClickListener(
+        "rot-y-btn",
+        handleRotateYButtonClick
+    );
+}
+
+function setupClearButtons() {
+    //addClickListener(
+      //  "clear-test-btn",
+        //handleClearTest
+    //);
+
+    addClickListener(
+        "clear-retry-btn",
+        handleClearRetry
+    );
+
+    addClickListener(
+        "clear-title-btn",
+        returnToTitle
+    );
+}
+
+/*function handleClearTest() {
+    const {
+        finalScore,
+        timeBonus,
+        clearBonus
+    } = calculateClearResult();
+
+    fadeToBlack(() => {
+        showClearOverlay(
+            finalScore,
+            timeBonus,
+            clearBonus
+        );
     });
 }*/
 
-    const timeupTitleBtn = document.getElementById("timeup-title-btn");
-    
-    if (timeupTitleBtn) {
-        timeupTitleBtn.addEventListener("click", returnToTitle);
-    }    
-    // 左右回転ボタン
-    document.getElementById("rot-z-btn").addEventListener("click", () => {
-        initAudioSystem(); 
-        if (isGameOver || isPaused) return; 
-        playWebAudio("select"); 
-        triggerResizeAndRefresh();
+function calculateClearResult() {
+
+    if (isTutorialMode) {
+        return {
+            finalScore: 0,
+            timeBonus: 0,
+            clearBonus: 0
+        };
+    }
+
+    const timeBonus = timeLeft * 2000;
+
+    let clearBonus = 0;
+
+    if (SIZE === 4) {
+        clearBonus = 20000;
+    } else if (SIZE === 6) {
+        clearBonus = 75600;
+    } else if (SIZE === 8) {
+        clearBonus = 200000;
+    }
+
+    const finalScore =
+        currentScore +
+        clearBonus +
+        timeBonus;
+
+    return {
+        finalScore,
+        timeBonus,
+        clearBonus
+    };
+}
+
+function handleClearRetry() {
+    playWebAudio("select");
+
+    fadeToBlack(restartGameFromClear);
+}
+
+function restartGameFromClear() {
+    hideClearOverlay();
+    restartGame();
+}
+
+function hideClearOverlay() {
+    hideOverlay("clear-overlay");
+}
+
+function handleResetButtonClick() {
+    initAudioSystem();
+    playWebAudio("select");
+
+    restartGameFromReset();
+}
+
+function restartGameFromReset() {
+    initGame();
+
+    requestAnimationFrame(() => {
+        playRandomBGM();
     });
+}
 
-    // 上下回転ボタン
-    document.getElementById("rot-y-btn").addEventListener("click", () => {
+function setupGameButtons() {
+    addClickListener(
+        "to-title-btn",
+        returnToTitle
+    );
 
-        initAudioSystem();
-    
-        if (isGameOver || isPaused) return;
-    
-            playWebAudio("select");
-        
-            const { dynamicCubeSize, offset } = getDynamicSizes();
-        
-            const visibleBlocks = blocks.filter(b =>
-                b.active &&
-                b.element.style.display !== "none"
+    addClickListener(
+        "reset-btn",
+        handleResetButtonClick
+    );
+}
+
+function handleRotateZButtonClick() {
+    initAudioSystem();
+
+    if (isGameOver || isPaused) return;
+
+    playWebAudio("select");
+    triggerResizeAndRefresh();
+}
+
+function handleRotateYButtonClick() {
+    initAudioSystem();
+
+    if (isGameOver || isPaused) return;
+
+    playWebAudio("select");
+
+    rotateCubeAroundY();
+}
+
+function rotateCubeAroundY() {
+    const { dynamicCubeSize, offset } = getDynamicSizes();
+
+    const visibleBlocks = getVisibleBlocks();
+
+    rotateBlockCoordinatesY();
+
+    updateVisibleBlockPositions(
+        visibleBlocks,
+        offset,
+        dynamicCubeSize
+    );
+}
+
+function updateVisibleBlockPositions(
+    visibleBlocks,
+    offset,
+    dynamicCubeSize
+) {
+    visibleBlocks.forEach(b => {
+        updateCubePosition(
+            b.element,
+            b.x,
+            b.y,
+            b.z,
+            offset,
+            dynamicCubeSize
+        );
+    });
+}
+
+function rotateBlockCoordinatesY() {
+    blocks.forEach(b => {
+        const oldY = b.y;
+        b.y = b.z;
+        b.z = (SIZE - 1) - oldY;
+    });
+}
+
+function getVisibleBlocks() {
+    return blocks.filter(b =>
+        b.active &&
+        b.element.style.display !== "none"
+    );
+}
+
+function handlePauseButtonClick() {
+    initAudioSystem();
+    playWebAudio("select");
+    togglePause();
+}
+
+function setupPauseButtons() {
+    addClickListener(
+        "pause-btn",
+        handlePauseButtonClick
+    );
+
+    addClickListener(
+        "resume-btn",
+        handlePauseButtonClick
+    );
+}
+
+function selectDifficulty(size) {
+    prepareDifficultySelection();
+
+    SIZE = size;
+
+    isTutorialMode = (size === 4);
+
+    if (size !== 4) {
+        selectedDifficulty = size;
+    }
+
+    prepareTimerForSelectedMode();
+
+    updateDifficultyButtons(size);
+
+    loadHighScore();
+}
+
+function prepareTimerForSelectedMode() {
+    if (isTutorialMode) {
+        timeLeft = 999;
+    } else {
+        timeLeft = 120;
+    }
+
+    updateTimerUI();
+}
+
+function prepareDifficultySelection() {
+    initAudioSystem();
+
+    debugLog(
+        "select=" + !!soundBank.select +
+        " / audio=" +
+        (audioCtx ? audioCtx.state : "none")
+    );
+
+    playWebAudio("select");
+}
+
+function updateDifficultyButtons(size) {
+    document.getElementById(
+        "diff-tutorial-btn"
+    ).classList.toggle(
+        "active",
+        size === 4
+    );
+
+    document.getElementById(
+        "diff-normal-btn"
+    ).classList.toggle(
+        "active",
+        size === 6
+    );
+
+    document.getElementById(
+        "diff-hard-btn"
+    ).classList.toggle(
+        "active",
+        size === 8
+    );
+}
+
+async function enterMobileFullscreenIfNeeded() {
+    if (!shouldEnterMobileFullscreen()) {
+        return;
+    }
+
+    await requestFullscreenIfAvailable();
+    await lockLandscapeOrientationIfAvailable();
+}
+
+function shouldEnterMobileFullscreen() {
+    const isIOS =
+        /iPhone|iPad|iPod/i.test(
+            navigator.userAgent
+        );
+
+    const isMobileSize =
+        window.innerWidth < 960;
+
+    return !isIOS && isMobileSize;
+}
+
+async function requestFullscreenIfAvailable() {
+    const docEl = document.documentElement;
+
+    try {
+        if (docEl.requestFullscreen) {
+            await docEl.requestFullscreen();
+
+        } else if (
+            docEl.webkitRequestFullscreen
+        ) {
+            await docEl.webkitRequestFullscreen();
+        }
+
+    } catch (err) {
+        console.log("フルスクリーン拒否");
+    }
+}
+
+async function lockLandscapeOrientationIfAvailable() {
+    try {
+        if (
+            screen.orientation &&
+            screen.orientation.lock
+        ) {
+            await screen.orientation.lock(
+                "landscape"
             );
-    
-        blocks.forEach(b => {
-            const oldY = b.y;
-            b.y = b.z;
-            b.z = (SIZE - 1) - oldY;
-        });
-    
-        visibleBlocks.forEach(b => {
-            updateCubePosition(
-                b.element,
-                b.x,
-                b.y,
-                b.z,
-                offset,
-                dynamicCubeSize
-            );
-        });
+        }
 
-    });
+    } catch (err) {
+        console.log("向きロック拒否");
+    }
+}
 
-    // ポーズボタン
-    document.getElementById("pause-btn").addEventListener("click", () => { 
-        initAudioSystem();
-        playWebAudio("select");
-        togglePause(); });
-    
-    // ポーズ画面の再開ボタン
-    document.getElementById("resume-btn").addEventListener("click", () => { 
-        initAudioSystem(); 
-        playWebAudio("select"); 
-        togglePause(); 
-    });
+function resetStageRotation(stage) {
+    rotX = 0;
+    rotZ = 0;
 
-    // ポーズ画面内の「タイトルへ」ボタンの処理
-    document.getElementById("to-title-btn").addEventListener("click", returnToTitle);
-    
-    // リセットボタン
-    document.getElementById("reset-btn").addEventListener("click", () => { 
-        initAudioSystem(); 
-        playWebAudio("select"); 
-    
-        initGame();
-    
+    if (!stage) return;
+
+    stage.style.transition = "none";
+    stage.style.transform =
+        "rotateX(0deg) rotateZ(0deg)";
+}
+
+function animateStageToDefaultAngle(stage) {
+    if (!stage) return;
+
+    requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-            playRandomBGM();
+            rotX = 60;
+            rotZ = -45;
+
+            stage.style.transition =
+                "transform 0.5s ease-out";
+
+            stage.style.transform =
+                `rotateX(${rotX}deg) rotateZ(${rotZ}deg)`;
         });
     });
+}
 
-    // タイトル画面の難易度 Easy ボタン
-    document.getElementById("diff-easy-btn").addEventListener("click", () => {
-        initAudioSystem();
-        
-        debugLog(
-        "select=" + !!soundBank.select +
-        " / audio=" + (audioCtx ? audioCtx.state : "none")
+function initializeGameFromTitle() {
+    skipStageRotationOnce = true;
+    initGame();
+}
+
+function startGameAfterTitleOverlay(overlay) {
+    overlay.style.display = "none";
+
+    initializeGameFromTitle();
+
+    const newStage = document.getElementById("stage");
+
+    resetStageRotation(newStage);
+
+    if (newStage) {
+        newStage.offsetWidth;
+        animateStageToDefaultAngle(newStage);
+    }
+}
+
+function playStartSequence() {
+    initAudioSystem();
+    playWebAudio("start");
+    playRandomBGM();
+}
+
+function hideTitleOverlay(overlay) {
+    document.body.classList.add("game-started");
+
+    if (!overlay) return;
+
+    overlay.style.opacity = "0";
+}
+
+function startGameAfterTitleFade(overlay) {
+    setTimeout(() => {
+        startGameAfterTitleOverlay(overlay);
+    }, 500);
+}
+
+async function startFromTitle() {
+    playStartSequence();
+
+    const stage =
+        document.getElementById("stage");
+
+    const overlay =
+        document.getElementById("start-overlay");
+
+    hideTitleOverlay(overlay);
+
+    await enterMobileFullscreenIfNeeded();
+
+    resetStageRotation(stage);
+
+    startGameAfterTitleFade(overlay);
+}
+
+async function startTutorialFromTitle() {
+    SIZE = 4;
+    isTutorialMode = true;
+
+    prepareTimerForSelectedMode();
+
+    await startFromTitle();
+}
+
+function setupDifficultyButtons() {
+    addClickListener(
+        "diff-tutorial-btn",
+        startTutorialFromTitle
     );
-        
-        playWebAudio("select"); 
-        SIZE = 5;
-        document.getElementById("diff-easy-btn").classList.add("active");
-        document.getElementById("diff-normal-btn").classList.remove("active");
-        loadHighScore(); 
-    });
-    
-    // タイトル画面の難易度 Normal ボタン
-    document.getElementById("diff-normal-btn").addEventListener("click", () => {
-        initAudioSystem();
 
-        debugLog(
-        "select=" + !!soundBank.select +
-        " / audio=" + (audioCtx ? audioCtx.state : "none")
+    addClickListener(
+        "diff-normal-btn",
+        () => selectDifficulty(6)
     );
-        
-        playWebAudio("select"); 
-        SIZE = 6;
-        document.getElementById("diff-normal-btn").classList.add("active");
-        document.getElementById("diff-easy-btn").classList.remove("active");
-        loadHighScore(); 
-    });
 
-    // 🚀 スタートボタンの処理（PCの最高の回転を維持、iPhoneのねじれと衝突バグを完全分離ハック）
-    document.getElementById("actual-start-btn").addEventListener("click", async () => {
-        initAudioSystem();
-        playWebAudio("start"); 
-        playRandomBGM(); 
-    
-        const stage = document.getElementById("stage");
-        const overlay = document.getElementById("start-overlay");
-        
-        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-        const isMobileSize = window.innerWidth < 960;
-    
-        document.body.classList.add("game-started");
-        overlay.style.opacity = "0";
-    
-        if (!isIOS && isMobileSize) {
-            const docEl = document.documentElement;
-    
-            try {
-                if (docEl.requestFullscreen) await docEl.requestFullscreen();
-                else if (docEl.webkitRequestFullscreen) await docEl.webkitRequestFullscreen();
-            } catch (err) {
-                console.log("フルスクリーン拒否");
-            }
-    
-            try {
-                if (screen.orientation && screen.orientation.lock) {
-                    await screen.orientation.lock("landscape");
-                }
-            } catch (err) {
-                console.log("向きロック拒否");
-            }
-        }
+    addClickListener(
+        "diff-hard-btn",
+        () => selectDifficulty(8)
+    );
+}
 
-        // 重要：initGame() の前に角度を0へ
-        rotX = 0;
-        rotZ = 0;
-    
-        if (stage) {
-            stage.style.transition = "none";
-            stage.style.transform = "rotateX(0deg) rotateZ(0deg)";
-        }
+function setupStartButton() {
+    document.getElementById("actual-start-btn")
+        .addEventListener("click", startFromTitle);
+}
 
-        setTimeout(() => {
-            overlay.style.display = "none";
-        
-            rotX = 0;
-            rotZ = 0;
-    
-            skipStageRotationOnce = true;
-            initGame();
-           
-            const newStage = document.getElementById("stage");
-        
-            if (newStage) {
-        
-                newStage.style.transition = "none";
-                newStage.style.transform = "rotateX(0deg) rotateZ(0deg)";
-        
-                    // Safariに0度状態を確定させる
-                    newStage.offsetWidth;
-            
-                    requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
-            
-                            rotX = 60;
-                            rotZ = -45;
-            
-                            newStage.style.transition =
-                                "transform 0.5s ease-out";
-            
-                            newStage.style.transform =
-                                `rotateX(${rotX}deg) rotateZ(${rotZ}deg)`;
-            
-                        });
-                    });
-                }
-        
-            }, 500);
-        });
+function setupTitleButtons() {
+    setupDifficultyButtons();
+    setupStartButton();
+}
+
+function setupEvents() {
+    setupShareButtons();
+    setupSoundButtons();
+    setupTimeupButtons();
+    setupClearButtons();
+
+    setupRotationButtons();
+    setupGameButtons();
+    setupPauseButtons();
+
+    setupTitleButtons();
 }
 
 function togglePause() {
     if (isGameOver) return;
-    const pauseOverlay = document.getElementById("pause-overlay");
+
+    const pauseOverlay =
+        document.getElementById("pause-overlay");
+
     if (!pauseOverlay) return;
 
     if (!isPaused) {
-        isPaused = true;
-        clearInterval(timerId); 
-        pauseOverlay.style.display = "flex";
-        setTimeout(() => pauseOverlay.style.opacity = "1", 10);
-        try { if(currentActiveBGM) currentActiveBGM.pause(); } catch(e){} 
+        pauseGame(pauseOverlay);
     } else {
-        isPaused = false;
-        pauseOverlay.style.opacity = "0";
-        setTimeout(() => pauseOverlay.style.display = "none", 400);
-        clearInterval(timerId);
-        timerId = setInterval(countdown, 1000);
-        try { if(currentActiveBGM) currentActiveBGM.play(); } catch(e){} 
+        resumeGame(pauseOverlay);
     }
+}
+
+function pauseGame(pauseOverlay) {
+    isPaused = true;
+
+    clearInterval(timerId);
+
+    pauseOverlay.style.display = "flex";
+
+    setTimeout(() => {
+        pauseOverlay.style.opacity = "1";
+    }, 10);
+
+    try {
+        if (currentActiveBGM) {
+            currentActiveBGM.pause();
+        }
+    } catch (e) {}
+}
+
+function resumeGame(pauseOverlay) {
+    isPaused = false;
+
+    pauseOverlay.style.opacity = "0";
+
+    setTimeout(() => {
+        pauseOverlay.style.display = "none";
+    }, 400);
+
+    clearInterval(timerId);
+
+    timerId = setInterval(countdown, 1000);
+
+    try {
+        if (currentActiveBGM) {
+            currentActiveBGM.play();
+        }
+    } catch (e) {}
 }
 
 /*gpt提案、左右回転の改善*/
 function triggerResizeAndRefresh() {
+    const sizes = getDynamicSizes();
 
-    const { dynamicCubeSize, offset } = getDynamicSizes();
+    const visibleBlocks = getVisibleBlocks();
 
-    const visibleBlocks = blocks.filter(b =>
-        b.active &&
-        b.element.style.display !== "none"
+    rotateBlockCoordinatesZ();
+
+    updateVisibleBlockPositionsNextFrame(
+        visibleBlocks,
+        sizes
     );
+}
 
-    // まず論理座標だけ更新
-    blocks.forEach(b => {
-        const oldX = b.x;
-        b.x = b.y;
-        b.y = (SIZE - 1) - oldX;
-    });
+function rotateBlockCoordinatesZ() {
+    blocks.forEach(block => {
+        const oldX = block.x;
 
-    // DOM更新は次フレームに回す
-    requestAnimationFrame(() => {
-        visibleBlocks.forEach(b => {
-            updateCubePosition(
-                b.element,
-                b.x,
-                b.y,
-                b.z,
-                offset,
-                dynamicCubeSize
-            );
-        });
+        block.x = block.y;
+        block.y = (SIZE - 1) - oldX;
     });
 }
 
-function refreshFaceSizes(b, halfSize) {
-    if(b.hasFaces) {
-        b.element.querySelectorAll('.face.top').forEach(el => el.style.transform = `translateZ(${halfSize}px)`);
-        b.element.querySelectorAll('.face.bottom').forEach(el => el.style.transform = `rotateX(180deg) translateZ(${halfSize}px)`);
-        b.element.querySelectorAll('.face.front').forEach(el => el.style.transform = `rotateX(-90deg) translateZ(${halfSize}px)`);
-        b.element.querySelectorAll('.face.back').forEach(el => el.style.transform = `rotateX(90deg) translateZ(${halfSize}px)`);
-        b.element.querySelectorAll('.face.right').forEach(el => el.style.transform = `rotateY(90deg) translateZ(${halfSize}px)`);
-        b.element.querySelectorAll('.face.left').forEach(el => el.style.transform = `rotateY(-90deg) translateZ(${halfSize}px)`);
-    }
+function updateVisibleBlockPositionsNextFrame(
+    visibleBlocks,
+    sizes
+) {
+    requestAnimationFrame(() => {
+        visibleBlocks.forEach(block => {
+            updateCubePosition(
+                block.element,
+                block.x,
+                block.y,
+                block.z,
+                sizes.offset,
+                sizes.dynamicCubeSize
+            );
+        });
+    });
 }
 
 function updateStageRotation() {
@@ -1030,7 +1784,6 @@ function countdown() {
     timeLeft--;
     updateTimerUI();
 
-    // 🔔 カウントダウン音
     if (timeLeft <= 5 && timeLeft >= 3) {
         playCountdownBeep();
     }
@@ -1040,142 +1793,382 @@ function countdown() {
     }
 
     if (timeLeft <= 0) {
-        clearInterval(timerId);
-        isGameOver = true;
-
-        document.getElementById("status").innerText = "⏱️ タイムアップ！";
-        document.getElementById("status").style.color = "#ff4444";
-
-        // BGMは止めない
-        playWebAudio("timeup");
-
-        showTimeUpOverlay();
+        handleTimeUp();
     }
 }
 
+function handleTimeUp() {
+    clearInterval(timerId);
+
+    isGameOver = true;
+
+    document.getElementById("status").innerText =
+        "⏱️ タイムアップ！";
+
+    document.getElementById("status").style.color =
+        "#ff4444";
+
+    playWebAudio("timeup");
+
+    fadeToBlack(() => {
+        showTimeUpOverlay();
+    });
+}
+
 function updateTimerUI() {
-    document.getElementById("timer-text").innerText = `残り時間 ${timeLeft} 秒`;
+    if (isTutorialMode) {
+        document.getElementById("timer-text").innerText =
+            "チュートリアル";
+
+        const bar = document.getElementById("timer-bar");
+
+        if (bar) {
+            bar.style.width = "100%";
+        }
+
+        return;
+    }
+
+    document.getElementById("timer-text").innerText =
+        `残り時間 ${timeLeft} 秒`;
+
     const percentage = (timeLeft / 120) * 100;
     const bar = document.getElementById("timer-bar");
-    if(bar) bar.style.width = `${percentage}%`;
+
+    if (bar) {
+        bar.style.width = `${percentage}%`;
+    }
 }
 
 function isSelectable(b) {
-    let hasLeft = false, hasRight = false, hasFront = false, hasBack = false;
-    const findBlock = (x, y, z) => blocks.find(o => o.active && o.x === x && o.y === y && o.z === z);
-    if (findBlock(b.x - 1, b.y, b.z)) hasLeft = true;
-    if (findBlock(b.x + 1, b.y, b.z)) hasRight = true;
-    if (findBlock(b.x, b.y - 1, b.z)) hasFront = true;
-    if (findBlock(b.x, b.y + 1, b.z)) hasBack = true;
+    const hasLeft = hasActiveBlockAt(b.x - 1, b.y, b.z);
+    const hasRight = hasActiveBlockAt(b.x + 1, b.y, b.z);
+    const hasFront = hasActiveBlockAt(b.x, b.y - 1, b.z);
+    const hasBack = hasActiveBlockAt(b.x, b.y + 1, b.z);
+
     let openSides = 0;
-    if (!hasLeft) openSides++; if (!hasRight) openSides++; if (!hasFront) openSides++; if (!hasBack) openSides++;
-    return (openSides >= 2);
+
+    if (!hasLeft) openSides++;
+    if (!hasRight) openSides++;
+    if (!hasFront) openSides++;
+    if (!hasBack) openSides++;
+
+    return openSides >= 2;
+}
+
+function hasActiveBlockAt(x, y, z) {
+    return blocks.some(o =>
+        o.active &&
+        o.x === x &&
+        o.y === y &&
+        o.z === z
+    );
 }
 
 function isExposed(b) {
-    const findBlock = (x, y, z) => blocks.find(o => o.active && o.x === x && o.y === y && o.z === z);
     let openSides = 0;
-    if (!findBlock(b.x - 1, b.y, b.z)) openSides++; if (!findBlock(b.x + 1, b.y, b.z)) openSides++;
-    if (!findBlock(b.x, b.y - 1, b.z)) openSides++; if (!findBlock(b.x, b.y + 1, b.z)) openSides++;
-    if (!findBlock(b.x, b.y, b.z - 1)) openSides++; if (!findBlock(b.x, b.y, b.z + 1)) openSides++; 
-    return (openSides > 0); 
+
+    if (!hasActiveBlockAt(b.x - 1, b.y, b.z)) openSides++;
+    if (!hasActiveBlockAt(b.x + 1, b.y, b.z)) openSides++;
+    if (!hasActiveBlockAt(b.x, b.y - 1, b.z)) openSides++;
+    if (!hasActiveBlockAt(b.x, b.y + 1, b.z)) openSides++;
+    if (!hasActiveBlockAt(b.x, b.y, b.z - 1)) openSides++;
+    if (!hasActiveBlockAt(b.x, b.y, b.z + 1)) openSides++;
+
+    return openSides > 0;
+}
+
+function showNotSelectableMessage(status) {
+    if (isTutorialMode) {
+        status.innerText =
+            "このブロックはまだ選べません。左右前後のうち、2方向以上が空いているブロックを選びましょう";
+
+        status.style.color =
+            "#ffb703";
+
+        return;
+    }
+
+    status.innerText =
+        "周囲に挟まれています（空きが1面以下なので選べません）";
+
+    status.style.color =
+        "#ff5722";
+}
+
+function clearSelection(block, status) {
+    block.element.classList.remove("selected");
+
+    selected = null;
+
+    status.innerText = "選択を解除しました";
+    status.style.color = "#ffeb3b";
+}
+
+function selectFirstBlock(block, status) {
+    selected = block;
+    block.element.classList.add("selected");
+
+    if (isTutorialMode) {
+        status.innerText =
+            "いいですね。同じ数字をもう1つ探して選びましょう";
+    } else {
+        status.innerText =
+            "2つ目の同じ数字を選んでください";
+    }
+
+    status.style.color = "#ffeb3b";
+}
+
+function clearMatchedBlocks(
+    firstBlock,
+    secondBlock,
+    status
+) {
+    deactivateMatchedBlocks(
+        firstBlock,
+        secondBlock
+    );
+
+    selected = null;
+
+    updateScoreDisplay(
+        currentScore + 700
+    );
+
+    if (
+        isTutorialMode &&
+        !tutorialFirstMatchDone
+    ) {
+        showTutorialFirstMatchMessage(status);
+    } else {
+        showMatchSuccessMessage(status);
+    }
+
+    playWebAudio("clear");
+
+    revealExposedBlocks();
+
+    updateCount();
+}
+
+function showTutorialFirstMatchMessage(status) {
+    tutorialFirstMatchDone = true;
+
+    status.innerText =
+        "よくできました！次は回転ボタンで視点を変えてみましょう";
+
+    status.style.color = "#4caf50";
+}
+
+function deactivateMatchedBlocks(
+    firstBlock,
+    secondBlock
+) {
+    firstBlock.active = false;
+    secondBlock.active = false;
+
+    firstBlock.element.style.display = "none";
+    secondBlock.element.style.display = "none";
+}
+
+function showMatchSuccessMessage(status) {
+    status.innerText =
+        "消去成功！(+700pt)";
+
+    status.style.color =
+        "#4caf50";
+}
+
+function revealExposedBlocks() {
+    const sizes = getDynamicSizes();
+
+    blocks.forEach(block => {
+        if (shouldRevealBlock(block)) {
+            revealBlock(block, sizes);
+        }
+    });
+}
+
+function shouldRevealBlock(block) {
+    return (
+        block.active &&
+        block.element.style.display === "none" &&
+        isExposed(block)
+    );
+}
+
+function revealBlock(block, sizes) {
+    updateCubePosition(
+        block.element,
+        block.x,
+        block.y,
+        block.z,
+        sizes.offset,
+        sizes.dynamicCubeSize
+    );
+
+    createFacesForCube(
+        block,
+        sizes.halfSize,
+        sizes.dynamicCubeSize
+    );
+
+    block.element.style.display = "block";
+}
+
+function selectDifferentBlock(block, status) {
+    selected.element.classList.remove("selected");
+
+    selected = block;
+    block.element.classList.add("selected");
+
+    status.innerText = "数字が違います！";
+    status.style.color = "#ff5722";
+}
+
+function validateBlockSelection(block, status) {
+
+    if (!isSelectable(block)) {
+        playWebAudio("error");
+        showNotSelectableMessage(status);
+        return false;
+    }
+
+    if (selected !== block) {
+        playWebAudio("select");
+    }
+
+    return true;
 }
 
 function handleClick(b) {
     if (isGameOver || isPaused || !b.active) return;
-    
-    if (isSelectable(b)) {
-        if (selected !== b) {
-            playWebAudio("select"); 
-        }
-    } else {
-        playWebAudio("error"); 
-    }
 
     const status = document.getElementById("status");
-    if (!isSelectable(b)) {
-        status.innerText = "周囲に挟まれています（空きが1面以下なので選べません）";
-        status.style.color = "#ff5722";
+
+    if (!validateBlockSelection(b, status)) {
         return;
     }
-    
+
+    handleBlockSelection(b, status);
+}
+
+function handleBlockSelection(b, status) {
     if (selected === null) {
-        selected = b;
-        b.element.classList.add("selected");
-        status.innerText = "2つ目の同じ数字を選んでください";
-        status.style.color = "#ffeb3b";
+        selectFirstBlock(b, status);
+
+    } else if (selected === b) {
+        clearSelection(b, status);
+
+    } else if (selected.txt === b.txt) {
+        clearMatchedBlocks(selected, b, status);
+
     } else {
-        if (selected === b) {
-            b.element.classList.remove("selected");
-            selected = null;
-            status.innerText = "選択を解除しました";
-            status.style.color = "#ffeb3b";
-        } else if (selected.txt === b.txt) {
-            selected.active = false; b.active = false;
-            selected.element.style.display = "none"; b.element.style.display = "none";
-            selected = null;
-            
-            updateScoreDisplay(currentScore + 700);
-            status.innerText = "消去成功！(+700pt)";
-            status.style.color = "#4caf50";
-            
-            playWebAudio("clear");
-            
-            const { halfSize, dynamicCubeSize, offset } = getDynamicSizes();
-            blocks.forEach(o => {
-                if (o.active && o.element.style.display === "none" && isExposed(o)) {
-                    updateCubePosition(o.element, o.x, o.y, o.z, offset, dynamicCubeSize);
-                    createFacesForCube(o, halfSize, dynamicCubeSize); 
-                    o.element.style.display = "block"; 
-                }
-            });
-            updateCount();
-        } else {
-            selected.element.classList.remove("selected");
-            selected = b; b.element.classList.add("selected");
-            status.innerText = "数字が違います！";
-            status.style.color = "#ff5722";
-        }
+        selectDifferentBlock(b, status);
     }
 }
 
 function updateCount() {
-    let count = blocks.filter(b => b.active).length;
+    const count = getActiveBlockCount();
+
     document.getElementById("count").innerText = count;
+
     if (count === 0) {
-        clearInterval(timerId);
-        isGameOver = true;
-    
-        const timeBonus = timeLeft * 2000;
-        const clearBonus = SIZE === 5 ? 43750 : 75600;
-        const finalScore = currentScore + clearBonus + timeBonus;
-    
-        updateScoreDisplay(finalScore);
-    
-        document.getElementById("status").innerText = "🎉 全クリア達成!!";
-        document.getElementById("status").style.color = "#4caf50";
-    
-        playWebAudio("clear");
-    
-        showClearOverlay(finalScore, timeBonus, clearBonus);
+        handleGameClear();
     }
 }
 
-document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-        try { if(currentActiveBGM) currentActiveBGM.pause(); } catch(e){}
+function getActiveBlockCount() {
+    return blocks.filter(b => b.active).length;
+}
+
+function handleGameClear() {
+    clearInterval(timerId);
+
+    isGameOver = true;
+
+    const {
+        finalScore,
+        timeBonus,
+        clearBonus
+    } = calculateClearResult();
+
+    updateScoreDisplay(finalScore);
+
+    if (isTutorialMode) {
+        document.getElementById("status").innerText =
+            "🎉 チュートリアルクリア！";
+    
     } else {
-        if (document.body.classList.contains("game-started") && !isPaused && !isGameOver) {
-            try { if(currentActiveBGM) currentActiveBGM.play().catch(e => console.log(e)); } catch(e){}
-        }
+        document.getElementById("status").innerText =
+            "🎉 全クリア達成!!";
     }
-});
+    
+        document.getElementById("status").style.color =
+        "#4caf50";
 
-initAudioSystem();
+    playWebAudio("clear");
 
-loadHighScore();
-updateSoundButtonUI();
+    fadeToBlack(() => {
+        showClearOverlay(
+            finalScore,
+            timeBonus,
+            clearBonus
+        );
+    });
+}
 
-setTimeout(() => {
-    setupEvents();
-}, 300);
+document.addEventListener(
+    "visibilitychange",
+    handleVisibilityChange
+);
+
+function handleVisibilityChange() {
+    if (document.hidden) {
+        pauseBGMForHiddenPage();
+    } else {
+        resumeBGMForVisiblePage();
+    }
+}
+
+function pauseBGMForHiddenPage() {
+    try {
+        if (currentActiveBGM) {
+            currentActiveBGM.pause();
+        }
+    } catch (e) {}
+}
+
+function resumeBGMForVisiblePage() {
+    if (
+        !document.body.classList.contains(
+            "game-started"
+        ) ||
+        isPaused ||
+        isGameOver
+    ) {
+        return;
+    }
+
+    try {
+        if (currentActiveBGM) {
+            currentActiveBGM.play()
+                .catch(e => console.log(e));
+        }
+    } catch (e) {}
+}
+
+initializeApplication();
+
+function initializeApplication() {
+    initAudioSystem();
+
+    loadHighScore();
+
+    updateSoundButtonUI();
+
+    setTimeout(() => {
+        setupEvents();
+    }, 300);
+}
